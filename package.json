@@ -1,6 +1,6 @@
 {
   "name": "ng-annotate",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "add, remove and rebuild angularjs dependency injection annotations",
   "main": "ng-annotate-main.js",
   "repository": {
