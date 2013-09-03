@@ -76,5 +76,9 @@ in --harmony mode. I will publish a version of ng-annotate that is pre-transpile
 [defs](https://github.com/olov/defs) so that the --harmony requirement goes away, if that
 is of interest.
 
-    var ngAnnotate = require("ng-annotate/ng-annotate-main.js");
-    ngAnnotate(src, options);
+    var ngAnnotate = require("ng-annotate");
+    var transformedSource = ngAnnotate(src, {add: true}).src;
+
+
+## Grunt?
+In the works! Feel free to contribute by creating grunt-ng-annotate, and let me know (@olov).
