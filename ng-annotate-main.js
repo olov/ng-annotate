@@ -4,28 +4,29 @@ const is = require("simple-is");
 const alter = require("alter");
 const traverse = require("ast-traverse");
 
-/*
-// return { .. controller: function($scope, $timeout), ...}
-// TODO check that we're inside directive def?
+function match(node, re) {
+    return matchRegular(node, re) ||
+        matchDirectiveReturnObject(node) ||
+        matchProviderGet(node);
+}
+
 function matchDirectiveReturnObject(node) {
-    function matcControllerProp(props) {
-        for (let i = 0; i < props.length; i++) {
-            const prop = props[i];
-            if (prop.key.type === "Identifier" && prop.key.name === "controller") {
-                return prop.value; // FunctionExpression or ArrayExpression
-            }
-        }
-        return null;
-    }
+    // return { .. controller: function($scope, $timeout), ...}
+    // TODO check that we're inside directive def?
 
     return node.type === "ReturnStatement" &&
         node.argument && node.argument.type === "ObjectExpression" &&
-        matchControllerProp(node.argument.properties);
+        matchProp("controller", node.argument.properties);
 }
 
-*/
-function match(node, re) {
-    return matchRegular(node, re);
+function matchProviderGet(node) {
+    // this.$get = function($scope, $timeout)
+    // { ... $get: function($scope, $timeout), ...}
+    // TODO check that we're inside provider def?
+
+    return (node.type === "AssignmentExpression" && node.left.type === "MemberExpression" &&
+        node.left.object.type === "ThisExpression" && node.left.property.name === "$get" && node.right) ||
+        (node.type === "ObjectExpression" && matchProp("$get", node.properties));
 }
 
 function matchRegular(node, re) {
@@ -69,6 +70,16 @@ function matchRegular(node, re) {
 
 function last(arr) {
     return arr[arr.length - 1];
+}
+
+function matchProp(name, props) {
+    for (let i = 0; i < props.length; i++) {
+        const prop = props[i];
+        if (prop.key.type === "Identifier" && prop.key.name === name) {
+            return prop.value; // FunctionExpression or ArrayExpression
+        }
+    }
+    return null;
 }
 
 function insertArray(functionExpression, fragments) {
@@ -121,10 +132,19 @@ function removeArray(array, fragments) {
 }
 
 function isAnnotatedArray(node) {
+    function allButLastStrings(arr) { // not used for now
+        for (var i = 0; i < arr.length - 1; i++) {
+            if (arr[i].type !== "Literal" ||
+                is.not.string(arr[i].value)) {
+                return false;
+            }
+        }
+        return true;
+    }
     return node.type === "ArrayExpression" && node.elements.length >= 1 && last(node.elements).type === "FunctionExpression";
 }
-function isFunction(node) {
-    return node.type === "FunctionExpression";
+function isFunctionWithArgs(node) {
+    return node.type === "FunctionExpression" && node.params.length >= 1;
 }
 
 module.exports = function ngAnnotate(src, options) {
@@ -155,7 +175,7 @@ module.exports = function ngAnnotate(src, options) {
             replaceArray(target, fragments);
         } else if (mode === "remove" && isAnnotatedArray(target)) {
             removeArray(target, fragments);
-        } else if (is.someof(mode, ["add", "rebuild"]) && isFunction(target)) {
+        } else if (is.someof(mode, ["add", "rebuild"]) && isFunctionWithArgs(target)) {
             insertArray(target, fragments);
         }
     }});
@@ -166,18 +186,3 @@ module.exports = function ngAnnotate(src, options) {
         src: out,
     };
 }
-
-
-
-
-/*
- function allButLastStrings(arr) {
- for (var i = 0; i < arr.length - 1; i++) {
- if (arr[i].type !== "Literal" ||
- is.not.string(arr[i].value)) {
- return false;
- }
- }
- return true;
- }
- */
