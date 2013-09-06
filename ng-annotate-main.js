@@ -57,9 +57,15 @@ function matchRegular(node, re) {
     if (!obj || !prop) {
         return false;
     }
-    const matchAngularModule = (obj.$chained || isShortDef(obj, re) || isLongDef(obj)) && is.someof(prop.name, ["config", "factory", "directive", "filter", "run", "controller", "service"]);
+    const matchAngularModule = (obj.$chained || isShortDef(obj, re) || isLongDef(obj)) &&
+        is.someof(prop.name, ["provider", "config", "factory", "directive", "filter", "run", "controller", "service"]);
     if (!matchAngularModule) {
         return false;
+    }
+    node.$chained = true;
+
+    if (prop.name === "provider") {
+        return false; // affects matchAngularModule because of chaining
     }
 
     const args = node.arguments;
@@ -162,8 +168,6 @@ module.exports = function ngAnnotate(src, options) {
     });
 
     const fragments = [];
-    // TODO chained
-    //    node.$chained = true;
 
     traverse(ast, {post: function(node, parent) {
         const target = match(node, re);

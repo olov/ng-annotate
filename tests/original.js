@@ -91,3 +91,29 @@ myMod.provider("foo", {
         bar;
     }
 });
+
+// chaining
+myMod.directive("foo", function($a, $b) {
+    a;
+}).factory("foo", function() {
+        b;
+    }).config(function($c) {
+        c;
+    }).filter("foo", function($d, $e) {
+        d;
+    });
+
+angular.module("MyMod").directive("foo", function($a, $b) {
+    a;
+}).provider("foo", function() {
+        return {
+            $get: function($scope, $timeout) {
+                bar;
+            }};
+    }).factory("foo", function() {
+        b;
+    }).config(function($c) {
+        c;
+    }).filter("foo", function($d, $e) {
+        d;
+    });
