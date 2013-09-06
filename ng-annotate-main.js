@@ -4,22 +4,49 @@ const is = require("simple-is");
 const alter = require("alter");
 const traverse = require("ast-traverse");
 
-// Short form:
-// *.controller("MyCtrl", function($scope, $timeout) {});
-function isShortDef(node, re) {
-    return is.string(node.name) && (!re || re.test(node.name));
+/*
+// return { .. controller: function($scope, $timeout), ...}
+// TODO check that we're inside directive def?
+function matchDirectiveReturnObject(node) {
+    function matcControllerProp(props) {
+        for (let i = 0; i < props.length; i++) {
+            const prop = props[i];
+            if (prop.key.type === "Identifier" && prop.key.name === "controller") {
+                return prop.value; // FunctionExpression or ArrayExpression
+            }
+        }
+        return null;
+    }
+
+    return node.type === "ReturnStatement" &&
+        node.argument && node.argument.type === "ObjectExpression" &&
+        matchControllerProp(node.argument.properties);
 }
 
-// Long form:
-// angular.module(*).controller("MyCtrl", function($scope, $timeout) {});
-function isLongDef(node) {
-    return node.type === "CallExpression" &&
-        node.callee &&
-        node.callee.object && node.callee.object.name === "angular" &&
-        node.callee.property && node.callee.property.name === "module";
+*/
+function match(node, re) {
+    return matchRegular(node, re);
 }
 
-function matchCallee(node, re) {
+function matchRegular(node, re) {
+    // Short form:
+    // *.controller("MyCtrl", function($scope, $timeout) {});
+    function isShortDef(node, re) {
+        return is.string(node.name) && (!re || re.test(node.name));
+    }
+
+    // Long form:
+    // angular.module(*).controller("MyCtrl", function($scope, $timeout) {});
+    function isLongDef(node) {
+        return node.callee &&
+            node.callee.object && node.callee.object.name === "angular" &&
+            node.callee.property && node.callee.property.name === "module";
+    }
+
+    if (node.type !== "CallExpression") {
+        return;
+    }
+
     const callee = node.callee;
     if (callee.type !== "MemberExpression") {
         return false;
@@ -29,31 +56,22 @@ function matchCallee(node, re) {
     if (!obj || !prop) {
         return false;
     }
-    return (obj.$chained || isShortDef(obj, re) || isLongDef(obj)) && is.someof(prop.name, ["config", "factory", "directive", "filter", "run", "controller", "service"]);
-}
+    const matchAngularModule = (obj.$chained || isShortDef(obj, re) || isLongDef(obj)) && is.someof(prop.name, ["config", "factory", "directive", "filter", "run", "controller", "service"]);
+    if (!matchAngularModule) {
+        return false;
+    }
 
-function matchFunctionSignature(node) {
     const args = node.arguments;
-    return (is.someof(node.callee.property.name, ["config", "run"]) ?
-        args.length === 1 :
-        args.length === 2 && args[0].type === "Literal") &&
-        last(args).type === "FunctionExpression" && last(args).params.length > 0;
-}
-
-function matchArraySignature(node) {
-    const args = node.arguments;
-    return (is.someof(node.callee.property.name, ["config", "run"]) ?
-        args.length === 1 :
-        args.length === 2 && args[0].type === "Literal") &&
-        last(args).type === "ArrayExpression" && last(args).elements.length >= 1 && last(last(args).elements).type === "FunctionExpression";
+    return (is.someof(prop.name, ["config", "run"]) ?
+        args.length === 1 && args[0] :
+        args.length === 2 && args[0].type === "Literal" && is.string(args[0].value) && args[1]);
 }
 
 function last(arr) {
     return arr[arr.length - 1];
 }
 
-function insertArray(node, fragments) {
-    const functionExpression = last(node.arguments);
+function insertArray(functionExpression, fragments) {
     const range = functionExpression.range;
 
     const args = JSON.stringify(functionExpression.params.map(function(arg) {
@@ -71,12 +89,11 @@ function insertArray(node, fragments) {
     });
 }
 
-function replaceArray(node, fragments) {
-    const array = last(node.arguments);
+function replaceArray(array, fragments) {
     const functionExpression = last(array.elements);
 
     if (functionExpression.params.length === 0) {
-        return removeArray(node, fragments);
+        return removeArray(array, fragments);
     }
     const args = JSON.stringify(functionExpression.params.map(function(arg) {
         return arg.name;
@@ -88,8 +105,7 @@ function replaceArray(node, fragments) {
     });
 }
 
-function removeArray(node, fragments) {
-    const array = last(node.arguments);
+function removeArray(array, fragments) {
     const functionExpression = last(array.elements);
 
     fragments.push({
@@ -102,6 +118,13 @@ function removeArray(node, fragments) {
         end: array.range[1],
         str: "",
     });
+}
+
+function isAnnotatedArray(node) {
+    return node.type === "ArrayExpression" && node.elements.length >= 1 && last(node.elements).type === "FunctionExpression";
+}
+function isFunction(node) {
+    return node.type === "FunctionExpression";
 }
 
 module.exports = function ngAnnotate(src, options) {
@@ -119,21 +142,21 @@ module.exports = function ngAnnotate(src, options) {
     });
 
     const fragments = [];
-    traverse(ast, {post: function(node, parent) {
-        if (node.type !== "CallExpression") {
-            return;
-        }
-        if (!matchCallee(node, re)) {
-            return;
-        }
-        node.$chained = true;
+    // TODO chained
+    //    node.$chained = true;
 
-        if (mode === "rebuild" && matchArraySignature(node)) {
-            replaceArray(node, fragments);
-        } else if (mode === "remove" && matchArraySignature(node)) {
-            removeArray(node, fragments);
-        } else if (is.someof(mode, ["add", "rebuild"]) && matchFunctionSignature(node)) {
-            insertArray(node, fragments);
+    traverse(ast, {post: function(node, parent) {
+        const target = match(node, re);
+        if (!target) {
+            return;
+        }
+
+        if (mode === "rebuild" && isAnnotatedArray(target)) {
+            replaceArray(target, fragments);
+        } else if (mode === "remove" && isAnnotatedArray(target)) {
+            removeArray(target, fragments);
+        } else if (is.someof(mode, ["add", "rebuild"]) && isFunction(target)) {
+            insertArray(target, fragments);
         }
     }});
 
@@ -143,3 +166,18 @@ module.exports = function ngAnnotate(src, options) {
         src: out,
     };
 }
+
+
+
+
+/*
+ function allButLastStrings(arr) {
+ for (var i = 0; i < arr.length - 1; i++) {
+ if (arr[i].type !== "Literal" ||
+ is.not.string(arr[i].value)) {
+ return false;
+ }
+ }
+ return true;
+ }
+ */
