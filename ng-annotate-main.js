@@ -12,7 +12,6 @@ function match(node, re) {
 
 function matchDirectiveReturnObject(node) {
     // return { .. controller: function($scope, $timeout), ...}
-    // TODO check that we're inside directive def?
 
     return node.type === "ReturnStatement" &&
         node.argument && node.argument.type === "ObjectExpression" &&
@@ -22,7 +21,6 @@ function matchDirectiveReturnObject(node) {
 function matchProviderGet(node) {
     // this.$get = function($scope, $timeout)
     // { ... $get: function($scope, $timeout), ...}
-    // TODO check that we're inside provider def?
 
     return (node.type === "AssignmentExpression" && node.left.type === "MemberExpression" &&
         node.left.object.type === "ThisExpression" && node.left.property.name === "$get" && node.right) ||
@@ -30,14 +28,12 @@ function matchProviderGet(node) {
 }
 
 function matchRegular(node, re) {
-    // Short form:
-    // *.controller("MyCtrl", function($scope, $timeout) {});
+    // Short form: *.controller("MyCtrl", function($scope, $timeout) {});
     function isShortDef(node, re) {
         return is.string(node.name) && (!re || re.test(node.name));
     }
 
-    // Long form:
-    // angular.module(*).controller("MyCtrl", function($scope, $timeout) {});
+    // Long form: angular.module(*).controller("MyCtrl", function($scope, $timeout) {});
     function isLongDef(node) {
         return node.callee &&
             node.callee.object && node.callee.object.name === "angular" &&
@@ -138,15 +134,6 @@ function removeArray(array, fragments) {
 }
 
 function isAnnotatedArray(node) {
-    function allButLastStrings(arr) { // not used for now
-        for (var i = 0; i < arr.length - 1; i++) {
-            if (arr[i].type !== "Literal" ||
-                is.not.string(arr[i].value)) {
-                return false;
-            }
-        }
-        return true;
-    }
     return node.type === "ArrayExpression" && node.elements.length >= 1 && last(node.elements).type === "FunctionExpression";
 }
 function isFunctionWithArgs(node) {
@@ -169,7 +156,7 @@ module.exports = function ngAnnotate(src, options) {
 
     const fragments = [];
 
-    traverse(ast, {post: function(node, parent) {
+    traverse(ast, {post: function(node) {
         const target = match(node, re);
         if (!target) {
             return;
