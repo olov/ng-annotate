@@ -10,7 +10,7 @@ function slurp(filename) {
 
 function test(correct, got, name) {
     if (got !== correct) {
-        const patch = diff.createPatch(name, got, correct);
+        const patch = diff.createPatch(name, correct, got);
         process.stderr.write(patch);
         process.exit(-1);
     }
