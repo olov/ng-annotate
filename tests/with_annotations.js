@@ -110,7 +110,8 @@ angular.module("MyMod").directive("foo", ["$a","$b", function($a, $b) {
             $get: ["$scope","$timeout", function($scope, $timeout) {
                 bar;
             }]};
-    }).factory("foo", function() {
+    }).value("foo", "bar")
+    .factory("foo", function() {
         b;
     }).config(["$c", function($c) {
         c;
