@@ -12,6 +12,9 @@ done
 
 cp ng-annotate es5/
 
+echo "hard-coding version"
+node --harmony inline-version.js
+
 cd es5
 
 echo "running tests (in es5 mode i.e. without --harmony)"

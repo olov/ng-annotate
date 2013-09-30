@@ -3,7 +3,7 @@ const fs = require("fs");
 const fmt = require("simple-fmt");
 const tryor = require("tryor");
 const ngAnnotate = require("./ng-annotate-main");
-const version = require("./package.json").version
+const version = require("./package.json").version;
 const optimist = require("optimist")
     .usage("ng-annotate v" + version + "\n\nUsage: ng-annotate OPTIONS file.js")
     .options("a", {
