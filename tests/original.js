@@ -119,3 +119,13 @@ angular.module("MyMod").directive("foo", function($a, $b) {
     }).filter("foo", function($d, $e) {
         d;
     });
+
+// $provide
+angular.module("MyMod").directive("foo", function($a, $b) {
+    $provide.decorator("foo", function($scope, $timeout) {
+        a;
+    });
+    $provide.factory("bar", function($timeout, $scope) {
+        b;
+    });
+});
