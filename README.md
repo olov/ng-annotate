@@ -31,8 +31,8 @@ See description of the `--regexp` options further down.
 
 There's also a [Grunt](http://gruntjs.com/) plugin, see [grunt-ng-annotate](https://npmjs.org/package/grunt-ng-annotate).
 
-ng-annotate is written in ES6 constlet style and uses defs.js to transpile
-to ES5. Build instrunctions in [BUILD.md](BUILD.md).
+ng-annotate is written in ES6 constlet style and uses [defs.js](https://github.com/olov/defs)
+to transpile to ES5. Build instructions in [BUILD.md](BUILD.md).
 
 
 ## License
@@ -93,10 +93,7 @@ decompilation step.
 
 ## Library (API)
 ng-annotate can be used as a library. See `ng-annotate.js` for further info about
-options and return value. ng-annotate uses ES6 const and let, so you must currently run node
-in --harmony mode. I will publish a version of ng-annotate that is pre-transpiled using
-[defs](https://github.com/olov/defs) so that the --harmony requirement goes away, if that
-is of interest.
+options and return value.
 
     var ngAnnotate = require("ng-annotate");
     var transformedSource = ngAnnotate(src, {add: true}).src;
