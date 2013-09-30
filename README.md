@@ -35,6 +35,14 @@ ng-annotate is written in ES6 constlet style and uses defs.js to transpile
 to ES5. Build instrunctions in [BUILD.md](BUILD.md).
 
 
+## License
+`MIT`, see [LICENSE](LICENSE) file.
+
+
+## Changes
+See [CHANGES.md](CHANGES.md).
+
+
 ## Why?
  * Keep your code base clutter free from annotations but add them in your build step
  prior to minimizing
