@@ -2,7 +2,7 @@
   "name": "ng-annotate",
   "version": "0.2.0",
   "description": "add, remove and rebuild angularjs dependency injection annotations",
-  "main": "ng-annotate-main.js",
+  "main": "build/es5/ng-annotate-main.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/olov/ng-annotate.git"
@@ -34,7 +34,7 @@
   "scripts": {
     "test": "node --harmony run-tests"
   },
-  "bin": "./ng-annotate",
+  "bin": "./build/es5/ng-annotate",
   "author": "Olov Lassus <olov.lassus@gmail.com>",
   "license": "MIT"
 }

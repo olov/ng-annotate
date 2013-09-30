@@ -2,6 +2,5 @@
     "environments": ["node"],
     "disallowVars": true,
     "disallowDuplicated": true,
-    "disallowUnknownReferences": true,
-    "stats": true
+    "disallowUnknownReferences": true
 }
