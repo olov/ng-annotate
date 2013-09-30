@@ -29,6 +29,11 @@ use `--add --remove` (`-ar`) to rebuild all annotations.
 
 See description of the `--regexp` options further down.
 
+There's also a [Grunt](http://gruntjs.com/) plugin, see [grunt-ng-annotate](https://npmjs.org/package/grunt-ng-annotate).
+
+ng-annotate is written in ES6 constlet style and uses defs.js to transpile
+to ES5. Build instrunctions in [BUILD.md](BUILD.md).
+
 
 ## Why?
  * Keep your code base clutter free from annotations but add them in your build step
@@ -84,7 +89,3 @@ is of interest.
 
     var ngAnnotate = require("ng-annotate");
     var transformedSource = ngAnnotate(src, {add: true}).src;
-
-
-## Grunt?
-In the works! Feel free to contribute by creating grunt-ng-annotate, and let me know (@olov).
