@@ -111,6 +111,7 @@ angular.module("MyMod").directive("foo", ["$a","$b", function($a, $b) {
                 bar;
             }]};
     }).value("foo", "bar")
+    .constant("foo", "bar")
     .factory("foo", function() {
         b;
     }).config(["$c", function($c) {

@@ -54,13 +54,13 @@ function matchRegular(node, re) {
         return false;
     }
     const matchAngularModule = (obj.$chained || isShortDef(obj, re) || isLongDef(obj)) &&
-        is.someof(prop.name, ["provider", "value", "config", "factory", "directive", "filter", "run", "controller", "service"]);
+        is.someof(prop.name, ["provider", "value", "constant", "config", "factory", "directive", "filter", "run", "controller", "service"]);
     if (!matchAngularModule) {
         return false;
     }
     node.$chained = true;
 
-    if (is.someof(prop.name, ["provider", "value"])) {
+    if (is.someof(prop.name, ["provider", "value", "constant"])) {
         return false; // affects matchAngularModule because of chaining
     }
 
