@@ -73,11 +73,14 @@ on your individual source files without concatenating. If ng-annotate detects a 
 false positive then you can use the `--regexp` option to limit the module identifier.
 Examples: `--regexp "^myMod$"` (match only `myMod`) or `--regexp "^$"` (ignore short forms).
 
-ng-annotate understands `this.$get = function($scope)` and
-`{.., $get: function($scope), ..}` inside a `provider`.
+ng-annotate understands `this.$get = function($scope) ..` and
+`{.., $get: function($scope) ..}` inside a `provider`.
 
-ng-annotate understands `return {.., controller: function($scope), ..}` inside a
+ng-annotate understands `return {.., controller: function($scope) ..}` inside a
 `directive`.
+
+ng-annotate understands `$provide.decorator("bar", function($scope) ..)` and other methods
+on `provide` such as `factory`.
 
 ng-annotate understands chaining.
 
