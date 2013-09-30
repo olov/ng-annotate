@@ -1,3 +1,7 @@
+## v0.3.2 2013-09-30
+ * bugfix angular.module("MyMod").constant("foo", "bar") disrupting chaining
+ * match $provide.decorator (in addition to other $provide methods)
+
 ## v0.3.1 2013-09-30
  * bugfix angular.module("MyMod").value("foo", "bar") disrupting chaining
 
