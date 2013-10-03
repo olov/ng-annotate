@@ -58,8 +58,8 @@ myMod.directive("foo", function($scope) {
     }
 });
 
-// provider $get
-myMod.provider("foo", function() {
+// provider, provider $get
+myMod.provider("foo", function($scope) {
     this.$get = function($scope, $timeout) {
         bar;
     };
