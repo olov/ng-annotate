@@ -60,7 +60,7 @@ function matchRegular(node, re) {
     }
     node.$chained = true;
 
-    if (is.someof(prop.name, ["provider", "value", "constant"])) {
+    if (is.someof(prop.name, ["value", "constant"])) {
         return false; // affects matchAngularModule because of chaining
     }
 
