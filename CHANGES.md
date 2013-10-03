@@ -1,3 +1,6 @@
+## v0.3.3 2013-10-03
+ * bugfix .provider("foo", function($scope) ..) annotation. fixes #2
+
 ## v0.3.2 2013-09-30
  * bugfix angular.module("MyMod").constant("foo", "bar") disrupting chaining
  * match $provide.decorator (in addition to other $provide methods)
