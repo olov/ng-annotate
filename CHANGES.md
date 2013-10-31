@@ -1,3 +1,6 @@
+## v0.4.0 2013-10-31
+ * match angular.module("MyMod").animation(".class", function ..)
+
 ## v0.3.3 2013-10-03
  * bugfix .provider("foo", function($scope) ..) annotation. fixes #2
 
