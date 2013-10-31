@@ -19,6 +19,8 @@ myMod.directive("foo", function($scope, $timeout) {
 });
 myMod.filter("foo", function($scope, $timeout) {
 });
+myMod.animation("foo", function($scope, $timeout) {
+});
 
 // no dependencies => no need to wrap the function in an array
 myMod.controller("foo", function() {
@@ -30,6 +32,8 @@ myMod.factory("foo", function() {
 myMod.directive("foo", function() {
 });
 myMod.filter("foo", function() {
+});
+myMod.animation("foo", function() {
 });
 
 // run, config don't take names
@@ -101,6 +105,8 @@ myMod.directive("foo", function($a, $b) {
         c;
     }).filter("foo", function($d, $e) {
         d;
+    }).animation("foo", function($f, $g) {
+        e;
     });
 
 angular.module("MyMod").directive("foo", function($a, $b) {
@@ -118,6 +124,8 @@ angular.module("MyMod").directive("foo", function($a, $b) {
         c;
     }).filter("foo", function($d, $e) {
         d;
+    }).animation("foo", function($f, $g) {
+        e;
     });
 
 // $provide
@@ -127,5 +135,8 @@ angular.module("MyMod").directive("foo", function($a, $b) {
     });
     $provide.factory("bar", function($timeout, $scope) {
         b;
+    });
+    $provide.animation("baz", function($scope, $timeout) {
+        c;
     });
 });

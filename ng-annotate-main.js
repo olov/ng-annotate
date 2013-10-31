@@ -54,7 +54,7 @@ function matchRegular(node, re) {
         return false;
     }
     const matchAngularModule = (obj.$chained || isShortDef(obj, re) || isLongDef(obj)) &&
-        is.someof(prop.name, ["provider", "value", "constant", "config", "factory", "directive", "filter", "run", "controller", "service", "decorator"]);
+        is.someof(prop.name, ["provider", "value", "constant", "config", "factory", "directive", "filter", "run", "controller", "service", "decorator", "animation"]);
     if (!matchAngularModule) {
         return false;
     }
