@@ -1,3 +1,6 @@
+## Next release
+ * tweaked output: ["foo", "bar", ..] instead of ["foo","bar", ..]
+
 ## v0.4.0 2013-10-31
  * match angular.module("MyMod").animation(".class", function ..)
 
