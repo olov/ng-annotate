@@ -10,7 +10,7 @@ Without annotations:
 
 With annotations:
 
-    angular.module("MyMod").controller("MyCtrl", ["$scope","$timeout", function($scope, $timeout) {
+    angular.module("MyMod").controller("MyCtrl", ["$scope", "$timeout", function($scope, $timeout) {
     }]);
 
 Annotations are useful because with them you're able to minify your source code using your
@@ -29,11 +29,14 @@ use `--add --remove` (`-ar`) to rebuild all annotations.
 
 See description of the `--regexp` options further down.
 
-There's also a [Grunt](http://gruntjs.com/) plugin, see [grunt-ng-annotate](https://npmjs.org/package/grunt-ng-annotate).
-
 ng-annotate is written in ES6 constlet style and uses [defs.js](https://github.com/olov/defs)
 to transpile to ES5. Build instructions in [BUILD.md](BUILD.md).
 
+
+## Tools support
+* [Grunt](http://gruntjs.com/): [grunt-ng-annotate](https://npmjs.org/package/grunt-ng-annotate)
+* [Browserify](http://browserify.org/): [browserify-ngannotate](https://www.npmjs.org/package/browserify-ngannotate)
+* [Brunch](http://brunch.io/): [ng-annotate-uglify-js-brunch](https://www.npmjs.org/package/ng-annotate-uglify-js-brunch)
 
 ## License
 `MIT`, see [LICENSE](LICENSE) file.
