@@ -84,12 +84,16 @@ function matchProp(name, props) {
     return null;
 }
 
+function stringify(arr) {
+    return "[" + arr.map(function(arg) {
+        return '"' + arg.name + '"';
+    }).join(", ") + "]";
+}
+
 function insertArray(functionExpression, fragments) {
     const range = functionExpression.range;
 
-    const args = JSON.stringify(functionExpression.params.map(function(arg) {
-        return arg.name;
-    }));
+    const args = stringify(functionExpression.params);
     fragments.push({
         start: range[0],
         end: range[0],
@@ -108,9 +112,7 @@ function replaceArray(array, fragments) {
     if (functionExpression.params.length === 0) {
         return removeArray(array, fragments);
     }
-    const args = JSON.stringify(functionExpression.params.map(function(arg) {
-        return arg.name;
-    }));
+    const args = stringify(functionExpression.params);
     fragments.push({
         start: array.range[0],
         end: functionExpression.range[0],
