@@ -1,4 +1,4 @@
-## Next release
+## v0.5.0 2014-04-11
  * tweaked output: ["foo", "bar", ..] instead of ["foo","bar", ..]
 
 ## v0.4.0 2013-10-31
