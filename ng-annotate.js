@@ -19,6 +19,8 @@ const optimist = require("optimist")
     .options("regexp", {
         describe: "detect short form myMod.controller(...) iff myMod matches regexp",
     })
+    .options("single", {
+        describe: "use single quotes for dependency injection annotations"})
 const argv = optimist.argv;
 
 function exit(msg) {

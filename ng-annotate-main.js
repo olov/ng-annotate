@@ -84,16 +84,16 @@ function matchProp(name, props) {
     return null;
 }
 
-function stringify(arr) {
+function stringify(arr, quot) {
     return "[" + arr.map(function(arg) {
-        return '"' + arg.name + '"';
+        return quot + arg.name + quot;
     }).join(", ") + "]";
 }
 
-function insertArray(functionExpression, fragments) {
+function insertArray(functionExpression, fragments, quot) {
     const range = functionExpression.range;
 
-    const args = stringify(functionExpression.params);
+    const args = stringify(functionExpression.params, quot);
     fragments.push({
         start: range[0],
         end: range[0],
@@ -151,6 +151,7 @@ module.exports = function ngAnnotate(src, options) {
         return {src: src};
     }
 
+    const quot = options.single ? '\'' : '"';
     const re = (options.regexp && new RegExp(options.regexp));
     const ast = esprima(src, {
         range: true,
@@ -169,7 +170,7 @@ module.exports = function ngAnnotate(src, options) {
         } else if (mode === "remove" && isAnnotatedArray(target)) {
             removeArray(target, fragments);
         } else if (is.someof(mode, ["add", "rebuild"]) && isFunctionWithArgs(target)) {
-            insertArray(target, fragments);
+            insertArray(target, fragments, quot);
         }
     }});
 
