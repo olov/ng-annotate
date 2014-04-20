@@ -16,11 +16,14 @@ const optimist = require("optimist")
         boolean: true,
         describe: "remove all existing dependency injection annotations",
     })
+    .options("single_quotes", {
+        boolean: true,
+        describe: "use single quotes (') instead of double quotes (\")",
+    })
     .options("regexp", {
         describe: "detect short form myMod.controller(...) iff myMod matches regexp",
-    })
-    .options("single", {
-        describe: "use single quotes for dependency injection annotations"})
+    });
+
 const argv = optimist.argv;
 
 function exit(msg) {
@@ -61,7 +64,7 @@ function addOption(opt) {
     }
 }
 
-["add", "remove", "regexp"].forEach(addOption);
+["add", "remove", "regexp", "single_quotes"].forEach(addOption);
 
 const ret = ngAnnotate(src, config);
 

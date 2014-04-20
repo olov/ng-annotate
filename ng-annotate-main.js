@@ -106,13 +106,13 @@ function insertArray(functionExpression, fragments, quot) {
     });
 }
 
-function replaceArray(array, fragments) {
+function replaceArray(array, fragments, quot) {
     const functionExpression = last(array.elements);
 
     if (functionExpression.params.length === 0) {
         return removeArray(array, fragments);
     }
-    const args = stringify(functionExpression.params);
+    const args = stringify(functionExpression.params, quot);
     fragments.push({
         start: array.range[0],
         end: functionExpression.range[0],
@@ -151,7 +151,7 @@ module.exports = function ngAnnotate(src, options) {
         return {src: src};
     }
 
-    const quot = options.single ? '\'' : '"';
+    const quot = options.single_quotes ? "'" : '"';
     const re = (options.regexp && new RegExp(options.regexp));
     const ast = esprima(src, {
         range: true,
@@ -166,7 +166,7 @@ module.exports = function ngAnnotate(src, options) {
         }
 
         if (mode === "rebuild" && isAnnotatedArray(target)) {
-            replaceArray(target, fragments);
+            replaceArray(target, fragments, quot);
         } else if (mode === "remove" && isAnnotatedArray(target)) {
             removeArray(target, fragments);
         } else if (is.someof(mode, ["add", "rebuild"]) && isFunctionWithArgs(target)) {
