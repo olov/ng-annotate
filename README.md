@@ -27,6 +27,8 @@ Use the `--add` (`-a`) option to add annotations where non-existing,
 use `--remove` (`-r`) to remove all existing annotations,
 use `--add --remove` (`-ar`) to rebuild all annotations.
 
+Use the `--single_quotes` option to output `'$scope'` instead of `"$scope"`.
+
 See description of the `--regexp` options further down.
 
 ng-annotate is written in ES6 constlet style and uses [defs.js](https://github.com/olov/defs)

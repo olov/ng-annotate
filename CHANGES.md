@@ -1,3 +1,6 @@
+## v0.6.0 2014-04-20
+ * --single_quotes option to output '$scope' instead of "$scope"
+
 ## v0.5.0 2014-04-11
  * tweaked output: ["foo", "bar", ..] instead of ["foo","bar", ..]
 
