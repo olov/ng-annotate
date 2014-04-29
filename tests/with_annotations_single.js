@@ -185,8 +185,10 @@ $stateProvider.state("myState", {
     dontAlterMe: function(arg) {
         f;
     },
-});
+}).state("myState2", {
+        controller: ['$scope', function($scope) {}],
+    });
 $urlRouterProvider.when("", ['$match', function($match) { a; }]);
 $urlRouterProvider.otherwise("", ['$location', function($location) { a; }]);
 $urlRouterProvider.rule(['$location', function($location) { a; }]);
-$urlRouterProvider.anythingreally(['$location', function($location) { a; }]);
+$urlRouterProvider.anythingreally(['$location', function($location) { a; }]).chained(['$location', function($location) { a; }]);

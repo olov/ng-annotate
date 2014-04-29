@@ -50,20 +50,21 @@ function matchStateProvider(node) {
         return false;
     }
 
-    // TODO chain
     const obj = callee.object;
     const prop = callee.property;
     const args = node.arguments;
 
     // special shortcut for $urlRouterProvider.*(.., function($scope) {})
-    if (obj.type === "Identifier" && obj.name === "$urlRouterProvider" && args.length >= 1) {
+    if ((obj.$chainedURP || (obj.type === "Identifier" && obj.name === "$urlRouterProvider")) && args.length >= 1) {
+        node.$chainedURP = true;
         return args[args.length - 1];
     }
 
-    // everything below if for $stateProvider alone
-    if (!(obj.type === "Identifier" && obj.name === "$stateProvider")) {
+    // everything below is for $stateProvider alone
+    if (!(obj.$chained || (obj.type === "Identifier" && obj.name === "$stateProvider"))) {
         return false;
     }
+    node.$chained = true;
 
     if (!obj || !prop || prop.name !== "state") {
         return false;
