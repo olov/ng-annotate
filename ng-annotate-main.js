@@ -6,6 +6,7 @@ const traverse = require("ast-traverse");
 
 function match(node, re) {
     return matchRegular(node, re) ||
+        matchStateProvider(node) ||
         matchDirectiveReturnObject(node) ||
         matchProviderGet(node);
 }
@@ -25,6 +26,59 @@ function matchProviderGet(node) {
     return (node.type === "AssignmentExpression" && node.left.type === "MemberExpression" &&
         node.left.object.type === "ThisExpression" && node.left.property.name === "$get" && node.right) ||
         (node.type === "ObjectExpression" && matchProp("$get", node.properties));
+}
+
+function matchStateProvider(node) {
+    // $stateProvider.state("myState", {... resolve: {f: function($scope) {}, ..} ..})
+    // $stateProvider.state("myState", {... controller: function($scope) ..})
+    // $stateProvider.state("myState", {... onEnter: function($scope) ..})
+    // $stateProvider.state("myState", {... onExit: function($scope) ..})
+    if (node.type !== "CallExpression") {
+        return;
+    }
+
+    const callee = node.callee;
+    if (callee.type !== "MemberExpression") {
+        return false;
+    }
+
+    // TODO do we need to verify that it's either $stateProvider or chained?
+    const obj = callee.object;
+
+    const prop = callee.property;
+    if (!obj || !prop || prop.name !== "state") {
+        return false;
+    }
+
+    const args = node.arguments;
+    if (args.length !== 2) {
+        return false;
+    }
+
+    const firstArgIsStringLiteral = (args[0].type === "Literal" && is.string(args[0].value));
+    if (!firstArgIsStringLiteral) {
+        return false;
+    }
+
+    if (args[1].type !== "ObjectExpression") {
+        return false;
+    }
+
+    const props = args[1].properties;
+    const res = [matchProp("controller", props), matchProp("onEnter", props), matchProp("onExit", props)].filter(Boolean);
+
+    for (let i = 0; i < props.length; i++) {
+        const prop = props[i];
+        if (prop.key && prop.key.name === "resolve" && prop.value.type === "ObjectExpression") {
+            const resolveObjProps = prop.value.properties;
+            resolveObjProps.forEach(function(prop) {
+                res.push(prop.value);
+            });
+            break;
+        }
+    }
+
+    return (res.length === 0 ? false : res);
 }
 
 function matchRegular(node, re) {
@@ -160,17 +214,23 @@ module.exports = function ngAnnotate(src, options) {
     const fragments = [];
 
     traverse(ast, {post: function(node) {
-        const target = match(node, re);
-        if (!target) {
+        let targets = match(node, re);
+        if (!targets) {
             return;
         }
+        if (!is.array(targets)) {
+            targets = [targets];
+        }
 
-        if (mode === "rebuild" && isAnnotatedArray(target)) {
-            replaceArray(target, fragments, quot);
-        } else if (mode === "remove" && isAnnotatedArray(target)) {
-            removeArray(target, fragments);
-        } else if (is.someof(mode, ["add", "rebuild"]) && isFunctionWithArgs(target)) {
-            insertArray(target, fragments, quot);
+        for (let i = 0; i < targets.length; i++) {
+            const target = targets[i];
+            if (mode === "rebuild" && isAnnotatedArray(target)) {
+                replaceArray(target, fragments, quot);
+            } else if (mode === "remove" && isAnnotatedArray(target)) {
+                removeArray(target, fragments);
+            } else if (is.someof(mode, ["add", "rebuild"]) && isFunctionWithArgs(target)) {
+                insertArray(target, fragments, quot);
+            }
         }
     }});
 

@@ -140,3 +140,30 @@ angular.module("MyMod").directive("foo", ["$a", "$b", function($a, $b) {
         c;
     }]);
 }]);
+
+// ui-router
+$stateProvider.state("myState", {
+    resolve: {
+        simpleObj: function() {
+            a;
+        },
+
+        promiseObj:  ["$scope", "$timeout", function($scope, $timeout){
+            b;
+        }],
+
+        translations: "translations",
+    },
+    controller: ["$scope", "simpleObj", "promiseObj", "translations", function($scope, simpleObj, promiseObj, translations) {
+        c;
+    }],
+    onEnter: ["$scope", function($scope) {
+        d;
+    }],
+    onExit: ["$scope", function($scope) {
+        e;
+    }],
+    dontAlterMe: function(arg) {
+        f;
+    },
+});
