@@ -6,7 +6,7 @@ const traverse = require("ast-traverse");
 
 function match(node, re) {
     return matchRegular(node, re) ||
-        matchStateProvider(node) ||
+        matchUiRouter(node) ||
         matchDirectiveReturnObject(node) ||
         matchProviderGet(node);
 }
@@ -28,7 +28,7 @@ function matchProviderGet(node) {
         (node.type === "ObjectExpression" && matchProp("$get", node.properties));
 }
 
-function matchStateProvider(node) {
+function matchUiRouter(node) {
     // $stateProvider.state("myState", {
     //     ...
     //     controller: function($scope)
@@ -93,16 +93,12 @@ function matchStateProvider(node) {
     ];
 
 
-    // rewrite using matchprops
-    for (let i = 0; i < props.length; i++) {
-        const prop = props[i];
-        if (prop.key && prop.key.name === "resolve" && prop.value.type === "ObjectExpression") {
-            const resolveObjProps = prop.value.properties;
-            resolveObjProps.forEach(function(prop) {
-                res.push(prop.value);
-            });
-            break;
-        }
+    // {resolve: ..}
+    const resolveObject = matchProp("resolve", props);
+    if (resolveObject && resolveObject.type === "ObjectExpression") {
+        resolveObject.properties.forEach(function(prop) {
+            res.push(prop.value);
+        });
     }
 
     // {view: ...}
