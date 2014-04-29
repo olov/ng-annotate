@@ -29,7 +29,8 @@ use `--add --remove` (`-ar`) to rebuild all annotations.
 
 Use the `--single_quotes` option to output `'$scope'` instead of `"$scope"`.
 
-See description of the `--regexp` options further down.
+Use the `--regexp` option in case you want to restrict matching further (rarely used). See
+description further down.
 
 ng-annotate is written in ES6 constlet style and uses [defs.js](https://github.com/olov/defs)
 to transpile to ES5. Build instructions in [BUILD.md](BUILD.md).

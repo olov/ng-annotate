@@ -148,7 +148,7 @@ $stateProvider.state("myState", {
             a;
         },
 
-        promiseObj:  function($scope, $timeout){
+        promiseObj: function($scope, $timeout) {
             b;
         },
 
@@ -156,6 +156,12 @@ $stateProvider.state("myState", {
     },
     controller: function($scope, simpleObj, promiseObj, translations) {
         c;
+    },
+    controllerProvider: function($scope) {
+        g;
+    },
+    templateProvider: function($scope) {
+        h;
     },
     onEnter: function($scope) {
         d;
@@ -167,3 +173,7 @@ $stateProvider.state("myState", {
         f;
     },
 });
+$urlRouterProvider.when("", function($match) { a; });
+$urlRouterProvider.otherwise("", function($location) { a; });
+$urlRouterProvider.rule(function($location) { a; });
+$urlRouterProvider.anythingreally(function($location) { a; });

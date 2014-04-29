@@ -29,10 +29,18 @@ function matchProviderGet(node) {
 }
 
 function matchStateProvider(node) {
+    // $stateProvider.state("myState", {
+    //     ...
+    //     controller: function($scope)
+    //     controllerProvider: function($scope)
+    //     templateProvider: function($scope)
+    //     onEnter: function($scope)
+    //     onExit: function($scope)
+    // });
     // $stateProvider.state("myState", {... resolve: {f: function($scope) {}, ..} ..})
-    // $stateProvider.state("myState", {... controller: function($scope) ..})
-    // $stateProvider.state("myState", {... onEnter: function($scope) ..})
-    // $stateProvider.state("myState", {... onExit: function($scope) ..})
+    // $stateProvider.state("myState", {... views: {... somename: {... controller: fn, templateProvider: fn}}})
+    //
+    // $urlRouterProvider.when_otherwise_rule(.., function($scope) {})
     if (node.type !== "CallExpression") {
         return;
     }
@@ -42,15 +50,25 @@ function matchStateProvider(node) {
         return false;
     }
 
-    // TODO do we need to verify that it's either $stateProvider or chained?
+    // TODO chain
     const obj = callee.object;
-
     const prop = callee.property;
+    const args = node.arguments;
+
+    // special shortcut for $urlRouterProvider.*(.., function($scope) {})
+    if (obj.type === "Identifier" && obj.name === "$urlRouterProvider" && args.length >= 1) {
+        return args[args.length - 1];
+    }
+
+    // everything below if for $stateProvider alone
+    if (!(obj.type === "Identifier" && obj.name === "$stateProvider")) {
+        return false;
+    }
+
     if (!obj || !prop || prop.name !== "state") {
         return false;
     }
 
-    const args = node.arguments;
     if (args.length !== 2) {
         return false;
     }
@@ -65,7 +83,13 @@ function matchStateProvider(node) {
     }
 
     const props = args[1].properties;
-    const res = [matchProp("controller", props), matchProp("onEnter", props), matchProp("onExit", props)].filter(Boolean);
+    const res = [
+        matchProp("controller", props),
+        matchProp("controllerProvider", props),
+        matchProp("templateProvider", props),
+        matchProp("onEnter", props),
+        matchProp("onExit", props),
+    ].filter(Boolean);
 
     for (let i = 0; i < props.length; i++) {
         const prop = props[i];
