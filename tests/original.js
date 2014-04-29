@@ -154,6 +154,19 @@ $stateProvider.state("myState", {
 
         translations: "translations",
     },
+    views: {
+        viewa: {
+            controller: function($scope) {},
+            templateProvider: function($scope) {},
+            dontAlterMe: function(arg) {},
+        },
+        viewb: {
+            dontAlterMe: function(arg) {},
+            templateProvider: function($scope) {},
+            controller: function($scope) {},
+        },
+        dontAlterMe: null,
+    },
     controller: function($scope, simpleObj, promiseObj, translations) {
         c;
     },

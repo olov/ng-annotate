@@ -89,8 +89,10 @@ function matchStateProvider(node) {
         matchProp("templateProvider", props),
         matchProp("onEnter", props),
         matchProp("onExit", props),
-    ].filter(Boolean);
+    ];
 
+
+    // rewrite using matchprops
     for (let i = 0; i < props.length; i++) {
         const prop = props[i];
         if (prop.key && prop.key.name === "resolve" && prop.value.type === "ObjectExpression") {
@@ -102,7 +104,19 @@ function matchStateProvider(node) {
         }
     }
 
-    return (res.length === 0 ? false : res);
+    // {view: ...}
+    const viewObject = matchProp("views", props);
+    if (viewObject && viewObject.type === "ObjectExpression") {
+        viewObject.properties.forEach(function(prop) {
+            if (prop.value.type === "ObjectExpression") {
+                res.push(matchProp("controller", prop.value.properties));
+                res.push(matchProp("templateProvider", prop.value.properties));
+            }
+        });
+    }
+
+    const filteredRes = res.filter(Boolean);
+    return (filteredRes.length === 0 ? false : filteredRes);
 }
 
 function matchRegular(node, re) {
