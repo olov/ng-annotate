@@ -1,3 +1,6 @@
+## next
+ * ui-router declarations support
+
 ## v0.6.0 2014-04-20
  * --single_quotes option to output '$scope' instead of "$scope"
 
