@@ -40,6 +40,7 @@ to transpile to ES5. Build instructions in [BUILD.md](BUILD.md).
 * [Grunt](http://gruntjs.com/): [grunt-ng-annotate](https://npmjs.org/package/grunt-ng-annotate)
 * [Browserify](http://browserify.org/): [browserify-ngannotate](https://www.npmjs.org/package/browserify-ngannotate)
 * [Brunch](http://brunch.io/): [ng-annotate-uglify-js-brunch](https://www.npmjs.org/package/ng-annotate-uglify-js-brunch)
+* Missing Gulp, Broccoli or other tool support? Contributions welcome! (create plugin, submit README pull request)
 
 ## License
 `MIT`, see [LICENSE](LICENSE) file.
