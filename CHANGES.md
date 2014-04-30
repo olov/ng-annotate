@@ -1,3 +1,6 @@
+## v0.7.1 2014-04-30
+ * ui-router declarations improvements
+
 ## v0.7.0 2014-04-30
  * ui-router declarations support
 
