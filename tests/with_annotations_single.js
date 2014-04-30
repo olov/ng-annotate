@@ -186,8 +186,13 @@ $stateProvider.state("myState", {
         f;
     },
 }).state("myState2", {
-        controller: ['$scope', function($scope) {}],
-    });
+    controller: ['$scope', function($scope) {}],
+}).state({
+    name: "myState3",
+    controller: ['$scope', 'simpleObj', 'promiseObj', 'translations', function($scope, simpleObj, promiseObj, translations) {
+        c;
+    }],
+});
 $urlRouterProvider.when("", ['$match', function($match) { a; }]);
 $urlRouterProvider.otherwise("", ['$location', function($location) { a; }]);
 $urlRouterProvider.rule(['$location', function($location) { a; }]);

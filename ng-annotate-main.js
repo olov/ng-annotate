@@ -70,20 +70,22 @@ function matchUiRouter(node) {
         return false;
     }
 
-    if (args.length !== 2) {
+    var configArg;
+    if (args.length === 2) {
+        const firstArgIsStringLiteral = (args[0].type === "Literal" && is.string(args[0].value));
+        if (!firstArgIsStringLiteral) {
+            return false;
+        }
+        configArg = args[1];
+    } else if (args.length === 1) {
+        configArg = args[0];
+    }
+
+    if (configArg.type !== "ObjectExpression") {
         return false;
     }
 
-    const firstArgIsStringLiteral = (args[0].type === "Literal" && is.string(args[0].value));
-    if (!firstArgIsStringLiteral) {
-        return false;
-    }
-
-    if (args[1].type !== "ObjectExpression") {
-        return false;
-    }
-
-    const props = args[1].properties;
+    const props = configArg.properties;
     const res = [
         matchProp("controller", props),
         matchProp("controllerProvider", props),
