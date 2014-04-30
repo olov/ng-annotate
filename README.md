@@ -95,6 +95,11 @@ ng-annotate understands [ui-router](https://github.com/angular-ui/ui-router) (`$
 ng-annotate understands chaining.
 
 
+## Issues
+If ng-annotate does not handle a construct you're using, if there's a bug or if you have a feature
+request then please [file an issue](https://github.com/olov/ng-annotate/issues?state=open).
+
+
 ## Performance
 ng-annotate is designed to be very fast (in general limited by parse speed).
 It traverses the AST exactly once and transforms it without the need for an AST -> source
