@@ -74,14 +74,8 @@ function matchUiRouter(node) {
     if (is.noneof(args.length, [1, 2])) {
         return false;
     }
-    const configArg = args[args.length - 1];
-    if (args.length === 2) {
-        const firstArgIsStringLiteral = (args[0].type === "Literal" && is.string(args[0].value));
-        if (!firstArgIsStringLiteral) {
-            return false;
-        }
-    }
 
+    const configArg = args[args.length - 1];
     if (configArg.type !== "ObjectExpression") {
         return false;
     }
