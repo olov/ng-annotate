@@ -70,15 +70,16 @@ function matchUiRouter(node) {
         return false;
     }
 
-    var configArg;
+    // $stateProvider.state({ ... }) and $stateProvider.state("name", { ... })
+    if (is.noneof(args.length, [1, 2])) {
+        return false;
+    }
+    const configArg = args[args.length - 1];
     if (args.length === 2) {
         const firstArgIsStringLiteral = (args[0].type === "Literal" && is.string(args[0].value));
         if (!firstArgIsStringLiteral) {
             return false;
         }
-        configArg = args[1];
-    } else if (args.length === 1) {
-        configArg = args[0];
     }
 
     if (configArg.type !== "ObjectExpression") {
