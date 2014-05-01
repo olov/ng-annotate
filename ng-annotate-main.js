@@ -38,7 +38,7 @@ function matchUiRouter(node) {
     //     onExit: function($scope)
     // });
     // $stateProvider.state("myState", {... resolve: {f: function($scope) {}, ..} ..})
-    // $stateProvider.state("myState", {... views: {... somename: {... controller: fn, templateProvider: fn}}})
+    // $stateProvider.state("myState", {... views: {... somename: {... controller: fn, templateProvider: fn, resolve: {f: fn}}}})
     //
     // $urlRouterProvider.when_otherwise_rule(.., function($scope) {})
     if (node.type !== "CallExpression") {
@@ -89,17 +89,8 @@ function matchUiRouter(node) {
         matchProp("onExit", props),
     ];
 
-
     // {resolve: ..}
-    function addUiRouterResolves(props) {
-        const resolveObject = matchProp("resolve", props);
-        if (resolveObject && resolveObject.type === "ObjectExpression") {
-            resolveObject.properties.forEach(function(prop) {
-                res.push(prop.value);
-            });
-        }
-    };
-    addUiRouterResolves(props);
+    res.push.apply(res, matchResolve(props));
 
     // {view: ...}
     const viewObject = matchProp("views", props);
@@ -108,20 +99,24 @@ function matchUiRouter(node) {
             if (prop.value.type === "ObjectExpression") {
                 res.push(matchProp("controller", prop.value.properties));
                 res.push(matchProp("templateProvider", prop.value.properties));
-
-                const viewResolvesObject = prop.value;
-
-                if (viewResolvesObject.type !== "ObjectExpression") {
-                    return false;
-                }
-
-                addUiRouterResolves(viewResolvesObject.properties);
+                res.push.apply(res, matchResolve(prop.value.properties));
             }
         });
     }
 
     const filteredRes = res.filter(Boolean);
     return (filteredRes.length === 0 ? false : filteredRes);
+
+
+    function matchResolve(props) {
+        const resolveObject = matchProp("resolve", props);
+        if (resolveObject && resolveObject.type === "ObjectExpression") {
+            return resolveObject.properties.map(function(prop) {
+                return prop.value;
+            });
+        }
+        return [];
+    };
 }
 
 function matchRegular(node, re) {
