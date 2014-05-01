@@ -91,12 +91,15 @@ function matchUiRouter(node) {
 
 
     // {resolve: ..}
-    const resolveObject = matchProp("resolve", props);
-    if (resolveObject && resolveObject.type === "ObjectExpression") {
-        resolveObject.properties.forEach(function(prop) {
-            res.push(prop.value);
-        });
-    }
+    function addUiRouterResolves(props) {
+        const resolveObject = matchProp("resolve", props);
+        if (resolveObject && resolveObject.type === "ObjectExpression") {
+            resolveObject.properties.forEach(function(prop) {
+                res.push(prop.value);
+            });
+        }
+    };
+    addUiRouterResolves(props);
 
     // {view: ...}
     const viewObject = matchProp("views", props);
@@ -105,6 +108,14 @@ function matchUiRouter(node) {
             if (prop.value.type === "ObjectExpression") {
                 res.push(matchProp("controller", prop.value.properties));
                 res.push(matchProp("templateProvider", prop.value.properties));
+
+                const viewResolvesObject = prop.value;
+
+                if (viewResolvesObject.type !== "ObjectExpression") {
+                    return false;
+                }
+
+                addUiRouterResolves(viewResolvesObject.properties);
             }
         });
     }

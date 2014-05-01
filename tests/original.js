@@ -156,9 +156,14 @@ $stateProvider.state("myState", {
     },
     views: {
         viewa: {
-            controller: function($scope) {},
+            controller: function($scope, myParam) {},
             templateProvider: function($scope) {},
             dontAlterMe: function(arg) {},
+            resolve: {
+                myParam: function($stateParams) {
+                    return $stateParams.paramFromDI;
+                }
+            },
         },
         viewb: {
             dontAlterMe: function(arg) {},
