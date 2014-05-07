@@ -25,8 +25,8 @@ root) or include it as a library via
 as well as the NPM package.
 
 `run-tests.js` is the test runner. Run it on the original source via
-`node --harmony run-tests.js`. The tests are run automatically in the
-build scripts.
+`node --harmony run-tests.js` or `npm test`. The tests are run automatically
+in the build scripts.
 
 To build, `cd build` then run `./build.sh` for defs transpilation.
 `./clean.sh` removes the build artefacts.

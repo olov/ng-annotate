@@ -32,9 +32,6 @@ Use the `--single_quotes` option to output `'$scope'` instead of `"$scope"`.
 Use the `--regexp` option in case you want to restrict matching further (rarely used). See
 description further down.
 
-ng-annotate is written in ES6 constlet style and uses [defs.js](https://github.com/olov/defs)
-to transpile to ES5. Build instructions in [BUILD.md](BUILD.md).
-
 
 ## Tools support
 * [Grunt](http://gruntjs.com/): [grunt-ng-annotate](https://npmjs.org/package/grunt-ng-annotate)
@@ -42,9 +39,6 @@ to transpile to ES5. Build instructions in [BUILD.md](BUILD.md).
 * [Brunch](http://brunch.io/): [ng-annotate-uglify-js-brunch](https://www.npmjs.org/package/ng-annotate-uglify-js-brunch)
 * [Gulp](http://gulpjs.com/): [gulp-ng-annotate](https://www.npmjs.org/package/gulp-ng-annotate/)
 * Missing Broccoli or other tool support? Contributions welcome! (create plugin, submit README pull request)
-
-## License
-`MIT`, see [LICENSE](LICENSE) file.
 
 
 ## Changes
@@ -101,11 +95,14 @@ If ng-annotate does not handle a construct you're using, if there's a bug or if 
 request then please [file an issue](https://github.com/olov/ng-annotate/issues?state=open).
 
 
-## Tests
-The tests annotate `tests/original.js` and diff the result with `tests/with_annotations.js`
-and `tests/with_annotations_single.js`.
-If a test fails it will output the the diff.
-You can run the tests with `node --harmony run-tests.js`.
+## Build and test
+ng-annotate is written in ES6 constlet style and uses [defs.js](https://github.com/olov/defs)
+to transpile to ES5. See  [BUILD.md](BUILD.md) for build and test instructions.
+
+
+## License
+`MIT`, see [LICENSE](LICENSE) file.
+
 
 ## Performance
 ng-annotate is designed to be very fast (in general limited by parse speed).
