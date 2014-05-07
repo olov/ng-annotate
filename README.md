@@ -101,6 +101,12 @@ If ng-annotate does not handle a construct you're using, if there's a bug or if 
 request then please [file an issue](https://github.com/olov/ng-annotate/issues?state=open).
 
 
+## Tests
+The tests annotate `tests/original.js` and diff the result with `tests/with_annotations.js`
+and `tests/with_annotations_single.js`.
+If a test fails it will output the the diff.
+You can run the tests with `node --harmony run-tests.js`.
+
 ## Performance
 ng-annotate is designed to be very fast (in general limited by parse speed).
 It traverses the AST exactly once and transforms it without the need for an AST -> source
