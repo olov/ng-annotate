@@ -22,6 +22,11 @@ myMod.filter("foo", ["$scope", "$timeout", function($scope, $timeout) {
 myMod.animation("foo", ["$scope", "$timeout", function($scope, $timeout) {
 }]);
 
+// object property
+var myObj = {};
+myObj.myMod = angular.module("MyMod");
+myObj.myMod.controller("foo", ["$scope", "$timeout", function($scope, $timeout) { a }]);
+
 // no dependencies => no need to wrap the function in an array
 myMod.controller("foo", function() {
 });
@@ -108,11 +113,6 @@ myMod.directive("foo", ["$a", "$b", function($a, $b) {
     }]).animation("foo", ["$f", "$g", function($f, $g) {
         e;
     }]);
-
-// object property
-var myObj;
-myObj.myMod = angular.module("MyMod");
-myObj.myMod.controller("foo", ["$scope", "$timeout", function($scope, $timeout) {}]);
 
 angular.module("MyMod").directive("foo", ["$a", "$b", function($a, $b) {
     a;
