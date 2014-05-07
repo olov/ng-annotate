@@ -109,6 +109,11 @@ myMod.directive("foo", ["$a", "$b", function($a, $b) {
         e;
     }]);
 
+// object property
+var myObj;
+myObj.myMod = angular.module("MyMod");
+myObj.myMod.controller("foo", ["$scope", "$timeout", function($scope, $timeout) {}]);
+
 angular.module("MyMod").directive("foo", ["$a", "$b", function($a, $b) {
     a;
 }]).provider("foo", function() {

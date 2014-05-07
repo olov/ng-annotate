@@ -125,6 +125,14 @@ function matchRegular(node, re) {
         return is.string(node.name) && (!re || re.test(node.name));
     }
 
+    // Medium form: *.*.controller("MyCtrl", function($scope, $timeout) {});
+    function isMediumDef(node, re) {
+        if (node.type === "MemberExpression" && is.object(node.object) && is.object(node.property) && is.string(node.object.name) && is.string(node.property.name)) {
+            return (!re || re.test(node.object.name + "." + node.property.name));
+        }
+        return false;
+    }
+
     // Long form: angular.module(*).controller("MyCtrl", function($scope, $timeout) {});
     function isLongDef(node) {
         return node.callee &&
@@ -145,7 +153,7 @@ function matchRegular(node, re) {
     if (!obj || !prop) {
         return false;
     }
-    const matchAngularModule = (obj.$chained || isShortDef(obj, re) || isLongDef(obj)) &&
+    const matchAngularModule = (obj.$chained || isShortDef(obj, re) || isMediumDef(obj, re) || isLongDef(obj)) &&
         is.someof(prop.name, ["provider", "value", "constant", "config", "factory", "directive", "filter", "run", "controller", "service", "decorator", "animation"]);
     if (!matchAngularModule) {
         return false;
