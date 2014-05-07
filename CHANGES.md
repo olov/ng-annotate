@@ -1,3 +1,6 @@
+## v0.7.3 2014-05-07
+ * support obj.myMod.controller(..) in addition to myMod.controller(..)
+
 ## v0.7.2 2014-05-01
  * ui-router declarations improvements
 
