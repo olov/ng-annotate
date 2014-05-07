@@ -122,7 +122,7 @@ function matchUiRouter(node) {
 function matchRegular(node, re) {
     // Short form: *.controller("MyCtrl", function($scope, $timeout) {});
     function isShortDef(node, re) {
-        return is.string(node.name) && (!re || re.test(node.name));
+        return node.type === "Identifier" && is.string(node.name) && (!re || re.test(node.name));
     }
 
     // Medium form: *.*.controller("MyCtrl", function($scope, $timeout) {});
