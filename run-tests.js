@@ -16,14 +16,16 @@ function test(correct, got, name) {
     }
 }
 
-console.log("testing adding annotations");
 const original = slurp("tests/original.js");
+
+console.log("testing adding annotations");
 const annotated = ngAnnotate(original, {add: true}).src;
 test(slurp("tests/with_annotations.js"), annotated, "with_annotations.js");
 
 console.log("testing adding annotations using single quotes");
 const annotatedSingleQuotes = ngAnnotate(original, {add: true, single_quotes: true}).src;
 test(slurp("tests/with_annotations_single.js"), annotatedSingleQuotes, "with_annotations_single.js");
+
 console.log("testing removing annotations");
 const deAnnotated = ngAnnotate(annotated, {remove: true}).src;
 test(original, deAnnotated, "original.js");
