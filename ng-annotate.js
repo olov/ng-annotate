@@ -1,3 +1,7 @@
+// ng-annotate.js
+// MIT licensed, see LICENSE file
+// Copyright (c) 2013-2014 Olov Lassus <olov.lassus@gmail.com>
+
 "use strict";
 const fs = require("fs");
 const fmt = require("simple-fmt");

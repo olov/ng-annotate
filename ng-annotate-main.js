@@ -1,3 +1,7 @@
+// ng-annotate-main.js
+// MIT licensed, see LICENSE file
+// Copyright (c) 2013-2014 Olov Lassus <olov.lassus@gmail.com>
+
 "use strict";
 const esprima = require("esprima").parse;
 const is = require("simple-is");

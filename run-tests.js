@@ -1,3 +1,7 @@
+// run-tests.js
+// MIT licensed, see LICENSE file
+// Copyright (c) 2013-2014 Olov Lassus <olov.lassus@gmail.com>
+
 "use strict";
 
 const ngAnnotate = require("./ng-annotate-main");
