@@ -4,10 +4,14 @@ rm -rf es5
 mkdir es5
 
 declare -a files=(ng-annotate.js ng-annotate-main.js run-tests.js)
+DEFS="../node_modules/.bin/defs"
+if [[ ! -f "$DEFS" ]]; then DEFS="../../../../node_modules/.bin/defs" ; fi
+if [[ ! -f "$DEFS" ]]; then DEFS="defs" ; fi
+
 for i in ${files[@]}
 do
   echo "building $i with defs"
-  ../node_modules/.bin/defs ../$i > es5/$i
+  $DEFS ../$i > es5/$i
 done
 
 cp ng-annotate es5/
