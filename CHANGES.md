@@ -1,3 +1,6 @@
+## next
+ * ngRoute support: $routeProvider.when("path", { .. })
+
 ## v0.7.3 2014-05-07
  * support obj.myMod.controller(..) in addition to myMod.controller(..)
 

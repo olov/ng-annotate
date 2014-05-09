@@ -10,6 +10,7 @@ const traverse = require("ast-traverse");
 
 function match(node, re) {
     return matchRegular(node, re) ||
+        matchNgRoute(node) ||
         matchUiRouter(node) ||
         matchDirectiveReturnObject(node) ||
         matchProviderGet(node);
@@ -30,6 +31,53 @@ function matchProviderGet(node) {
     return (node.type === "AssignmentExpression" && node.left.type === "MemberExpression" &&
         node.left.object.type === "ThisExpression" && node.left.property.name === "$get" && node.right) ||
         (node.type === "ObjectExpression" && matchProp("$get", node.properties));
+}
+
+function matchNgRoute(node) {
+    // $routeProvider.when("path", {
+    //   ...
+    //   controller: function($scope) {},
+    //   resolve: {f: function($scope) {}, ..}
+    // })
+    if (node.type !== "CallExpression") {
+        return;
+    }
+
+    const callee = node.callee;
+    if (callee.type !== "MemberExpression") {
+        return false;
+    }
+
+    const obj = callee.object;
+    const prop = callee.property;
+    const args = node.arguments;
+
+    if (!(obj.$chained === "routeProvider" || (obj.type === "Identifier" && obj.name === "$routeProvider"))) {
+        return false;
+    }
+    node.$chained = "routeProvider";
+
+    if (prop.name !== "when") {
+        return false;
+    }
+
+    if (args.length !== 2) {
+        return false;
+    }
+    const configArg = args[args.length - 1];
+    if (configArg.type !== "ObjectExpression") {
+        return false;
+    }
+
+    const props = configArg.properties;
+    const res = [
+        matchProp("controller", props)
+    ];
+    // {resolve: ..}
+    res.push.apply(res, matchResolve(props));
+
+    const filteredRes = res.filter(Boolean);
+    return (filteredRes.length === 0 ? false : filteredRes);
 }
 
 function matchUiRouter(node) {
@@ -70,7 +118,7 @@ function matchUiRouter(node) {
     }
     node.$chained = true;
 
-    if (!obj || !prop || prop.name !== "state") {
+    if (!prop || prop.name !== "state") {
         return false;
     }
 
@@ -110,17 +158,6 @@ function matchUiRouter(node) {
 
     const filteredRes = res.filter(Boolean);
     return (filteredRes.length === 0 ? false : filteredRes);
-
-
-    function matchResolve(props) {
-        const resolveObject = matchProp("resolve", props);
-        if (resolveObject && resolveObject.type === "ObjectExpression") {
-            return resolveObject.properties.map(function(prop) {
-                return prop.value;
-            });
-        }
-        return [];
-    };
 }
 
 function matchRegular(node, re) {
@@ -187,6 +224,16 @@ function matchProp(name, props) {
     }
     return null;
 }
+
+function matchResolve(props) {
+    const resolveObject = matchProp("resolve", props);
+    if (resolveObject && resolveObject.type === "ObjectExpression") {
+        return resolveObject.properties.map(function(prop) {
+            return prop.value;
+        });
+    }
+    return [];
+};
 
 function stringify(arr, quot) {
     return "[" + arr.map(function(arg) {

@@ -84,6 +84,8 @@ ng-annotate understands `return {.., controller: function($scope) ..}` inside a
 ng-annotate understands `$provide.decorator("bar", function($scope) ..)` and other methods
 on `provide` such as `factory`.
 
+ng-annotate understands `$routeProvider.when("path", { .. })`.
+
 ng-annotate understands [ui-router](https://github.com/angular-ui/ui-router) (`$stateProvider` and
 `$urlRouterProvider`).
 
