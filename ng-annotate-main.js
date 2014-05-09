@@ -14,9 +14,16 @@ const chainedStateProvider = 3;
 const chainedRegular = 4;
 
 function match(node, re) {
-    return matchRegular(node, re) ||
-        matchNgRoute(node) ||
-        matchUiRouter(node) ||
+    const isMethodCall = (
+        node.type === "CallExpression" &&
+            node.callee.type === "MemberExpression" &&
+            node.callee.computed === false
+        );
+
+    const matchMethodCalls = (isMethodCall &&
+        (matchRegular(node, re) || matchNgRoute(node) || matchUiRouter(node)));
+
+    return matchMethodCalls ||
         matchDirectiveReturnObject(node) ||
         matchProviderGet(node);
 }
@@ -44,28 +51,21 @@ function matchNgRoute(node) {
     //   controller: function($scope) {},
     //   resolve: {f: function($scope) {}, ..}
     // })
-    if (node.type !== "CallExpression") {
-        return;
-    }
 
+    // we already know that node is a (non-computed) method call
     const callee = node.callee;
-    if (callee.type !== "MemberExpression") {
-        return false;
-    }
-
-    const obj = callee.object;
-    const prop = callee.property;
-    const args = node.arguments;
-
+    const obj = callee.object; // identifier or expression
     if (!(obj.$chained === chainedRouteProvider || (obj.type === "Identifier" && obj.name === "$routeProvider"))) {
         return false;
     }
     node.$chained = chainedRouteProvider;
 
-    if (prop.name !== "when") {
+    const method = callee.property; // identifier
+    if (method.name !== "when") {
         return false;
     }
 
+    const args = node.arguments;
     if (args.length !== 2) {
         return false;
     }
@@ -98,17 +98,10 @@ function matchUiRouter(node) {
     // $stateProvider.state("myState", {... views: {... somename: {... controller: fn, templateProvider: fn, resolve: {f: fn}}}})
     //
     // $urlRouterProvider.when_otherwise_rule(.., function($scope) {})
-    if (node.type !== "CallExpression") {
-        return;
-    }
 
+    // we already know that node is a (non-computed) method call
     const callee = node.callee;
-    if (callee.type !== "MemberExpression") {
-        return false;
-    }
-
-    const obj = callee.object;
-    const prop = callee.property;
+    const obj = callee.object; // identifier or expression
     const args = node.arguments;
 
     // special shortcut for $urlRouterProvider.*(.., function($scope) {})
@@ -123,12 +116,13 @@ function matchUiRouter(node) {
     }
     node.$chained = chainedStateProvider;
 
-    if (!prop || prop.name !== "state") {
+    const method = callee.property; // identifier
+    if (method.name !== "state") {
         return false;
     }
 
     // $stateProvider.state({ ... }) and $stateProvider.state("name", { ... })
-    if (is.noneof(args.length, [1, 2])) {
+    if (!(args.length >= 1 && args.length <= 2)) {
         return false;
     }
 
@@ -166,54 +160,46 @@ function matchUiRouter(node) {
 }
 
 function matchRegular(node, re) {
-    // Short form: *.controller("MyCtrl", function($scope, $timeout) {});
-    function isShortDef(node, re) {
-        return node.type === "Identifier" && is.string(node.name) && (!re || re.test(node.name));
-    }
-
-    // Medium form: *.*.controller("MyCtrl", function($scope, $timeout) {});
-    function isMediumDef(node, re) {
-        if (node.type === "MemberExpression" && is.object(node.object) && is.object(node.property) && is.string(node.object.name) && is.string(node.property.name)) {
-            return (!re || re.test(node.object.name + "." + node.property.name));
-        }
-        return false;
-    }
-
-    // Long form: angular.module(*).controller("MyCtrl", function($scope, $timeout) {});
-    function isLongDef(node) {
-        return node.callee &&
-            node.callee.object && node.callee.object.name === "angular" &&
-            node.callee.property && node.callee.property.name === "module";
-    }
-
-    if (node.type !== "CallExpression") {
-        return;
-    }
-
+    // we already know that node is a (non-computed) method call
     const callee = node.callee;
-    if (callee.type !== "MemberExpression") {
-        return false;
-    }
-    const obj = callee.object;
-    const prop = callee.property;
-    if (!obj || !prop) {
-        return false;
-    }
+    const obj = callee.object; // identifier or expression
+    const method = callee.property; // identifier
+
     const matchAngularModule = (obj.$chained === chainedRegular || isShortDef(obj, re) || isMediumDef(obj, re) || isLongDef(obj)) &&
-        is.someof(prop.name, ["provider", "value", "constant", "config", "factory", "directive", "filter", "run", "controller", "service", "decorator", "animation"]);
+        is.someof(method.name, ["provider", "value", "constant", "config", "factory", "directive", "filter", "run", "controller", "service", "decorator", "animation"]);
     if (!matchAngularModule) {
         return false;
     }
     node.$chained = chainedRegular;
 
-    if (is.someof(prop.name, ["value", "constant"])) {
+    if (is.someof(method.name, ["value", "constant"])) {
         return false; // affects matchAngularModule because of chaining
     }
 
     const args = node.arguments;
-    return (is.someof(prop.name, ["config", "run"]) ?
+    return (is.someof(method.name, ["config", "run"]) ?
         args.length === 1 && args[0] :
         args.length === 2 && args[0].type === "Literal" && is.string(args[0].value) && args[1]);
+}
+
+// Short form: *.controller("MyCtrl", function($scope, $timeout) {});
+function isShortDef(node, re) {
+    return node.type === "Identifier" && is.string(node.name) && (!re || re.test(node.name));
+}
+
+// Medium form: *.*.controller("MyCtrl", function($scope, $timeout) {});
+function isMediumDef(node, re) {
+    if (node.type === "MemberExpression" && is.object(node.object) && is.object(node.property) && is.string(node.object.name) && is.string(node.property.name)) {
+        return (!re || re.test(node.object.name + "." + node.property.name));
+    }
+    return false;
+}
+
+// Long form: angular.module(*).controller("MyCtrl", function($scope, $timeout) {});
+function isLongDef(node) {
+    return node.callee &&
+        node.callee.object && node.callee.object.name === "angular" &&
+        node.callee.property && node.callee.property.name === "module";
 }
 
 function last(arr) {
