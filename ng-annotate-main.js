@@ -166,13 +166,13 @@ function matchRegular(node, re) {
     const method = callee.property; // identifier
 
     const matchAngularModule = (obj.$chained === chainedRegular || isShortDef(obj, re) || isMediumDef(obj, re) || isLongDef(obj)) &&
-        is.someof(method.name, ["provider", "value", "constant", "config", "factory", "directive", "filter", "run", "controller", "service", "decorator", "animation"]);
+        is.someof(method.name, ["provider", "value", "constant", "bootstrap", "config", "factory", "directive", "filter", "run", "controller", "service", "decorator", "animation"]);
     if (!matchAngularModule) {
         return false;
     }
     node.$chained = chainedRegular;
 
-    if (is.someof(method.name, ["value", "constant"])) {
+    if (is.someof(method.name, ["value", "constant", "bootstrap"])) {
         return false; // affects matchAngularModule because of chaining
     }
 

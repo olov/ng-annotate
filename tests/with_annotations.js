@@ -123,6 +123,7 @@ angular.module("MyMod").directive("foo", ["$a", "$b", function($a, $b) {
             }]};
     }).value("foo", "bar")
     .constant("foo", "bar")
+    .bootstrap(element, [], {})
     .factory("foo", function() {
         b;
     }).config(["$c", function($c) {
