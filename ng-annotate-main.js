@@ -8,6 +8,11 @@ const is = require("simple-is");
 const alter = require("alter");
 const traverse = require("ast-traverse");
 
+const chainedRouteProvider = 1;
+const chainedUrlRouterProvider = 2;
+const chainedStateProvider = 3;
+const chainedRegular = 4;
+
 function match(node, re) {
     return matchRegular(node, re) ||
         matchNgRoute(node) ||
@@ -52,10 +57,10 @@ function matchNgRoute(node) {
     const prop = callee.property;
     const args = node.arguments;
 
-    if (!(obj.$chained === "routeProvider" || (obj.type === "Identifier" && obj.name === "$routeProvider"))) {
+    if (!(obj.$chained === chainedRouteProvider || (obj.type === "Identifier" && obj.name === "$routeProvider"))) {
         return false;
     }
-    node.$chained = "routeProvider";
+    node.$chained = chainedRouteProvider;
 
     if (prop.name !== "when") {
         return false;
@@ -107,16 +112,16 @@ function matchUiRouter(node) {
     const args = node.arguments;
 
     // special shortcut for $urlRouterProvider.*(.., function($scope) {})
-    if ((obj.$chainedURP || (obj.type === "Identifier" && obj.name === "$urlRouterProvider")) && args.length >= 1) {
-        node.$chainedURP = true;
+    if ((obj.$chained === chainedUrlRouterProvider || (obj.type === "Identifier" && obj.name === "$urlRouterProvider")) && args.length >= 1) {
+        node.$chained = chainedUrlRouterProvider;
         return args[args.length - 1];
     }
 
     // everything below is for $stateProvider alone
-    if (!(obj.$chained || (obj.type === "Identifier" && obj.name === "$stateProvider"))) {
+    if (!(obj.$chained === chainedStateProvider || (obj.type === "Identifier" && obj.name === "$stateProvider"))) {
         return false;
     }
-    node.$chained = true;
+    node.$chained = chainedStateProvider;
 
     if (!prop || prop.name !== "state") {
         return false;
@@ -194,12 +199,12 @@ function matchRegular(node, re) {
     if (!obj || !prop) {
         return false;
     }
-    const matchAngularModule = (obj.$chained || isShortDef(obj, re) || isMediumDef(obj, re) || isLongDef(obj)) &&
+    const matchAngularModule = (obj.$chained === chainedRegular || isShortDef(obj, re) || isMediumDef(obj, re) || isLongDef(obj)) &&
         is.someof(prop.name, ["provider", "value", "constant", "config", "factory", "directive", "filter", "run", "controller", "service", "decorator", "animation"]);
     if (!matchAngularModule) {
         return false;
     }
-    node.$chained = true;
+    node.$chained = chainedRegular;
 
     if (is.someof(prop.name, ["value", "constant"])) {
         return false; // affects matchAngularModule because of chaining
