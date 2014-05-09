@@ -1,5 +1,6 @@
-## next
+## v0.8.0 2014-05-09
  * ngRoute support: $routeProvider.when("path", { .. })
+ * even faster (~11% faster annotating angular.js)
 
 ## v0.7.3 2014-05-07
  * support obj.myMod.controller(..) in addition to myMod.controller(..)
