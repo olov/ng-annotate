@@ -146,6 +146,27 @@ angular.module("MyMod").directive("foo", ["$a", "$b", function($a, $b) {
     }]);
 }]);
 
+// $routeProvider
+$routeProvider.when("path", {
+    controller: ["$scope", function($scope) {
+        a;
+    }]
+}).when("path2", {
+        controller: ["$scope", function($scope) {
+            b;
+        }],
+        resolve: {
+            zero: function() {
+                a;
+            },
+            more: ["$scope", "$timeout", function($scope, $timeout) {
+                b;
+            }],
+            something: "else",
+        },
+        dontAlterMe: function(arg) {},
+    });
+
 // ui-router
 $stateProvider.state("myState", {
     resolve: {
