@@ -69,7 +69,7 @@ function matchNgRoute(node) {
     if (args.length !== 2) {
         return false;
     }
-    const configArg = args[args.length - 1];
+    const configArg = last(args)
     if (configArg.type !== "ObjectExpression") {
         return false;
     }
@@ -107,7 +107,7 @@ function matchUiRouter(node) {
     // special shortcut for $urlRouterProvider.*(.., function($scope) {})
     if ((obj.$chained === chainedUrlRouterProvider || (obj.type === "Identifier" && obj.name === "$urlRouterProvider")) && args.length >= 1) {
         node.$chained = chainedUrlRouterProvider;
-        return args[args.length - 1];
+        return last(args);
     }
 
     // everything below is for $stateProvider alone
@@ -126,7 +126,7 @@ function matchUiRouter(node) {
         return false;
     }
 
-    const configArg = args[args.length - 1];
+    const configArg = last(args);
     if (configArg.type !== "ObjectExpression") {
         return false;
     }
