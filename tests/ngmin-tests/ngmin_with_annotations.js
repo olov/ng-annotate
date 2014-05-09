@@ -154,9 +154,9 @@ angular.module('myMod', []).
     config(["$routeProvider", function($routeProvider) {
         $routeProvider.
             when('path', {
-                controller: function($scope) {
+                controller: ["$scope", function($scope) {
                     $scope.works = true;
-                }
+                }]
             }).
             when('other/path', {
                 controller: ["$http", function($http) {
