@@ -31,7 +31,16 @@ const annotatedSingleQuotes = ngAnnotate(original, {add: true, single_quotes: tr
 test(slurp("tests/with_annotations_single.js"), annotatedSingleQuotes, "with_annotations_single.js");
 
 console.log("testing removing annotations");
-const deAnnotated = ngAnnotate(annotated, {remove: true}).src;
-test(original, deAnnotated, "original.js");
+test(original, ngAnnotate(annotated, {remove: true}).src, "original.js");
+
+
+const ngminOriginal = slurp("tests/ngmin-tests/ngmin_original.js");
+
+console.log("testing adding annotations (imported tests)");
+const ngminAnnotated = ngAnnotate(ngminOriginal, {add: true, regexp: "^myMod"}).src;
+test(slurp("tests/ngmin-tests/ngmin_with_annotations.js"), ngminAnnotated, "ngmin_with_annotations.js");
+
+console.log("testing removing annotations (imported tests)");
+test(ngminOriginal, ngAnnotate(ngminAnnotated, {remove: true, regexp: "^myMod"}).src, "ngmin_original.js");
 
 console.log("all ok");
