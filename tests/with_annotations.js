@@ -229,3 +229,37 @@ $urlRouterProvider.when("", ["$match", function($match) { a; }]);
 $urlRouterProvider.otherwise("", ["$location", function($location) { a; }]);
 $urlRouterProvider.rule(["$location", function($location) { a; }]);
 $urlRouterProvider.anythingreally(["$location", function($location) { a; }]).chained(["$location", function($location) { a; }]);
+
+// explicit annotations
+var x = /* @ngInject */ ["$scope", function($scope) {
+}];
+
+var obj = {};
+obj.bar = /*@ngInject*/ ["$scope", function($scope) {}];
+
+obj = {
+    controller: /*@ngInject*/ ["$scope", function($scope) {}],
+};
+
+// @ngInject
+function foo($scope) {
+}
+foo.$injects = ["$scope"];
+
+// @ngInject
+// otherstuff
+function Foo($scope) {
+}
+Foo.$injects = ["$scope"];
+
+// @ngInject
+// has trailing semicolon
+var foo = function($scope) {
+};
+foo.$injects = ["$scope"];
+
+// @ngInject
+// lacks trailing semicolon
+var foo = function($scope) {
+}
+foo.$injects = ["$scope"];

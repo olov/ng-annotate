@@ -8,6 +8,7 @@ const is = require("simple-is");
 const alter = require("alter");
 const traverse = require("ordered-ast-traverse");
 const Heap = require("./heap");
+const ngInjectComments = require("./nginject-comments");
 
 const chainedRouteProvider = 1;
 const chainedUrlRouterProvider = 2;
@@ -367,6 +368,8 @@ module.exports = function ngAnnotate(src, options) {
         replaceRemoveOrInsertArrayForTarget: replaceRemoveOrInsertArrayForTarget,
         stringify: stringify,
     };
+
+    ngInjectComments.init(ctx);
 
     traverse(ast, {pre: function(node) {
         const pos = node.range[0];
