@@ -2,6 +2,7 @@
  * bugfix angular.module("MyMod").bootstrap(e, [], {}) disrupting chaining
  * API now returns {src <string>, errors <array of strings>}
  * support /* @ngInject */
+ * even faster (~6% faster annotating angular.js)
 
 ## v0.8.0 2014-05-09
  * ngRoute support: $routeProvider.when("path", { .. })
