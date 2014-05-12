@@ -6,7 +6,7 @@
 const esprima = require("esprima").parse;
 const is = require("simple-is");
 const alter = require("alter");
-const traverse = require("ast-traverse");
+const traverse = require("ordered-ast-traverse");
 
 const chainedRouteProvider = 1;
 const chainedUrlRouterProvider = 2;
@@ -29,6 +29,8 @@ function match(node, re) {
 }
 
 function matchDirectiveReturnObject(node) {
+    // TODO make these more strict by checking that we're inside an angular module?
+
     // return { .. controller: function($scope, $timeout), ...}
 
     return node.type === "ReturnStatement" &&
@@ -37,6 +39,8 @@ function matchDirectiveReturnObject(node) {
 }
 
 function matchProviderGet(node) {
+    // TODO make these more strict by checking that we're inside an angular module?
+
     // this.$get = function($scope, $timeout)
     // { ... $get: function($scope, $timeout), ...}
 
@@ -277,11 +281,31 @@ function removeArray(array, fragments) {
     });
 }
 
+function replaceRemoveOrInsertArrayForTarget(target, ctx) {
+    const mode = ctx.mode;
+    const fragments = ctx.fragments;
+    const quot = ctx.quot;
+
+    if (mode === "rebuild" && isAnnotatedArray(target)) {
+        replaceArray(target, fragments, quot);
+    } else if (mode === "remove" && isAnnotatedArray(target)) {
+        removeArray(target, fragments);
+    } else if (is.someof(mode, ["add", "rebuild"]) && isFunctionExpressionWithArgs(target)) {
+        insertArray(target, fragments, quot);
+    } else {
+        return false;
+    }
+    return true;
+}
+
 function isAnnotatedArray(node) {
     return node.type === "ArrayExpression" && node.elements.length >= 1 && last(node.elements).type === "FunctionExpression";
 }
-function isFunctionWithArgs(node) {
+function isFunctionExpressionWithArgs(node) {
     return node.type === "FunctionExpression" && node.params.length >= 1;
+}
+function isFunctionDeclarationWithArgs(node) {
+    return node.type === "FunctionDeclaration" && node.params.length >= 1;
 }
 
 module.exports = function ngAnnotate(src, options) {
@@ -295,11 +319,33 @@ module.exports = function ngAnnotate(src, options) {
 
     const quot = options.single_quotes ? "'" : '"';
     const re = (options.regexp && new RegExp(options.regexp));
-    const ast = esprima(src, {
-        range: true,
-    });
+    let ast;
+    try {
+        ast = esprima(src, {
+            range: true,
+            comment: true,
+        });
+    } catch(e) {
+        return {
+            errors: ["error: couldn't process source due to parse error", e.message],
+        };
+    }
 
+    // all source modifications are built up as operations in the
+    // fragments array, later sent to alter in one shot
     const fragments = [];
+
+    const ctx = {
+        mode: mode,
+        quot: quot,
+        src: src,
+        fragments: fragments,
+        isFunctionExpressionWithArgs: isFunctionExpressionWithArgs,
+        isFunctionDeclarationWithArgs: isFunctionDeclarationWithArgs,
+        isAnnotatedArray: isAnnotatedArray,
+        replaceRemoveOrInsertArrayForTarget: replaceRemoveOrInsertArrayForTarget,
+        stringify: stringify,
+    };
 
     traverse(ast, {post: function(node) {
         let targets = match(node, re);
@@ -310,15 +356,9 @@ module.exports = function ngAnnotate(src, options) {
             targets = [targets];
         }
 
+        // TODO add something to know that node has been altered so it won't happen again
         for (let i = 0; i < targets.length; i++) {
-            const target = targets[i];
-            if (mode === "rebuild" && isAnnotatedArray(target)) {
-                replaceArray(target, fragments, quot);
-            } else if (mode === "remove" && isAnnotatedArray(target)) {
-                removeArray(target, fragments);
-            } else if (is.someof(mode, ["add", "rebuild"]) && isFunctionWithArgs(target)) {
-                insertArray(target, fragments, quot);
-            }
+            replaceRemoveOrInsertArrayForTarget(targets[i], ctx);
         }
     }});
 

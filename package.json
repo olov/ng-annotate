@@ -8,13 +8,13 @@
     "url": "https://github.com/olov/ng-annotate.git"
   },
   "dependencies": {
-    "ast-traverse": "~0.1.1",
     "alter": "~0.2.0",
     "simple-fmt": "~0.1.0",
     "simple-is": "~0.2.0",
     "tryor": "~0.1.2",
     "esprima": "~1.2.0",
-    "optimist": "~0.6.1"
+    "optimist": "~0.6.1",
+    "ordered-ast-traverse": "~0.1.0"
   },
   "devDependencies": {
     "defs": "~0.6.2",

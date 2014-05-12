@@ -113,7 +113,7 @@ decompilation step.
 
 
 ## Library (API)
-ng-annotate can be used as a library. See `ng-annotate.js` for further info about
+ng-annotate can be used as a library. See [ng-annotate.js](ng-annotate.js) for further info about
 options and return value.
 
     var ngAnnotate = require("ng-annotate");

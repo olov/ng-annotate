@@ -73,7 +73,8 @@ function addOption(opt) {
 const ret = ngAnnotate(src, config);
 
 if (ret.errors) {
-    exit(ret.errors.join("\n"));
+    process.stderr.write(ret.errors.join("\n") + "\n");
+    process.exit(1);
 }
 
 if (ret.src) {
