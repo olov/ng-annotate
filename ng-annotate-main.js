@@ -202,7 +202,7 @@ function isShortDef(node, re) {
 
 // Medium form: *.*.controller("MyCtrl", function($scope, $timeout) {});
 function isMediumDef(node, re) {
-    if (node.type === "MemberExpression" && is.object(node.object) && is.object(node.property) && is.string(node.object.name) && is.string(node.property.name)) {
+    if (node.type === "MemberExpression" && is.string(node.object.name) && is.string(node.property.name)) {
         return (!re || re.test(node.object.name + "." + node.property.name));
     }
     return false;
