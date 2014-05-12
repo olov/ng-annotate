@@ -45,9 +45,12 @@ function matchProviderGet(node) {
 
     // this.$get = function($scope, $timeout)
     // { ... $get: function($scope, $timeout), ...}
-
-    return (node.type === "AssignmentExpression" && node.left.type === "MemberExpression" &&
-        node.left.object.type === "ThisExpression" && node.left.property.name === "$get" && node.right) ||
+    let memberExpr;
+    let self;
+    return (node.type === "AssignmentExpression" && (memberExpr = node.left).type === "MemberExpression" &&
+        memberExpr.property.name === "$get" &&
+        ((self = memberExpr.object).type === "ThisExpression" || (self.type === "Identifier" && is.someof(self.name, ["self", "that"]))) &&
+        node.right) ||
         (node.type === "ObjectExpression" && matchProp("$get", node.properties));
 }
 

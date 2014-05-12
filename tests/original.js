@@ -72,6 +72,9 @@ myMod.provider("foo", function($scope) {
     this.$get = function($scope, $timeout) {
         bar;
     };
+    self.$get = function($scope) {};
+    that.$get = function($scope) {};
+    ignore.$get = function($scope) {};
 });
 myMod.provider("foo", function() {
     this.$get = function() {
