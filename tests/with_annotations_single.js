@@ -225,10 +225,9 @@ $stateProvider.state("myState", {
         c;
     }],
 });
-$urlRouterProvider.when("", ['$match', function($match) { a; }]);
-$urlRouterProvider.otherwise("", ['$location', function($location) { a; }]);
-$urlRouterProvider.rule(['$location', function($location) { a; }]);
-$urlRouterProvider.anythingreally(['$location', function($location) { a; }]).chained(['$location', function($location) { a; }]);
+$urlRouterProvider.when("/", ['$match', function($match) { a; }]);
+$urlRouterProvider.otherwise("", function(a) { a; });
+$urlRouterProvider.rule(function(a) { a; }).anything().when("/", ['$location', function($location) { a; }]);
 
 // explicit annotations
 var x = /* @ngInject */ ['$scope', function($scope) {

@@ -103,17 +103,22 @@ function matchUiRouter(node) {
     // $stateProvider.state("myState", {... resolve: {f: function($scope) {}, ..} ..})
     // $stateProvider.state("myState", {... views: {... somename: {... controller: fn, templateProvider: fn, resolve: {f: fn}}}})
     //
-    // $urlRouterProvider.when_otherwise_rule(.., function($scope) {})
+    // $urlRouterProvider.when(.., function($scope) {})
 
     // we already know that node is a (non-computed) method call
     const callee = node.callee;
     const obj = callee.object; // identifier or expression
+    const method = callee.property; // identifier
     const args = node.arguments;
 
-    // special shortcut for $urlRouterProvider.*(.., function($scope) {})
-    if ((obj.$chained === chainedUrlRouterProvider || (obj.type === "Identifier" && obj.name === "$urlRouterProvider")) && args.length >= 1) {
+    // special shortcut for $urlRouterProvider.when(.., function($scope) {})
+    if (obj.$chained === chainedUrlRouterProvider || (obj.type === "Identifier" && obj.name === "$urlRouterProvider")) {
         node.$chained = chainedUrlRouterProvider;
-        return last(args);
+
+        if (method.name === "when" && args.length >= 1) {
+            return last(args);
+        }
+        return false;
     }
 
     // everything below is for $stateProvider alone
@@ -122,7 +127,6 @@ function matchUiRouter(node) {
     }
     node.$chained = chainedStateProvider;
 
-    const method = callee.property; // identifier
     if (method.name !== "state") {
         return false;
     }

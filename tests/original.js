@@ -225,10 +225,9 @@ $stateProvider.state("myState", {
         c;
     },
 });
-$urlRouterProvider.when("", function($match) { a; });
-$urlRouterProvider.otherwise("", function($location) { a; });
-$urlRouterProvider.rule(function($location) { a; });
-$urlRouterProvider.anythingreally(function($location) { a; }).chained(function($location) { a; });
+$urlRouterProvider.when("/", function($match) { a; });
+$urlRouterProvider.otherwise("", function(a) { a; });
+$urlRouterProvider.rule(function(a) { a; }).anything().when("/", function($location) { a; });
 
 // explicit annotations
 var x = /* @ngInject */ function($scope) {
