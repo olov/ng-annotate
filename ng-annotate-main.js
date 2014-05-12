@@ -7,6 +7,7 @@ const esprima = require("esprima").parse;
 const is = require("simple-is");
 const alter = require("alter");
 const traverse = require("ordered-ast-traverse");
+const Heap = require("./heap");
 
 const chainedRouteProvider = 1;
 const chainedUrlRouterProvider = 2;
@@ -331,15 +332,35 @@ module.exports = function ngAnnotate(src, options) {
         };
     }
 
+    // Fix Program node range (https://code.google.com/p/esprima/issues/detail?id=541)
+    ast.range[0] = 0;
+
+    // append a dummy-node to ast to catch any remaining triggers
+    ast.body.push({
+        type: "DebuggerStatement",
+        range: [ast.range[1], ast.range[1]],
+    });
+
+    // detach comments from ast
+    // [{type: "Block"|"Line", value: str, range: [from,to]}, ..]
+    const comments = ast.comments;
+    ast.comments = null;
+
     // all source modifications are built up as operations in the
     // fragments array, later sent to alter in one shot
     const fragments = [];
+
+    // triggers contains functions to trigger when traverse hits the
+    // first node at (or after) a certain pos
+    const triggers = new Heap();
 
     const ctx = {
         mode: mode,
         quot: quot,
         src: src,
+        comments: comments,
         fragments: fragments,
+        triggers: triggers,
         isFunctionExpressionWithArgs: isFunctionExpressionWithArgs,
         isFunctionDeclarationWithArgs: isFunctionDeclarationWithArgs,
         isAnnotatedArray: isAnnotatedArray,
@@ -347,7 +368,13 @@ module.exports = function ngAnnotate(src, options) {
         stringify: stringify,
     };
 
-    traverse(ast, {post: function(node) {
+    traverse(ast, {pre: function(node) {
+        const pos = node.range[0];
+        while (pos >= triggers.pos) {
+            const trigger = triggers.getAndRemoveNext();
+            trigger.fn.call(null, node, trigger.ctx);
+        }
+    }, post: function(node) {
         let targets = match(node, re);
         if (!targets) {
             return;
