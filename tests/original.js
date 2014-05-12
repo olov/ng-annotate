@@ -22,6 +22,10 @@ myMod.filter("foo", function($scope, $timeout) {
 myMod.animation("foo", function($scope, $timeout) {
 });
 
+// variable instead of string as first argument
+myMod.controller(ctrlName, function($scope, $timeout) {});
+angular.module("MyMod").controller(ctrlName, function($scope, $timeout) {});
+
 // object property
 var myObj = {};
 myObj.myMod = angular.module("MyMod");
