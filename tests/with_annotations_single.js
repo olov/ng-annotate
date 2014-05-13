@@ -154,6 +154,12 @@ angular.module("MyMod").directive("foo", ['$a', '$b', function($a, $b) {
     }]);
 }]);
 
+// $httpProvider
+$httpProvider.interceptors.push(['$scope', function($scope) { a }]);
+
+var interceptor = /*@ngInject*/ ['$scope', function($scope) { a }];
+$httpProvider.interceptors.push(interceptor);
+
 // $routeProvider
 $routeProvider.when("path", {
     controller: ['$scope', function($scope) {
