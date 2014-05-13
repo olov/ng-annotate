@@ -3,6 +3,10 @@
  * API now returns {src <string>, errors <array of strings>}
  * support /* @ngInject */
  * even faster (~6% faster annotating angular.js)
+ * match $httpProvider.interceptors.push(function($scope) {})
+ * support self and that as aliases to this for this.$get = function($scope){}
+ * support .controller(name, ..) in addition to .controller("name", ..)
+ * ui-router declarations improvements
 
 ## v0.8.0 2014-05-09
  * ngRoute support: $routeProvider.when("path", { .. })
