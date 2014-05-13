@@ -75,8 +75,12 @@ on your individual source files without concatenating. If ng-annotate detects a 
 false positive then you can use the `--regexp` option to limit the module identifier.
 Examples: `--regexp "^myMod$"` (match only `myMod`) or `--regexp "^$"` (ignore short forms).
 
+`angular.module("MyMod").controller(name, ..)` where name is a variable rather than a
+string literal is also supported.
+
 ng-annotate understands `this.$get = function($scope) ..` and
-`{.., $get: function($scope) ..}` inside a `provider`.
+`{.., $get: function($scope) ..}` inside a `provider`. `self` and `that` can be used as
+aliases for `this`.
 
 ng-annotate understands `return {.., controller: function($scope) ..}` inside a
 `directive`.
@@ -86,13 +90,52 @@ on `provide` such as `factory`.
 
 ng-annotate understands `$routeProvider.when("path", { .. })`.
 
+ng-annotate understands `$httpProvider.interceptors.push(function($scope) ..)`.
+
 ng-annotate understands [ui-router](https://github.com/angular-ui/ui-router) (`$stateProvider` and
 `$urlRouterProvider`).
 
 ng-annotate understands chaining.
 
 
-## Issues
+## Explicit annotations
+You can prepend a function expression with `/* @ngInject */` to explicitly state that this
+function should get annotated. ng-annotate will leave the comment intact and will thus still
+be able to also remove or rewrite such annotations. Use `/* @ngInject */` as an occasional
+workaround when ng-annotate doesn't support your code style but feel free to open an issue
+also.
+
+    var x = /* @ngInject */ function($scope) {};
+    obj = {controller: /*@ngInject*/ function($scope) {}};
+    obj.bar = /*@ngInject*/ function($scope) {};
+
+    =>
+
+    var x = /* @ngInject */ ["$scope", function($scope) {}];
+    obj = {controller: /*@ngInject*/ ["$scope", function($scope) {}]};
+    obj.bar = /*@ngInject*/ ["$scope", function($scope) {}];
+
+`/* @ngInject */` can also be prepended to a function statement or a single variable declaration
+(where its initializer is a function expression). It will then attach an `$injects` array to
+the function.
+
+    // @ngInject
+    function Foo($scope) {}
+
+    // @ngInject
+    var foo = function($scope) {}
+
+    =>
+    // @ngInject
+    function Foo($scope) {}
+    Foo.$injects = ["$scope"];
+
+    // @ngInject
+    var foo = function($scope) {}
+    foo.$injects = ["$scope"];
+
+
+## Issues and compatibility
 If ng-annotate does not handle a construct you're using, if there's a bug or if you have a feature
 request then please [file an issue](https://github.com/olov/ng-annotate/issues?state=open).
 
@@ -117,4 +160,6 @@ ng-annotate can be used as a library. See [ng-annotate.js](ng-annotate.js) for f
 options and return value.
 
     var ngAnnotate = require("ng-annotate");
-    var transformedSource = ngAnnotate(src, {add: true}).src;
+    var res = ngAnnotate(src, {add: true})
+    var errorstringArray = res.errors;
+    var transformedSource = res.src;
