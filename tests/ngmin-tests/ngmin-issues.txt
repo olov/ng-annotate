@@ -38,3 +38,16 @@ ngmin issues that works in ng-annotate by adding an explicit /* @ngInject */:
 #69 Certain style of directives do not get their controllers min safed
 #65 Is there a way to detect and minify controller inside a controller?
   - (example in issue comment works as-is)
+
+ngmin bug issues not included in the lists above:
+-------------------------------------------------
+none
+
+ngmin feature request issues where ng-annotate also lacks the feature:
+----------------------------------------------------------------------
+#88 Use "strict DI mode" enhancement
+#86 Inclusion in grunt-contrib-uglify
+#44 Dynamic Analysis bonus points enhancement
+#51 Fixes #19 - Add support for source-map generation
+#19 source map support enhancement
+#12 Group chainable methods enhancement
