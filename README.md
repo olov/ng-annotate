@@ -32,6 +32,9 @@ Use the `--single_quotes` option to output `'$scope'` instead of `"$scope"`.
 Use the `--regexp` option in case you want to restrict matching further (rarely used). See
 description further down.
 
+Use the `--plugin` option to load user plugins (experimental, 0.9.x may change API). See
+[plugin-example.js](plugin-example.js) for more info.
+
 
 ## Tools support
 * [Grunt](http://gruntjs.com/): [grunt-ng-annotate](https://npmjs.org/package/grunt-ng-annotate)
@@ -161,6 +164,7 @@ ng-annotate can be used as a library. See [ng-annotate.js](ng-annotate.js) for f
 options and return value.
 
     var ngAnnotate = require("ng-annotate");
-    var res = ngAnnotate(src, {add: true})
+    var somePlugin = require("./some/path/some-plugin");
+    var res = ngAnnotate(src, {add: true, plugin: [somePlugin]})
     var errorstringArray = res.errors;
     var transformedSource = res.src;

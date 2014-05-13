@@ -15,7 +15,7 @@ const chainedUrlRouterProvider = 2;
 const chainedStateProvider = 3;
 const chainedRegular = 4;
 
-function match(node, re) {
+function match(node, re, matchPlugins) {
     const isMethodCall = (
         node.type === "CallExpression" &&
             node.callee.type === "MemberExpression" &&
@@ -26,6 +26,7 @@ function match(node, re) {
         (matchRegular(node, re) || matchNgRoute(node) || matchUiRouter(node) || matchHttpProvider(node)));
 
     return matchMethodCalls ||
+        (matchPlugins && matchPlugins(node)) ||
         matchDirectiveReturnObject(node) ||
         matchProviderGet(node);
 }
@@ -391,7 +392,22 @@ module.exports = function ngAnnotate(src, options) {
         stringify: stringify,
     };
 
+    const plugins = options.plugin || [];
+    function matchPlugins(node, isMethodCall) {
+        for (let i = 0; i < plugins.length; i++) {
+            const res = plugins[i].match(node, isMethodCall);
+            if (res) {
+                return res;
+            }
+        }
+        return false;
+    }
+    const matchPluginsOrNull = (plugins.length === 0 ? null : matchPlugins);
+
     ngInjectComments.init(ctx);
+    plugins.forEach(function(plugin) {
+        plugin.init(ctx);
+    });
 
     traverse(ast, {pre: function(node) {
         const pos = node.range[0];
@@ -400,7 +416,7 @@ module.exports = function ngAnnotate(src, options) {
             trigger.fn.call(null, node, trigger.ctx);
         }
     }, post: function(node) {
-        let targets = match(node, re);
+        let targets = match(node, re, matchPluginsOrNull);
         if (!targets) {
             return;
         }

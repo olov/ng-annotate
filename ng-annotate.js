@@ -26,6 +26,9 @@ const optimist = require("optimist")
     })
     .options("regexp", {
         describe: "detect short form myMod.controller(...) iff myMod matches regexp",
+    })
+    .options("plugin", {
+        describe: "use plugin with path (experimental)",
     });
 
 const argv = optimist.argv;
@@ -68,7 +71,22 @@ function addOption(opt) {
     }
 }
 
-["add", "remove", "regexp", "single_quotes"].forEach(addOption);
+["add", "remove", "regexp", "single_quotes", "plugin"].forEach(addOption);
+
+if (config.plugin) {
+    if (!Array.isArray(config.plugin)) {
+        config.plugin = [config.plugin];
+    }
+    config.plugin = config.plugin.map(function(path) {
+        const absPath = tryor(fs.realpathSync.bind(fs, path), null);
+        if (!absPath) {
+            exit(fmt('error: plugin file not found {0}', path));
+        }
+        // the require below may throw an exception on parse-error
+        // that is fine because it gives the user the line info
+        return require(absPath);
+    });
+}
 
 const ret = ngAnnotate(src, config);
 
