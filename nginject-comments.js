@@ -45,9 +45,7 @@ function visitNodeFollowingNgInjectComment(node, ctx) {
 
 
     function addRemoveInjectsArray(params, posAfterFunctionDeclaration, name) {
-        const str1 = fmt("{0}.$injects", name);
-        const str2 = fmt(" = {0};", ctx.stringify(params, ctx.quot));
-        const str = "\n" + str1 + str2;
+        const str = fmt("\n{0}.$injects = {1};", name, ctx.stringify(params, ctx.quot));
 
         ctx.triggers.add({
             pos: posAfterFunctionDeclaration,
@@ -55,7 +53,12 @@ function visitNodeFollowingNgInjectComment(node, ctx) {
         });
 
         function visitNodeFollowingFunctionDeclaration(nextNode) {
-            const hasInjectsArray = (str1 === ctx.src.slice(nextNode.range[0], nextNode.range[0] + str1.length));
+            const assignment = nextNode.expression;
+            let lvalue;
+            const hasInjectsArray = (nextNode.type === "ExpressionStatement" && assignment.type === "AssignmentExpression" &&
+                assignment.operator === "=" &&
+                (lvalue = assignment.left).type === "MemberExpression" &&
+                lvalue.computed === false && lvalue.object.name === name && lvalue.property.name === "$injects");
 
             if (ctx.mode === "rebuild" && hasInjectsArray) {
                 ctx.fragments.push({
