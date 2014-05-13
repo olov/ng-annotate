@@ -1,11 +1,12 @@
-## next
- * bugfix angular.module("MyMod").bootstrap(e, [], {}) disrupting chaining
+## v0.9.0 2014-05-13
  * explicit annotations using /* @ngInject */
+ * --plugin option to load user plugins (experimental, 0.9.x may change API)
  * match $httpProvider.interceptors.push(function($scope) {})
  * match $httpProvider.responseInterceptors.push(function($scope) {})
  * match self and that as aliases to this for this.$get = function($scope){}
  * match .controller(name, ..) in addition to .controller("name", ..)
  * bugfix ui-router declarations
+ * bugfix angular.module("MyMod").bootstrap(e, [], {}) disrupting chaining
  * even faster (~6% faster annotating angular.js)
  * add error array to API return object
 
