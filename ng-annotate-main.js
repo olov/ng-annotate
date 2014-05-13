@@ -23,7 +23,7 @@ function match(node, re) {
         );
 
     const matchMethodCalls = (isMethodCall &&
-        (matchRegular(node, re) || matchNgRoute(node) || matchUiRouter(node)));
+        (matchRegular(node, re) || matchNgRoute(node) || matchUiRouter(node) || matchHttpProvider(node)));
 
     return matchMethodCalls ||
         matchDirectiveReturnObject(node) ||
@@ -170,6 +170,20 @@ function matchUiRouter(node) {
 
     const filteredRes = res.filter(Boolean);
     return (filteredRes.length === 0 ? false : filteredRes);
+}
+
+function matchHttpProvider(node) {
+    // $httpProvider.interceptors.push(function($scope) {});
+
+    // we already know that node is a (non-computed) method call
+    const callee = node.callee;
+    const obj = callee.object; // identifier or expression
+    const method = callee.property; // identifier
+
+    return (method.name === "push" &&
+        obj.type === "MemberExpression" && !obj.computed &&
+        obj.object.name === "$httpProvider" && obj.property.name === "interceptors" &&
+        node.arguments.length >= 1 && node.arguments);
 }
 
 function matchRegular(node, re) {
