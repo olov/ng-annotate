@@ -90,7 +90,8 @@ on `provide` such as `factory`.
 
 ng-annotate understands `$routeProvider.when("path", { .. })`.
 
-ng-annotate understands `$httpProvider.interceptors.push(function($scope) ..)`.
+ng-annotate understands `$httpProvider.interceptors.push(function($scope) ..)` and
+`$httpProvider.responseInterceptors.push(function($scope) ..)`.
 
 ng-annotate understands [ui-router](https://github.com/angular-ui/ui-router) (`$stateProvider` and
 `$urlRouterProvider`).

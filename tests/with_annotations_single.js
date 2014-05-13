@@ -156,7 +156,7 @@ angular.module("MyMod").directive("foo", ['$a', '$b', function($a, $b) {
 
 // $httpProvider
 $httpProvider.interceptors.push(['$scope', function($scope) { a }]);
-$httpProvider.interceptors.push(['$scope', function($scope) { a }], ['a', 'b', function(a, b) { b }], function() { c });
+$httpProvider.responseInterceptors.push(['$scope', function($scope) { a }], ['a', 'b', function(a, b) { b }], function() { c });
 
 var interceptor = /*@ngInject*/ ['$scope', function($scope) { a }];
 $httpProvider.interceptors.push(interceptor);

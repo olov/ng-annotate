@@ -2,6 +2,7 @@
  * bugfix angular.module("MyMod").bootstrap(e, [], {}) disrupting chaining
  * explicit annotations using /* @ngInject */
  * match $httpProvider.interceptors.push(function($scope) {})
+ * match $httpProvider.responseInterceptors.push(function($scope) {})
  * match self and that as aliases to this for this.$get = function($scope){}
  * match .controller(name, ..) in addition to .controller("name", ..)
  * bugfix ui-router declarations

@@ -174,6 +174,7 @@ function matchUiRouter(node) {
 
 function matchHttpProvider(node) {
     // $httpProvider.interceptors.push(function($scope) {});
+    // $httpProvider.responseInterceptors.push(function($scope) {});
 
     // we already know that node is a (non-computed) method call
     const callee = node.callee;
@@ -182,7 +183,7 @@ function matchHttpProvider(node) {
 
     return (method.name === "push" &&
         obj.type === "MemberExpression" && !obj.computed &&
-        obj.object.name === "$httpProvider" && obj.property.name === "interceptors" &&
+        obj.object.name === "$httpProvider" && is.someof(obj.property.name,  ["interceptors", "responseInterceptors"]) &&
         node.arguments.length >= 1 && node.arguments);
 }
 
