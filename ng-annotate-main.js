@@ -43,7 +43,7 @@ function matchDirectiveReturnObject(node) {
 function matchProviderGet(node) {
     // TODO make these more strict by checking that we're inside an angular module?
 
-    // this.$get = function($scope, $timeout)
+    // (this|self|that).$get = function($scope, $timeout)
     // { ... $get: function($scope, $timeout), ...}
     let memberExpr;
     let self;
