@@ -28,3 +28,13 @@ ngmin issues that just works in ng-annotate:
 #37 Support minification of $httpProvider.responseInterceptors.push functions enhancement
 #35 Support minification of $routeProvider resolve functions enhancement
 #22 Support anonymous factory
+
+ngmin issues that works in ng-annotate by adding an explicit /* @ngInject */:
+-----------------------------------------------------------------------------
+#84 Support services as function references
+#83 Support minification of modal controller
+#81 Support injector().invoke
+#79 Support minification of module providers
+#69 Certain style of directives do not get their controllers min safed
+#65 Is there a way to detect and minify controller inside a controller?
+  - (example in issue comment works as-is)
