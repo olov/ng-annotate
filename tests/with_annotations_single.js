@@ -22,10 +22,6 @@ myMod.filter("foo", ['$scope', '$timeout', function($scope, $timeout) {
 myMod.animation("foo", ['$scope', '$timeout', function($scope, $timeout) {
 }]);
 
-// variable instead of string as first argument
-myMod.controller(ctrlName, ['$scope', '$timeout', function($scope, $timeout) {}]);
-angular.module("MyMod").controller(ctrlName, ['$scope', '$timeout', function($scope, $timeout) {}]);
-
 // object property
 var myObj = {};
 myObj.myMod = angular.module("MyMod");

@@ -208,7 +208,7 @@ function matchRegular(node, re) {
     const args = node.arguments;
     return (is.someof(method.name, ["config", "run"]) ?
         args.length === 1 && args[0] :
-        args.length === 2 && ((args[0].type === "Literal" && is.string(args[0].value)) || args[0].type === "Identifier") && args[1]);
+        args.length === 2 && args[0].type === "Literal" && is.string(args[0].value) && args[1]);
 }
 
 // Short form: *.controller("MyCtrl", function($scope, $timeout) {});
