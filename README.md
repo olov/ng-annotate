@@ -78,9 +78,6 @@ on your individual source files without concatenating. If ng-annotate detects a 
 false positive then you can use the `--regexp` option to limit the module identifier.
 Examples: `--regexp "^myMod$"` (match only `myMod`) or `--regexp "^$"` (ignore short forms).
 
-`angular.module("MyMod").controller(name, ..)` where name is a variable rather than a
-string literal is also supported.
-
 ng-annotate understands `this.$get = function($scope) ..` and
 `{.., $get: function($scope) ..}` inside a `provider`. `self` and `that` can be used as
 aliases for `this`.

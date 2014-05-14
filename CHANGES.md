@@ -1,3 +1,7 @@
+## v0.9.1 2014-05-14
+ * bugfix false positive regression
+   revert 0.9.0 match .controller(name, ..) in addition to .controller("name"..
+
 ## v0.9.0 2014-05-13
  * explicit annotations using /* @ngInject */
  * --plugin option to load user plugins (experimental, 0.9.x may change API)
