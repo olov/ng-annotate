@@ -1,3 +1,7 @@
+## next
+ * match $modal.open from angular-ui/bootstrap (experimental)
+ * --stats option for runtime statistics (experimental)
+
 ## v0.9.1 2014-05-14
  * bugfix false positive regression
    revert 0.9.0 match .controller(name, ..) in addition to .controller("name"..

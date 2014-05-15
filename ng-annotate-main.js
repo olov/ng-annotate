@@ -25,7 +25,7 @@ function match(node, re, matchPlugins) {
         );
 
     const matchMethodCalls = (isMethodCall &&
-        (matchRegular(node, re) || matchNgRoute(node) || matchUiRouter(node) || matchHttpProvider(node)));
+        (matchRegular(node, re) || matchNgRoute(node) || matchNgUi(node) || matchHttpProvider(node)));
 
     return matchMethodCalls ||
         (matchPlugins && matchPlugins(node)) ||
@@ -97,7 +97,7 @@ function matchNgRoute(node) {
     return (filteredRes.length === 0 ? false : filteredRes);
 }
 
-function matchUiRouter(node) {
+function matchNgUi(node) {
     // $stateProvider.state("myState", {
     //     ...
     //     controller: function($scope)
@@ -110,6 +110,8 @@ function matchUiRouter(node) {
     // $stateProvider.state("myState", {... views: {... somename: {... controller: fn, templateProvider: fn, resolve: {f: fn}}}})
     //
     // $urlRouterProvider.when(.., function($scope) {})
+    //
+    // $modal.open({.. controller: fn, resolve: {f: function($scope) {}, ..}});
 
     // we already know that node is a (non-computed) method call
     const callee = node.callee;
@@ -117,7 +119,16 @@ function matchUiRouter(node) {
     const method = callee.property; // identifier
     const args = node.arguments;
 
-    // special shortcut for $urlRouterProvider.when(.., function($scope) {})
+    // shortcut for $modal.open({.. controller: fn, resolve: {f: function($scope) {}, ..}});
+    if (obj.type === "Identifier" && obj.name === "$modal" && method.name === "open" &&
+        args.length === 1 && args[0].type === "ObjectExpression") {
+        const props = args[0].properties;
+        const res = [matchProp("controller", props)];
+        res.push.apply(res, matchResolve(props));
+        return res.filter(Boolean);
+    }
+
+    // shortcut for $urlRouterProvider.when(.., function($scope) {})
     if (obj.$chained === chainedUrlRouterProvider || (obj.type === "Identifier" && obj.name === "$urlRouterProvider")) {
         node.$chained = chainedUrlRouterProvider;
 

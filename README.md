@@ -35,6 +35,8 @@ description further down.
 Use the `--plugin` option to load user plugins (experimental, 0.9.x may change API). See
 [plugin-example.js](plugin-example.js) for more info.
 
+Use the `--stats` option to print statistics on stderr (experimental)
+
 
 ## Tools support
 * [Grunt](http://gruntjs.com/): [grunt-ng-annotate](https://npmjs.org/package/grunt-ng-annotate)
@@ -95,6 +97,9 @@ ng-annotate understands `$httpProvider.interceptors.push(function($scope) ..)` a
 
 ng-annotate understands [ui-router](https://github.com/angular-ui/ui-router) (`$stateProvider` and
 `$urlRouterProvider`).
+
+ng-annotate understands `$modal.open` [angular-ui/bootstrap](http://angular-ui.github.io/bootstrap/).
+(*experimental*)
 
 ng-annotate understands chaining.
 
