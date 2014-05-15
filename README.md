@@ -43,7 +43,8 @@ Use the `--stats` option to print statistics on stderr (*experimental*)
 * [Browserify](http://browserify.org/): [browserify-ngannotate](https://www.npmjs.org/package/browserify-ngannotate)
 * [Brunch](http://brunch.io/): [ng-annotate-uglify-js-brunch](https://www.npmjs.org/package/ng-annotate-uglify-js-brunch)
 * [Gulp](http://gulpjs.com/): [gulp-ng-annotate](https://www.npmjs.org/package/gulp-ng-annotate/)
-* Missing Broccoli or other tool support? Contributions welcome! (create plugin, submit README pull request)
+* [Broccoli](https://github.com/broccolijs/broccoli): [broccoli-ng-annotate](https://github.com/pgilad/broccoli-ng-annotate)
+* Other tool support? Contributions welcome! (create plugin, submit README pull request)
 
 
 ## Changes
