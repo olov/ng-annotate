@@ -239,6 +239,18 @@ $urlRouterProvider.when("/", ['$match', function($match) { a; }]);
 $urlRouterProvider.otherwise("", function(a) { a; });
 $urlRouterProvider.rule(function(a) { a; }).anything().when("/", ['$location', function($location) { a; }]);
 
+// angular ui / ui-bootstrap $modal
+$modal.open({
+    templateUrl: "str",
+    controller: ['$scope', function($scope) {}],
+    resolve: {
+        items: ['MyService', function(MyService) {}],
+        data: ['a', 'b', function(a, b) {}],
+        its: 42,
+    },
+    donttouch: function(me) {},
+});
+
 // explicit annotations
 var x = /* @ngInject */ ['$scope', function($scope) {
 }];
