@@ -8,6 +8,7 @@ ngmin issues that just works in ng-annotate:
 #89 Support for javascript enclosures?
 #87 Not working with resolve in ngRoute.
 #85 ngmin is changing things it shouldn't
+#83 Support minification of modal controller
 #78 module.run not being annotated
 #77 Still does not annotate directive.controller
   - second example needs an explicit /* @ngInject */
@@ -32,7 +33,6 @@ ngmin issues that just works in ng-annotate:
 ngmin issues that works in ng-annotate by adding an explicit /* @ngInject */:
 -----------------------------------------------------------------------------
 #84 Support services as function references
-#83 Support minification of modal controller
 #81 Support injector().invoke
 #79 Support minification of module providers
 #69 Certain style of directives do not get their controllers min safed
