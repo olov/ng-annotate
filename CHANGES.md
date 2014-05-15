@@ -1,4 +1,4 @@
-## next
+## v0.9.2 2014-05-15
  * match $modal.open from angular-ui/bootstrap (experimental)
  * --stats option for runtime statistics (experimental)
 
