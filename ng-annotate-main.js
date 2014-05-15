@@ -3,7 +3,9 @@
 // Copyright (c) 2013-2014 Olov Lassus <olov.lassus@gmail.com>
 
 "use strict";
+const esprima_require_t0 = Date.now();
 const esprima = require("esprima").parse;
+const esprima_require_t1 = Date.now();
 const is = require("simple-is");
 const alter = require("alter");
 const traverse = require("ordered-ast-traverse");
@@ -345,11 +347,18 @@ module.exports = function ngAnnotate(src, options) {
     const quot = options.single_quotes ? "'" : '"';
     const re = (options.regexp && new RegExp(options.regexp));
     let ast;
+    const stats = {};
     try {
+        stats.esprima_require_t0 = esprima_require_t0;
+        stats.esprima_require_t1 = esprima_require_t1;
+        stats.esprima_parse_t0 = Date.now();
+
         ast = esprima(src, {
             range: true,
             comment: true,
         });
+
+        stats.esprima_parse_t1 = Date.now();
     } catch(e) {
         return {
             errors: ["error: couldn't process source due to parse error", e.message],
@@ -434,5 +443,6 @@ module.exports = function ngAnnotate(src, options) {
 
     return {
         src: out,
+        _stats: stats,
     };
 }
