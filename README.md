@@ -185,6 +185,7 @@ to transpile to ES5. See [BUILD.md](BUILD.md) for build and test instructions.
 
 ng-annotate is written by [Olov Lassus](https://github.com/olov) with the kind help by
 [contributors](https://github.com/olov/ng-annotate/graphs/contributors).
+[Follow @olov](https://twitter.com/olov) on Twitter for updates about ng-annotate.
 
 
 ## Performance
