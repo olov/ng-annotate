@@ -1,3 +1,6 @@
+## next
+ * ui-router declarations improvements
+
 ## v0.9.3 2014-05-16
  * /* @ngInject */ object literal support
  * bugfix ES5 strict mode oops

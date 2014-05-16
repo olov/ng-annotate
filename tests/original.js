@@ -194,6 +194,7 @@ $stateProvider.state("myState", {
     views: {
         viewa: {
             controller: function($scope, myParam) {},
+            controllerProvider: function($stateParams) {},
             templateProvider: function($scope) {},
             dontAlterMe: function(arg) {},
             resolve: {

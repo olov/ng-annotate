@@ -107,7 +107,7 @@ function matchNgUi(node) {
     //     onExit: function($scope)
     // });
     // $stateProvider.state("myState", {... resolve: {f: function($scope) {}, ..} ..})
-    // $stateProvider.state("myState", {... views: {... somename: {... controller: fn, templateProvider: fn, resolve: {f: fn}}}})
+    // $stateProvider.state("myState", {... views: {... somename: {... controller: fn, controllerProvider: fn, templateProvider: fn, resolve: {f: fn}}}})
     //
     // $urlRouterProvider.when(.., function($scope) {})
     //
@@ -176,6 +176,7 @@ function matchNgUi(node) {
         viewObject.properties.forEach(function(prop) {
             if (prop.value.type === "ObjectExpression") {
                 res.push(matchProp("controller", prop.value.properties));
+                res.push(matchProp("controllerProvider", prop.value.properties));
                 res.push(matchProp("templateProvider", prop.value.properties));
                 res.push.apply(res, matchResolve(prop.value.properties));
             }
