@@ -17,6 +17,14 @@ Annotations are useful because with them you're able to minify your source code 
 favorite JS minifier.
 
 
+## How does ng-annotate compare to ngmin?
+If you are currently using ngmin then this is probably your first question. In short:
+ng-annotate is much faster, finds more declarations to annotate (including ui-router),
+treats your source code better, is actively maintained and has a bunch of extra features
+on top of that. A much more elaborated answer can be found in
+["The future of ngmin and ng-annotate"](https://github.com/btford/ngmin/issues/93).
+
+
 ## Installation and usage
     npm install -g ng-annotate
 
