@@ -293,3 +293,31 @@ var foo = function($scope) {
 // lacks trailing semicolon
 var foo = function($scope) {
 }
+
+// let's zip-zag indentation to make sure that the $injects array lines up properly
+    // @ngInject
+    function foo($scope) {}
+        // @ngInject
+        function foo($scope) {
+        }
+/* @ngInject */ function foo($scope) {}
+            /* @ngInject */ function foo($scope) {
+            }
+
+    // @ngInject
+    var foo = function($scope) {
+    };
+        // @ngInject
+        var foo = function($scope) {};
+// @ngInject
+var foo = function($scope) {
+}
+            // @ngInject
+            var foo = function($scope) {}
+
+    /* @ngInject */ var foo = function($scope) {
+    };
+        /* @ngInject */var foo = function($scope) {};
+/* @ngInject */var foo = function($scope) {
+}
+            /* @ngInject */var foo = function($scope) {}

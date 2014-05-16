@@ -65,9 +65,18 @@ function visitNodeFollowingNgInjectComment(node, ctx) {
         addRemoveInjectsArray(node.params, nr1, node.id.name);
     }
 
+    function getIndent(pos) {
+        const src = ctx.src;
+        const lineStart = src.lastIndexOf("\n", pos - 1) + 1;
+        let i = lineStart;
+        for (; src[i] === " " || src[i] === "\t"; i++) {
+        }
+        return src.slice(lineStart, i);
+    }
 
     function addRemoveInjectsArray(params, posAfterFunctionDeclaration, name) {
-        const str = fmt("\n{0}.$injects = {1};", name, ctx.stringify(params, ctx.quot));
+        const indent = getIndent(posAfterFunctionDeclaration);
+        const str = fmt("\n{0}{1}.$injects = {2};", indent, name, ctx.stringify(params, ctx.quot));
 
         ctx.triggers.add({
             pos: posAfterFunctionDeclaration,

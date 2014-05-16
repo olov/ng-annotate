@@ -297,3 +297,43 @@ foo.$injects = ['$scope'];
 var foo = function($scope) {
 }
 foo.$injects = ['$scope'];
+
+// let's zip-zag indentation to make sure that the $injects array lines up properly
+    // @ngInject
+    function foo($scope) {}
+    foo.$injects = ['$scope'];
+        // @ngInject
+        function foo($scope) {
+        }
+        foo.$injects = ['$scope'];
+/* @ngInject */ function foo($scope) {}
+foo.$injects = ['$scope'];
+            /* @ngInject */ function foo($scope) {
+            }
+            foo.$injects = ['$scope'];
+
+    // @ngInject
+    var foo = function($scope) {
+    };
+    foo.$injects = ['$scope'];
+        // @ngInject
+        var foo = function($scope) {};
+        foo.$injects = ['$scope'];
+// @ngInject
+var foo = function($scope) {
+}
+foo.$injects = ['$scope'];
+            // @ngInject
+            var foo = function($scope) {}
+            foo.$injects = ['$scope'];
+
+    /* @ngInject */ var foo = function($scope) {
+    };
+    foo.$injects = ['$scope'];
+        /* @ngInject */var foo = function($scope) {};
+        foo.$injects = ['$scope'];
+/* @ngInject */var foo = function($scope) {
+}
+foo.$injects = ['$scope'];
+            /* @ngInject */var foo = function($scope) {}
+            foo.$injects = ['$scope'];
