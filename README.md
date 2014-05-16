@@ -39,12 +39,12 @@ Use the `--stats` option to print statistics on stderr (*experimental*).
 
 
 ## Tools support
-* [Grunt](http://gruntjs.com/): [grunt-ng-annotate](https://npmjs.org/package/grunt-ng-annotate)
-* [Browserify](http://browserify.org/): [browserify-ngannotate](https://www.npmjs.org/package/browserify-ngannotate)
-* [Brunch](http://brunch.io/): [ng-annotate-uglify-js-brunch](https://www.npmjs.org/package/ng-annotate-uglify-js-brunch)
-* [Gulp](http://gulpjs.com/): [gulp-ng-annotate](https://www.npmjs.org/package/gulp-ng-annotate/)
-* [Broccoli](https://github.com/broccolijs/broccoli): [broccoli-ng-annotate](https://github.com/pgilad/broccoli-ng-annotate)
-* Other tool support? Contributions welcome! (create plugin, submit README pull request)
+* [Grunt](http://gruntjs.com/): [grunt-ng-annotate](https://www.npmjs.org/package/grunt-ng-annotate) by [Michał Gołębiowski](https://github.com/mzgol)
+* [Browserify](http://browserify.org/): [browserify-ngannotate](https://www.npmjs.org/package/browserify-ngannotate) by [Owen Smith](https://github.com/omsmith)
+* [Brunch](http://brunch.io/): [ng-annotate-uglify-js-brunch](https://www.npmjs.org/package/ng-annotate-uglify-js-brunch) by [Kagami Hiiragi](https://github.com/Kagami)
+* [Gulp](http://gulpjs.com/): [gulp-ng-annotate](https://www.npmjs.org/package/gulp-ng-annotate/) by [Kagami Hiiragi](https://github.com/Kagami)
+* [Broccoli](https://github.com/broccolijs/broccoli): [broccoli-ng-annotate](https://www.npmjs.org/package/broccoli-ng-annotate) by [Gilad Peleg](https://github.com/pgilad)
+* Something missing? Contributions welcome - create plugin and submit a README pull request!
 
 
 ## Changes
@@ -174,6 +174,9 @@ to transpile to ES5. See [BUILD.md](BUILD.md) for build and test instructions.
 
 ## License
 `MIT`, see [LICENSE](LICENSE) file.
+
+ng-annotate is written by [Olov Lassus](https://github.com/olov) with the kind help by
+[contributors](https://github.com/olov/ng-annotate/graphs/contributors).
 
 
 ## Performance
