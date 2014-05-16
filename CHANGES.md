@@ -1,5 +1,7 @@
-## next
+## v0.9.3 2014-05-16
  * /* @ngInject */ object literal support
+ * bugfix ES5 strict mode oops
+ * added more tools that support ng-annotate to README
 
 ## v0.9.2 2014-05-15
  * match $modal.open from angular-ui/bootstrap (experimental)
