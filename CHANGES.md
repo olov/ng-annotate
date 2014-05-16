@@ -1,10 +1,13 @@
+## next
+ * /* @ngInject */ object literal support
+
 ## v0.9.2 2014-05-15
  * match $modal.open from angular-ui/bootstrap (experimental)
  * --stats option for runtime statistics (experimental)
 
 ## v0.9.1 2014-05-14
- * bugfix false positive regression
-   revert 0.9.0 match .controller(name, ..) in addition to .controller("name"..
+ * revert match .controller(name, ..) that was added in 0.9.0 because it
+   triggered false positives
 
 ## v0.9.0 2014-05-13
  * explicit annotations using /* @ngInject */

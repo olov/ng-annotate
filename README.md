@@ -32,10 +32,10 @@ Use the `--single_quotes` option to output `'$scope'` instead of `"$scope"`.
 Use the `--regexp` option in case you want to restrict matching further (rarely used). See
 description further down.
 
-Use the `--plugin` option to load user plugins (*experimental*, 0.9.x may change API). See
-[plugin-example.js](plugin-example.js) for more info.
+Use the `--plugin` option to load a user plugin with the provided path (*experimental*, 
+0.9.x may change API). See [plugin-example.js](plugin-example.js) for more info.
 
-Use the `--stats` option to print statistics on stderr (*experimental*)
+Use the `--stats` option to print statistics on stderr (*experimental*).
 
 
 ## Tools support
@@ -122,9 +122,28 @@ also.
     obj = {controller: /*@ngInject*/ ["$scope", function($scope) {}]};
     obj.bar = /*@ngInject*/ ["$scope", function($scope) {}];
 
-`/* @ngInject */` can also be prepended to a function statement or a single variable declaration
-(where its initializer is a function expression). It will then attach an `$injects` array to
-the function.
+Prepended to an object literal, `/* @ngInject */` will annotate all of its contained
+function expressions, recursively:
+
+	obj = /*@ngInject*/ {
+	    controller: function($scope) {},
+	    resolve: {
+	        data: function(Service) {},
+	    },
+	};
+
+	=>
+
+	obj = /*@ngInject*/ {
+	    controller: ["$scope", function($scope) {}],
+	    resolve: {
+	        data: ["Service", function(Service) {}],
+	    },
+	};
+
+
+Prepended to a function statement or a single variable declaration initialized with a
+function expression, `/* @ngInject */` will attach an `$injects` array to the function:
 
     // @ngInject
     function Foo($scope) {}
@@ -133,6 +152,7 @@ the function.
     var foo = function($scope) {}
 
     =>
+
     // @ngInject
     function Foo($scope) {}
     Foo.$injects = ["$scope"];
@@ -149,7 +169,7 @@ request then please [file an issue](https://github.com/olov/ng-annotate/issues?s
 
 ## Build and test
 ng-annotate is written in ES6 constlet style and uses [defs.js](https://github.com/olov/defs)
-to transpile to ES5. See  [BUILD.md](BUILD.md) for build and test instructions.
+to transpile to ES5. See [BUILD.md](BUILD.md) for build and test instructions.
 
 
 ## License

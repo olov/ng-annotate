@@ -262,6 +262,18 @@ obj = {
     controller: /*@ngInject*/ ['$scope', function($scope) {}],
 };
 
+obj = /*@ngInject*/ {
+    foo: ['a', function(a) {}],
+    bar: ['b', 'c', function(b, c) {}],
+    val: 42,
+    inner: {
+        circle: ['d', function(d) {}],
+        alalalala: "long",
+    },
+    nest: { many: {levels: ['x', function(x) {}]}},
+    but: { onlythrough: ["object literals", {donttouch: function(me) {}}]},
+};
+
 // @ngInject
 function foo($scope) {
 }

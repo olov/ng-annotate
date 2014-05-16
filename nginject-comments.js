@@ -25,14 +25,36 @@ function ngInjectCommentsInit(ctx) {
     ctx.triggers.addMany(triggers);
 }
 
-function visitNodeFollowingNgInjectComment(node, ctx) {
-    // TODO objectliteral (if add or remove)
+function nestedObjectValues(node, res) {
+    res = res || [];
 
+    node.properties.forEach(function(prop) {
+        const v = prop.value;
+        if (is.someof(v.type, ["FunctionExpression", "ArrayExpression"])) {
+            res.push(v);
+        } else if (v.type === "ObjectExpression") {
+            nestedObjectValues(v, res);
+        }
+    });
+
+    return res;
+}
+
+function visitNodeFollowingNgInjectComment(node, ctx) {
+    // handle most common case: /*@ngInject*/ prepended to an array or function expression
     if (ctx.replaceRemoveOrInsertArrayForTarget(node, ctx)) {
         return;
     }
 
-    // var foo = function($scope) {}
+    if (node.type === "ObjectExpression") {
+        nestedObjectValues(node).forEach(function(n) {
+            ctx.replaceRemoveOrInsertArrayForTarget(n, ctx);
+        });
+        return;
+    }
+
+    // /*@ngInject*/ var foo = function($scope) {} and
+    // /*@ngInject*/ function foo($scope) {}
     let d0 = null;
     const nr1 = node.range[1];
     if (node.type === "VariableDeclaration" && node.declarations.length === 1 &&
