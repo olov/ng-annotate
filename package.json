@@ -14,7 +14,7 @@
     "tryor": "~0.1.2",
     "esprima": "~1.2.0",
     "optimist": "~0.6.1",
-    "ordered-ast-traverse": "~0.1.0",
+    "ordered-ast-traverse": "~0.1.1",
     "priorityqueuejs": "~0.2.0"
   },
   "devDependencies": {
