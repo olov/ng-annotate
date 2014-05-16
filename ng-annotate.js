@@ -112,7 +112,7 @@ if (config.stats && stats) {
     const nga_run = (run_t1 - run_t0) - run_esprima;
     const nga_init = all - all_esprima - nga_run;
 
-    function pct(n) {
+    const pct = function(n) {
         return Math.round(100 * n / all);
     }
 
