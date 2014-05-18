@@ -226,6 +226,83 @@ angular.module("MyMod").directive("pleasematchthis", function() {
     });
 });
 
+// none of the patterns below matches because they are not in an angular module context
+// this should be a straight copy of the code above, with identical copies in
+// with_annotations(_single).js
+foobar.irrespective("dontmatchthis", function() {
+
+    // $httpProvider
+    $httpProvider.interceptors.push(function($scope) { a });
+    $httpProvider.responseInterceptors.push(function($scope) { a }, function(a, b) { b }, function() { c });
+
+    // $routeProvider
+    $routeProvider.when("path", {
+        controller: function($scope) { a }
+    }).when("path2", {
+            controller: function($scope) { b },
+            resolve: {
+                zero: function() { a },
+                more: function($scope, $timeout) { b },
+                something: "else",
+            },
+            dontAlterMe: function(arg) {},
+        });
+
+    // ui-router
+    $stateProvider.state("myState", {
+        resolve: {
+            simpleObj: function() { a },
+            promiseObj: function($scope, $timeout) { b },
+            translations: "translations",
+        },
+        views: {
+            viewa: {
+                controller: function($scope, myParam) {},
+                controllerProvider: function($stateParams) {},
+                templateProvider: function($scope) {},
+                dontAlterMe: function(arg) {},
+                resolve: {
+                    myParam: function($stateParams) {
+                        return $stateParams.paramFromDI;
+                    }
+                },
+            },
+            viewb: {
+                dontAlterMe: function(arg) {},
+                templateProvider: function($scope) {},
+                controller: function($scope) {},
+            },
+            dontAlterMe: null,
+        },
+        controller: function($scope, simpleObj, promiseObj, translations) { c },
+        controllerProvider: function($scope) { g },
+        templateProvider: function($scope) { h },
+        onEnter: function($scope) { d },
+        onExit: function($scope) { e },
+        dontAlterMe: function(arg) { f },
+    }).state("myState2", {
+            controller: function($scope) {},
+        }).state({
+            name: "myState3",
+            controller: function($scope, simpleObj, promiseObj, translations) { c },
+        });
+    $urlRouterProvider.when("/", function($match) { a; });
+    $urlRouterProvider.otherwise("", function(a) { a; });
+    $urlRouterProvider.rule(function(a) { a; }).anything().when("/", function($location) { a; });
+
+    // angular ui / ui-bootstrap $modal
+    $modal.open({
+        templateUrl: "str",
+        controller: function($scope) {},
+        resolve: {
+            items: function(MyService) {},
+            data: function(a, b) {},
+            its: 42,
+        },
+        donttouch: function(me) {},
+    });
+});
+
 // explicit annotations
 var x = /* @ngInject */ ["$scope", function($scope) {
 }];
