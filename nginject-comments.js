@@ -42,13 +42,14 @@ function nestedObjectValues(node, res) {
 
 function visitNodeFollowingNgInjectComment(node, ctx) {
     // handle most common case: /*@ngInject*/ prepended to an array or function expression
-    if (ctx.replaceRemoveOrInsertArrayForTarget(node, ctx)) {
+    if (node.type === "ArrayExpression" || node.type === "FunctionExpression") {
+        ctx.addModuleContextIndependentSuspect(node, ctx);
         return;
     }
 
     if (node.type === "ObjectExpression") {
         nestedObjectValues(node).forEach(function(n) {
-            ctx.replaceRemoveOrInsertArrayForTarget(n, ctx);
+            ctx.addModuleContextIndependentSuspect(n, ctx);
         });
         return;
     }

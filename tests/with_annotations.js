@@ -150,106 +150,80 @@ angular.module("MyMod").directive("foo", ["$a", "$b", function($a, $b) {
     }]);
 }]);
 
-// $httpProvider
-$httpProvider.interceptors.push(["$scope", function($scope) { a }]);
-$httpProvider.responseInterceptors.push(["$scope", function($scope) { a }], ["a", "b", function(a, b) { b }], function() { c });
 
-var interceptor = /*@ngInject*/ ["$scope", function($scope) { a }];
-$httpProvider.interceptors.push(interceptor);
+// all the patterns below matches only when we're inside a detected angular module
+angular.module("MyMod").directive("pleasematchthis", function() {
 
-// $routeProvider
-$routeProvider.when("path", {
-    controller: ["$scope", function($scope) {
-        a;
-    }]
-}).when("path2", {
-        controller: ["$scope", function($scope) {
-            b;
-        }],
-        resolve: {
-            zero: function() {
-                a;
-            },
-            more: ["$scope", "$timeout", function($scope, $timeout) {
-                b;
-            }],
-            something: "else",
-        },
-        dontAlterMe: function(arg) {},
-    });
+    // $httpProvider
+    $httpProvider.interceptors.push(["$scope", function($scope) { a }]);
+    $httpProvider.responseInterceptors.push(["$scope", function($scope) { a }], ["a", "b", function(a, b) { b }], function() { c });
 
-// ui-router
-$stateProvider.state("myState", {
-    resolve: {
-        simpleObj: function() {
-            a;
-        },
-
-        promiseObj: ["$scope", "$timeout", function($scope, $timeout) {
-            b;
-        }],
-
-        translations: "translations",
-    },
-    views: {
-        viewa: {
-            controller: ["$scope", "myParam", function($scope, myParam) {}],
-            controllerProvider: ["$stateParams", function($stateParams) {}],
-            templateProvider: ["$scope", function($scope) {}],
-            dontAlterMe: function(arg) {},
+    // $routeProvider
+    $routeProvider.when("path", {
+        controller: ["$scope", function($scope) { a }]
+    }).when("path2", {
+            controller: ["$scope", function($scope) { b }],
             resolve: {
-                myParam: ["$stateParams", function($stateParams) {
-                    return $stateParams.paramFromDI;
-                }]
+                zero: function() { a },
+                more: ["$scope", "$timeout", function($scope, $timeout) { b }],
+                something: "else",
             },
-        },
-        viewb: {
             dontAlterMe: function(arg) {},
-            templateProvider: ["$scope", function($scope) {}],
-            controller: ["$scope", function($scope) {}],
-        },
-        dontAlterMe: null,
-    },
-    controller: ["$scope", "simpleObj", "promiseObj", "translations", function($scope, simpleObj, promiseObj, translations) {
-        c;
-    }],
-    controllerProvider: ["$scope", function($scope) {
-        g;
-    }],
-    templateProvider: ["$scope", function($scope) {
-        h;
-    }],
-    onEnter: ["$scope", function($scope) {
-        d;
-    }],
-    onExit: ["$scope", function($scope) {
-        e;
-    }],
-    dontAlterMe: function(arg) {
-        f;
-    },
-}).state("myState2", {
-    controller: ["$scope", function($scope) {}],
-}).state({
-    name: "myState3",
-    controller: ["$scope", "simpleObj", "promiseObj", "translations", function($scope, simpleObj, promiseObj, translations) {
-        c;
-    }],
-});
-$urlRouterProvider.when("/", ["$match", function($match) { a; }]);
-$urlRouterProvider.otherwise("", function(a) { a; });
-$urlRouterProvider.rule(function(a) { a; }).anything().when("/", ["$location", function($location) { a; }]);
+        });
 
-// angular ui / ui-bootstrap $modal
-$modal.open({
-    templateUrl: "str",
-    controller: ["$scope", function($scope) {}],
-    resolve: {
-        items: ["MyService", function(MyService) {}],
-        data: ["a", "b", function(a, b) {}],
-        its: 42,
-    },
-    donttouch: function(me) {},
+    // ui-router
+    $stateProvider.state("myState", {
+        resolve: {
+            simpleObj: function() { a },
+            promiseObj: ["$scope", "$timeout", function($scope, $timeout) { b }],
+            translations: "translations",
+        },
+        views: {
+            viewa: {
+                controller: ["$scope", "myParam", function($scope, myParam) {}],
+                controllerProvider: ["$stateParams", function($stateParams) {}],
+                templateProvider: ["$scope", function($scope) {}],
+                dontAlterMe: function(arg) {},
+                resolve: {
+                    myParam: ["$stateParams", function($stateParams) {
+                        return $stateParams.paramFromDI;
+                    }]
+                },
+            },
+            viewb: {
+                dontAlterMe: function(arg) {},
+                templateProvider: ["$scope", function($scope) {}],
+                controller: ["$scope", function($scope) {}],
+            },
+            dontAlterMe: null,
+        },
+        controller: ["$scope", "simpleObj", "promiseObj", "translations", function($scope, simpleObj, promiseObj, translations) { c }],
+        controllerProvider: ["$scope", function($scope) { g }],
+        templateProvider: ["$scope", function($scope) { h }],
+        onEnter: ["$scope", function($scope) { d }],
+        onExit: ["$scope", function($scope) { e }],
+        dontAlterMe: function(arg) { f },
+    }).state("myState2", {
+            controller: ["$scope", function($scope) {}],
+        }).state({
+            name: "myState3",
+            controller: ["$scope", "simpleObj", "promiseObj", "translations", function($scope, simpleObj, promiseObj, translations) { c }],
+        });
+    $urlRouterProvider.when("/", ["$match", function($match) { a; }]);
+    $urlRouterProvider.otherwise("", function(a) { a; });
+    $urlRouterProvider.rule(function(a) { a; }).anything().when("/", ["$location", function($location) { a; }]);
+
+    // angular ui / ui-bootstrap $modal
+    $modal.open({
+        templateUrl: "str",
+        controller: ["$scope", function($scope) {}],
+        resolve: {
+            items: ["MyService", function(MyService) {}],
+            data: ["a", "b", function(a, b) {}],
+            its: 42,
+        },
+        donttouch: function(me) {},
+    });
 });
 
 // explicit annotations
@@ -342,3 +316,15 @@ foo.$injects = ["$scope"];
 // adding an explicit annotation where it isn't needed should work fine
 myMod.controller("foo", /*@ngInject*/ ["$scope", "$timeout", function($scope, $timeout) {
 }]);
+
+
+
+// snippets that shouldn't fool ng-annotate into generating false positives,
+//   whether we're inside an angular module or not
+myMod.controller("donttouchme", function() {
+    // lo-dash regression that happened in the brief time frame when
+    // notes (instad of "notes") would match. see issue #22
+    var notesForCurrentPage = _.filter(notes, function (note) {
+        return note.page.uid === page.uid;
+    });
+});

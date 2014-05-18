@@ -220,9 +220,14 @@ function matchRegular(node, re) {
     }
 
     const args = node.arguments;
-    return (is.someof(method.name, ["config", "run"]) ?
+    const target = (is.someof(method.name, ["config", "run"]) ?
         args.length === 1 && args[0] :
         args.length === 2 && args[0].type === "Literal" && is.string(args[0].value) && args[1]);
+
+    if (target) {
+        target.$always = true;
+    }
+    return target;
 }
 
 // Short form: *.controller("MyCtrl", function($scope, $timeout) {});
@@ -320,27 +325,46 @@ function removeArray(array, fragments) {
     });
 }
 
-function replaceRemoveOrInsertArrayForTarget(target, ctx) {
-    if (target.$modified) {
-        return true;
-    }
-
+function judgeSuspects(ctx) {
+    const suspects = ctx.suspects;
     const mode = ctx.mode;
     const fragments = ctx.fragments;
     const quot = ctx.quot;
 
-    if (mode === "rebuild" && isAnnotatedArray(target)) {
-        replaceArray(target, fragments, quot);
-    } else if (mode === "remove" && isAnnotatedArray(target)) {
-        removeArray(target, fragments);
-    } else if (is.someof(mode, ["add", "rebuild"]) && isFunctionExpressionWithArgs(target)) {
-        insertArray(target, fragments, quot);
-    } else {
-        return false;
-    }
+    for (let i = 0; i < suspects.length; i++) {
+        const target = suspects[i];
 
-    target.$modified = true;
-    return true;
+        if (target.$once) {
+            continue;
+        }
+        target.$once = true;
+
+        if (!target.$always) {
+            let $caller = target.$caller;
+            for (; $caller && $caller.$chained !== chainedRegular; $caller = $caller.$caller) {
+            }
+            if (!$caller) {
+                continue;
+            }
+        }
+
+        if (mode === "rebuild" && isAnnotatedArray(target)) {
+            replaceArray(target, fragments, quot);
+        } else if (mode === "remove" && isAnnotatedArray(target)) {
+            removeArray(target, fragments);
+        } else if (is.someof(mode, ["add", "rebuild"]) && isFunctionExpressionWithArgs(target)) {
+            insertArray(target, fragments, quot);
+        }
+    }
+}
+
+function addModuleContextDependentSuspect(target, ctx) {
+    ctx.suspects.push(target);
+}
+
+function addModuleContextIndependentSuspect(target, ctx) {
+    target.$always = true;
+    ctx.suspects.push(target);
 }
 
 function isAnnotatedArray(node) {
@@ -405,6 +429,14 @@ module.exports = function ngAnnotate(src, options) {
     // first node at (or after) a certain pos
     const triggers = new Heap();
 
+    // suspects is built up with suspect nodes by match.
+    // A suspect node will get annotations added / removed if it
+    // fulfills the arrayexpression or functionexpression look,
+    // and if it is in the correct context (inside an angular
+    // module definition) - alternatively is forced to ignore
+    // context with node.$always = true
+    const suspects = [];
+
     const ctx = {
         mode: mode,
         quot: quot,
@@ -412,10 +444,12 @@ module.exports = function ngAnnotate(src, options) {
         comments: comments,
         fragments: fragments,
         triggers: triggers,
+        suspects: suspects,
         isFunctionExpressionWithArgs: isFunctionExpressionWithArgs,
         isFunctionDeclarationWithArgs: isFunctionDeclarationWithArgs,
         isAnnotatedArray: isAnnotatedArray,
-        replaceRemoveOrInsertArrayForTarget: replaceRemoveOrInsertArrayForTarget,
+        addModuleContextDependentSuspect: addModuleContextDependentSuspect,
+        addModuleContextIndependentSuspect: addModuleContextIndependentSuspect,
         stringify: stringify,
     };
 
@@ -436,13 +470,26 @@ module.exports = function ngAnnotate(src, options) {
         plugin.init(ctx);
     });
 
+    let recentCaller = undefined; // micro-optimization
+    const callerIds = [];
     traverse(ast, {pre: function(node) {
+        node.$caller = recentCaller;
+        if (node.type === "CallExpression") {
+            callerIds.push(node);
+            recentCaller = node;
+        }
+
         const pos = node.range[0];
         while (pos >= triggers.pos) {
             const trigger = triggers.getAndRemoveNext();
             trigger.fn.call(null, node, trigger.ctx);
         }
     }, post: function(node) {
+        if (node === recentCaller) {
+            callerIds.pop();
+            recentCaller = last(callerIds);
+        }
+
         let targets = match(node, re, matchPluginsOrNull);
         if (!targets) {
             return;
@@ -452,9 +499,11 @@ module.exports = function ngAnnotate(src, options) {
         }
 
         for (let i = 0; i < targets.length; i++) {
-            replaceRemoveOrInsertArrayForTarget(targets[i], ctx);
+            addModuleContextDependentSuspect(targets[i], ctx);
         }
     }});
+
+    judgeSuspects(ctx);
 
     const out = alter(src, fragments);
 
