@@ -1,6 +1,7 @@
 ## next
  * ui-router declarations improvements
  * bugfix duplicated injects array in case of redundant /* @ngInject */
+ * indent generated fn.$injects = [..] arrays nicely
 
 ## v0.9.3 2014-05-16
  * /* @ngInject */ object literal support
