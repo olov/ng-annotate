@@ -34,8 +34,6 @@ function match(node, re, matchPlugins) {
 }
 
 function matchDirectiveReturnObject(node) {
-    // TODO make these more strict by checking that we're inside an angular module?
-
     // return { .. controller: function($scope, $timeout), ...}
 
     return node.type === "ReturnStatement" &&
@@ -44,8 +42,6 @@ function matchDirectiveReturnObject(node) {
 }
 
 function matchProviderGet(node) {
-    // TODO make these more strict by checking that we're inside an angular module?
-
     // (this|self|that).$get = function($scope, $timeout)
     // { ... $get: function($scope, $timeout), ...}
     let memberExpr;
