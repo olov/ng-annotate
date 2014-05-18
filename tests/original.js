@@ -321,3 +321,8 @@ var foo = function($scope) {
 /* @ngInject */var foo = function($scope) {
 }
             /* @ngInject */var foo = function($scope) {}
+
+
+// adding an explicit annotation where it isn't needed should work fine
+myMod.controller("foo", /*@ngInject*/ function($scope, $timeout) {
+});

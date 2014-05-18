@@ -321,6 +321,10 @@ function removeArray(array, fragments) {
 }
 
 function replaceRemoveOrInsertArrayForTarget(target, ctx) {
+    if (target.$modified) {
+        return true;
+    }
+
     const mode = ctx.mode;
     const fragments = ctx.fragments;
     const quot = ctx.quot;
@@ -334,6 +338,8 @@ function replaceRemoveOrInsertArrayForTarget(target, ctx) {
     } else {
         return false;
     }
+
+    target.$modified = true;
     return true;
 }
 
@@ -445,7 +451,6 @@ module.exports = function ngAnnotate(src, options) {
             targets = [targets];
         }
 
-        // TODO add something to know that node has been altered so it won't happen again
         for (let i = 0; i < targets.length; i++) {
             replaceRemoveOrInsertArrayForTarget(targets[i], ctx);
         }
