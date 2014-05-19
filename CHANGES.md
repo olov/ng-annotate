@@ -1,4 +1,5 @@
-## next
+## v0.9.4 2014-05-19
+ * stricter match: only match code inside of angular modules (except explicit)
  * ui-router declarations improvements
  * bugfix duplicated injects array in case of redundant /* @ngInject */
  * indent generated fn.$injects = [..] arrays nicely
