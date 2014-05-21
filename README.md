@@ -56,6 +56,7 @@ Use the `--stats` option to print statistics on stderr (*experimental*).
 * [Brunch](http://brunch.io/): [ng-annotate-uglify-js-brunch](https://www.npmjs.org/package/ng-annotate-uglify-js-brunch) by [Kagami Hiiragi](https://github.com/Kagami)
 * [Gulp](http://gulpjs.com/): [gulp-ng-annotate](https://www.npmjs.org/package/gulp-ng-annotate/) by [Kagami Hiiragi](https://github.com/Kagami)
 * [Broccoli](https://github.com/broccolijs/broccoli): [broccoli-ng-annotate](https://www.npmjs.org/package/broccoli-ng-annotate) by [Gilad Peleg](https://github.com/pgilad)
+* [Rails asset pipeline](http://guides.rubyonrails.org/asset_pipeline.html): [ngannotate-rails](https://rubygems.org/gems/ngannotate-rails) by [Kari Ikonen](https://github.com/kikonen)
 * Something missing? Contributions welcome - create plugin and submit a README pull request!
 
 
