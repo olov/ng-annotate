@@ -11,7 +11,8 @@ const tryor = require("tryor");
 const ngAnnotate = require("./ng-annotate-main");
 const version = require("./package.json").version;
 const optimist = require("optimist")
-    .usage("ng-annotate v" + version + "\n\nUsage: ng-annotate OPTIONS file.js")
+    .usage("ng-annotate v" + version + "\n\nUsage: ng-annotate OPTIONS <file>\n\n" +
+        "use -a and -r together to remove and add (rebuild) annotations in one go")
     .options("a", {
         alias: "add",
         boolean: true,
@@ -21,6 +22,9 @@ const optimist = require("optimist")
         alias: "remove",
         boolean: true,
         describe: "remove all existing dependency injection annotations",
+    })
+    .options("o", {
+        describe: "write output to <file>. output is written to stdout by default",
     })
     .options("single_quotes", {
         boolean: true,
@@ -77,7 +81,7 @@ function addOption(opt) {
     }
 }
 
-["add", "remove", "regexp", "single_quotes", "plugin", "stats"].forEach(addOption);
+["add", "remove", "o", "regexp", "single_quotes", "plugin", "stats"].forEach(addOption);
 
 if (config.plugin) {
     if (!Array.isArray(config.plugin)) {
@@ -120,6 +124,13 @@ if (config.stats && stats) {
     process.stderr.write(fmt("[%] esprima: {0}, nga init: {1}, nga run: {2}\n", pct(all_esprima), pct(nga_init), pct(nga_run)));
 }
 
-if (ret.src) {
+if (ret.src && config.o) {
+    try {
+        fs.writeFileSync(config.o, ret.src);
+    } catch (e) {
+        process.stderr.write(e.message + "\n");
+        process.exit(1);
+    }
+} else if (ret.src) {
     process.stdout.write(ret.src);
 }
