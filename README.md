@@ -28,12 +28,16 @@ on top of that. A much more elaborated answer can be found in
 ## Installation and usage
     npm install -g ng-annotate
 
-Then run it as `ng-annotate OPTIONS file.js`. The errors (if any) will go to stderr,
-the transpiled source to stdout, so redirect it like `ng-annotate file.js > output.js`.
+Then run it as `ng-annotate OPTIONS <file>`. The errors (if any) will go to stderr,
+the transpiled output to stdout.
 
 Use the `--add` (`-a`) option to add annotations where non-existing,
 use `--remove` (`-r`) to remove all existing annotations,
 use `--add --remove` (`-ar`) to rebuild all annotations.
+
+Use the `-o` option to write output to file.
+
+Provide `-` instead of an input `<file>` to read input from stdin.
 
 Use the `--single_quotes` option to output `'$scope'` instead of `"$scope"`.
 

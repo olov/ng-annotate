@@ -1,3 +1,6 @@
+## next
+ * added ability to read from stdin and write to file
+
 ## v0.9.4 2014-05-19
  * stricter match: only match code inside of angular modules (except explicit)
  * ui-router declarations improvements
