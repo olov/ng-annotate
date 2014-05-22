@@ -156,7 +156,7 @@ function expressions, recursively:
 
 
 Prepended to a function statement or a single variable declaration initialized with a
-function expression, `/* @ngInject */` will attach an `$injects` array to the function:
+function expression, `/* @ngInject */` will attach an `$inject` array to the function:
 
     // @ngInject
     function Foo($scope) {}
@@ -168,11 +168,11 @@ function expression, `/* @ngInject */` will attach an `$injects` array to the fu
 
     // @ngInject
     function Foo($scope) {}
-    Foo.$injects = ["$scope"];
+    Foo.$inject = ["$scope"];
 
     // @ngInject
     var foo = function($scope) {}
-    foo.$injects = ["$scope"];
+    foo.$inject = ["$scope"];
 
 
 ## Issues and compatibility
