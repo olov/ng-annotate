@@ -24,6 +24,13 @@ treats your source code better, is actively maintained and has a bunch of extra 
 on top of that. A much more elaborated answer can be found in
 ["The future of ngmin and ng-annotate"](https://github.com/btford/ngmin/issues/93).
 
+*Migrating from ngmin*:
+`ng-annotate -a -` is similar to `ngmin` (use stdin and
+stdout). `ng-annotate -a in.js -o out.js` is similar to `ngmin in.js out.js`. Grunt users
+can migrate easily by installing
+[grunt-ng-annotate](https://www.npmjs.org/package/grunt-ng-annotate) and replacing `ngmin`
+with `ngAnnotate` in their Gruntfile. Scroll down for information about other tools.
+
 
 ## Installation and usage
     npm install -g ng-annotate
