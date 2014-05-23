@@ -1,11 +1,12 @@
-## next
+## v0.9.5 2014-05-23
  * added ability to read from stdin and write to file
+ * bugfix name of generated fn.$inject = [..] arrays (was: fn.$injects)
 
 ## v0.9.4 2014-05-19
  * stricter match: only match code inside of angular modules (except explicit)
  * ui-router declarations improvements
- * bugfix duplicated injects array in case of redundant /* @ngInject */
- * indent generated fn.$injects = [..] arrays nicely
+ * bugfix duplicated annotations arrays in case of redundant /* @ngInject */
+ * indent generated fn.$inject = [..] arrays nicely
 
 ## v0.9.3 2014-05-16
  * /* @ngInject */ object literal support
