@@ -61,9 +61,9 @@ function visitNodeFollowingNgInjectComment(node, ctx) {
     if (node.type === "VariableDeclaration" && node.declarations.length === 1 &&
         (d0 = node.declarations[0]).init && ctx.isFunctionExpressionWithArgs(d0.init)) {
         const isSemicolonTerminated = (ctx.src[nr1 - 1] === ";");
-        addRemoveInjectsArray(d0.init.params, isSemicolonTerminated ? nr1 : d0.init.range[1], d0.id.name);
+        addRemoveInjectArray(d0.init.params, isSemicolonTerminated ? nr1 : d0.init.range[1], d0.id.name);
     } else if (ctx.isFunctionDeclarationWithArgs(node)) {
-        addRemoveInjectsArray(node.params, nr1, node.id.name);
+        addRemoveInjectArray(node.params, nr1, node.id.name);
     }
 
     function getIndent(pos) {
@@ -75,9 +75,9 @@ function visitNodeFollowingNgInjectComment(node, ctx) {
         return src.slice(lineStart, i);
     }
 
-    function addRemoveInjectsArray(params, posAfterFunctionDeclaration, name) {
+    function addRemoveInjectArray(params, posAfterFunctionDeclaration, name) {
         const indent = getIndent(posAfterFunctionDeclaration);
-        const str = fmt("\n{0}{1}.$injects = {2};", indent, name, ctx.stringify(params, ctx.quot));
+        const str = fmt("\n{0}{1}.$inject = {2};", indent, name, ctx.stringify(params, ctx.quot));
 
         ctx.triggers.add({
             pos: posAfterFunctionDeclaration,
@@ -87,24 +87,24 @@ function visitNodeFollowingNgInjectComment(node, ctx) {
         function visitNodeFollowingFunctionDeclaration(nextNode) {
             const assignment = nextNode.expression;
             let lvalue;
-            const hasInjectsArray = (nextNode.type === "ExpressionStatement" && assignment.type === "AssignmentExpression" &&
+            const hasInjectArray = (nextNode.type === "ExpressionStatement" && assignment.type === "AssignmentExpression" &&
                 assignment.operator === "=" &&
                 (lvalue = assignment.left).type === "MemberExpression" &&
-                lvalue.computed === false && lvalue.object.name === name && lvalue.property.name === "$injects");
+                lvalue.computed === false && lvalue.object.name === name && lvalue.property.name === "$inject");
 
-            if (ctx.mode === "rebuild" && hasInjectsArray) {
+            if (ctx.mode === "rebuild" && hasInjectArray) {
                 ctx.fragments.push({
                     start: posAfterFunctionDeclaration,
                     end: nextNode.range[1],
                     str: str,
                 });
-            } else if (ctx.mode === "remove" && hasInjectsArray) {
+            } else if (ctx.mode === "remove" && hasInjectArray) {
                 ctx.fragments.push({
                     start: posAfterFunctionDeclaration,
                     end: nextNode.range[1],
                     str: "",
                 });
-            } else if (is.someof(ctx.mode, ["add", "rebuild"]) && !hasInjectsArray) {
+            } else if (is.someof(ctx.mode, ["add", "rebuild"]) && !hasInjectArray) {
                 ctx.fragments.push({
                     start: posAfterFunctionDeclaration,
                     end: posAfterFunctionDeclaration,

@@ -345,7 +345,7 @@ var foo = function($scope) {
 var foo = function($scope) {
 }
 
-// let's zip-zag indentation to make sure that the $injects array lines up properly
+// let's zip-zag indentation to make sure that the $inject array lines up properly
     // @ngInject
     function foo($scope) {}
         // @ngInject
