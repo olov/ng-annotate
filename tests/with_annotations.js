@@ -21,6 +21,8 @@ myMod.filter("foo", ["$scope", "$timeout", function($scope, $timeout) {
 }]);
 myMod.animation("foo", ["$scope", "$timeout", function($scope, $timeout) {
 }]);
+myMod.invoke("foo", ["$scope", "$timeout", function($scope, $timeout) {
+}]);
 
 // object property
 var myObj = {};
@@ -39,6 +41,8 @@ myMod.directive("foo", function() {
 myMod.filter("foo", function() {
 });
 myMod.animation("foo", function() {
+});
+myMod.invoke("foo", function() {
 });
 
 // run, config don't take names
@@ -135,6 +139,8 @@ angular.module("MyMod").directive("foo", ["$a", "$b", function($a, $b) {
         d;
     }]).animation("foo", ["$f", "$g", function($f, $g) {
         e;
+    }]).invoke("foo", ["$h", "$i", function($h, $i) {
+        f;
     }]);
 
 // $provide
