@@ -42,7 +42,7 @@ ngmin issues that works in ng-annotate by adding an explicit /* @ngInject */:
 
 ngmin bug issues not included in the lists above:
 -------------------------------------------------
-none
+#95 Unexpected token ILLEGAL Use --force to continue
 
 ngmin feature request issues where ng-annotate also lacks the feature:
 ----------------------------------------------------------------------
