@@ -4,6 +4,7 @@ the lists below are correct to my knowledge, if not please let me know!
 
 ngmin issues that just works in ng-annotate:
 --------------------------------------------
+#96 Make it works with Browserify module structure
 #91 ngmin 30x is slower than ngAnnotate
 #89 Support for javascript enclosures?
 #87 Not working with resolve in ngRoute.
@@ -47,7 +48,7 @@ ngmin feature request issues where ng-annotate also lacks the feature:
 ----------------------------------------------------------------------
 #88 Use "strict DI mode" enhancement
 #86 Inclusion in grunt-contrib-uglify
-#44 Dynamic Analysis bonus points enhancement
 #51 Fixes #19 - Add support for source-map generation
+#44 Dynamic Analysis bonus points enhancement
 #19 source map support enhancement
 #12 Group chainable methods enhancement
