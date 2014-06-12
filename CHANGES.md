@@ -1,3 +1,7 @@
+## next
+ * match myMod.invoke
+ * more capable --regexp option (match any method callee, identifier or not)
+
 ## v0.9.5 2014-05-23
  * added ability to read from stdin and write to file
  * bugfix name of generated fn.$inject = [..] arrays (was: fn.$injects)

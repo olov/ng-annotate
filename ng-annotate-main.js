@@ -17,7 +17,7 @@ const chainedUrlRouterProvider = 2;
 const chainedStateProvider = 3;
 const chainedRegular = 4;
 
-function match(node, re, matchPlugins) {
+function match(node, ctx, matchPlugins) {
     const isMethodCall = (
         node.type === "CallExpression" &&
             node.callee.type === "MemberExpression" &&
@@ -25,7 +25,7 @@ function match(node, re, matchPlugins) {
         );
 
     const matchMethodCalls = (isMethodCall &&
-        (matchRegular(node, re) || matchNgRoute(node) || matchNgUi(node) || matchHttpProvider(node)));
+        (matchRegular(node, ctx) || matchNgRoute(node) || matchNgUi(node) || matchHttpProvider(node)));
 
     return matchMethodCalls ||
         (matchPlugins && matchPlugins(node)) ||
@@ -198,13 +198,13 @@ function matchHttpProvider(node) {
         node.arguments.length >= 1 && node.arguments);
 }
 
-function matchRegular(node, re) {
+function matchRegular(node, ctx) {
     // we already know that node is a (non-computed) method call
     const callee = node.callee;
     const obj = callee.object; // identifier or expression
     const method = callee.property; // identifier
 
-    const matchAngularModule = (obj.$chained === chainedRegular || isShortDef(obj, re) || isMediumDef(obj, re) || isLongDef(obj)) &&
+    const matchAngularModule = (obj.$chained === chainedRegular || isReDef(obj, ctx) || isLongDef(obj)) &&
         is.someof(method.name, ["provider", "value", "constant", "bootstrap", "config", "factory", "directive", "filter", "run", "controller", "service", "decorator", "animation", "invoke"]);
     if (!matchAngularModule) {
         return false;
@@ -226,17 +226,14 @@ function matchRegular(node, re) {
     return target;
 }
 
-// Short form: *.controller("MyCtrl", function($scope, $timeout) {});
-function isShortDef(node, re) {
-    return node.type === "Identifier" && is.string(node.name) && (!re || re.test(node.name));
-}
-
-// Medium form: *.*.controller("MyCtrl", function($scope, $timeout) {});
-function isMediumDef(node, re) {
-    if (node.type === "MemberExpression" && is.string(node.object.name) && is.string(node.property.name)) {
-        return (!re || re.test(node.object.name + "." + node.property.name));
-    }
-    return false;
+// matches with default regexp
+//   *.controller("MyCtrl", function($scope, $timeout) {});
+//   *.*.controller("MyCtrl", function($scope, $timeout) {});
+// matches with --regexp "^require(.*)$"
+//   require("app-module").controller("MyCtrl", function($scope) {});
+function isReDef(node, ctx) {
+    const slice = ctx.src.slice(node.range[0], node.range[1]);
+    return ctx.re.test(slice);
 }
 
 // Long form: angular.module(*).controller("MyCtrl", function($scope, $timeout) {});
@@ -383,7 +380,7 @@ module.exports = function ngAnnotate(src, options) {
     }
 
     const quot = options.single_quotes ? "'" : '"';
-    const re = (options.regexp && new RegExp(options.regexp));
+    const re = (options.regexp ? new RegExp(options.regexp) : /^[a-zA-Z0-9_\$\.\s]+$/);
     let ast;
     const stats = {};
     try {
@@ -437,6 +434,7 @@ module.exports = function ngAnnotate(src, options) {
         mode: mode,
         quot: quot,
         src: src,
+        re: re,
         comments: comments,
         fragments: fragments,
         triggers: triggers,
@@ -486,7 +484,7 @@ module.exports = function ngAnnotate(src, options) {
             recentCaller = last(callerIds);
         }
 
-        let targets = match(node, re, matchPluginsOrNull);
+        let targets = match(node, ctx, matchPluginsOrNull);
         if (!targets) {
             return;
         }

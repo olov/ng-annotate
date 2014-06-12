@@ -48,8 +48,8 @@ Provide `-` instead of an input `<file>` to read input from stdin.
 
 Use the `--single_quotes` option to output `'$scope'` instead of `"$scope"`.
 
-Use the `--regexp` option in case you want to restrict matching further (rarely used). See
-description further down.
+Use the `--regexp` option to restrict matching further or to expand matching.
+See description further down.
 
 Use the `--plugin` option to load a user plugin with the provided path (*experimental*, 
 0.9.x may change API). See [plugin-example.js](plugin-example.js) for more info.
@@ -101,6 +101,11 @@ For short forms it does not need to see the declaration of `myMod` so you can ru
 on your individual source files without concatenating. If ng-annotate detects a short form
 false positive then you can use the `--regexp` option to limit the module identifier.
 Examples: `--regexp "^myMod$"` (match only `myMod`) or `--regexp "^$"` (ignore short forms).
+You can also use `--regexp` to opt-in for more advanced method callee matching, for
+example `--regexp "^require(.*)$"` to detect and transform
+`require('app-module').controller(..)`. Not using the option is the same as passing
+`--regexp "^[a-zA-Z0-9_\$\.\s]+$"`, which means that the callee can be a (non-unicode)
+identifier (`foo`), possibly with dot notation (`foo.bar`).
 
 ng-annotate understands `this.$get = function($scope) ..` and
 `{.., $get: function($scope) ..}` inside a `provider`. `self` and `that` can be used as
