@@ -57,6 +57,17 @@ Use the `--plugin` option to load a user plugin with the provided path (*experim
 Use the `--stats` option to print statistics on stderr (*experimental*).
 
 
+## Highly recommended: enable ng-strict-di in your minified builds
+`<div ng-app="myApp" ng-strict-di>`
+
+Do that in your ng-annotate processed builds and AngularJS will let you in case there are
+any missing dependency injection annotations. This is an upcoming feature in AngularJS 1.3
+([docs](https://docs.angularjs.org/api/ng/directive/ngApp)).
+
+A future version of ng-annotate may get support for adding the `ng-strict-di` attribute
+automatically so you don't have to think about it.
+
+
 ## Tools support
 * [Grunt](http://gruntjs.com/): [grunt-ng-annotate](https://www.npmjs.org/package/grunt-ng-annotate) by [Michał Gołębiowski](https://github.com/mzgol)
 * [Browserify](http://browserify.org/): [browserify-ngannotate](https://www.npmjs.org/package/browserify-ngannotate) by [Owen Smith](https://github.com/omsmith)
