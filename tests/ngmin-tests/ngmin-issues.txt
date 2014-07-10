@@ -4,6 +4,8 @@ the lists below are correct to my knowledge, if not please let me know!
 
 ngmin issues that just works in ng-annotate:
 --------------------------------------------
+#99 Fails on certain regex string.
+#98 Issue with routeProvider when resolve option
 #96 Make it works with Browserify module structure
 #91 ngmin 30x is slower than ngAnnotate
 #89 Support for javascript enclosures?
