@@ -1,4 +1,4 @@
-## next
+## v0.9.7 2014-07-11
  * more capable /* @ngInject */ (support function expression assignment)
 
 ## v0.9.6 2014-06-12
