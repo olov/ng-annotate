@@ -1,3 +1,6 @@
+## next
+ * more capable /* @ngInject */ (support function expression assignment)
+
 ## v0.9.6 2014-06-12
  * match myMod.invoke
  * more capable --regexp option (match any method callee, identifier or not)

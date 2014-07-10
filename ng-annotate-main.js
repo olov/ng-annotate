@@ -232,8 +232,7 @@ function matchRegular(node, ctx) {
 // matches with --regexp "^require(.*)$"
 //   require("app-module").controller("MyCtrl", function($scope) {});
 function isReDef(node, ctx) {
-    const slice = ctx.src.slice(node.range[0], node.range[1]);
-    return ctx.re.test(slice);
+    return ctx.re.test(ctx.srcForRange(node.range));
 }
 
 // Long form: angular.module(*).controller("MyCtrl", function($scope, $timeout) {});
@@ -434,6 +433,9 @@ module.exports = function ngAnnotate(src, options) {
         mode: mode,
         quot: quot,
         src: src,
+        srcForRange: function(range) {
+            return src.slice(range[0], range[1]);
+        },
         re: re,
         comments: comments,
         fragments: fragments,

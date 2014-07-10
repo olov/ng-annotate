@@ -355,6 +355,18 @@ var foo = function($scope) {
 }
 foo.$inject = ['$scope'];
 
+// @ngInject
+// has trailing semicolon
+bar.foo = function($scope) {
+};
+bar.foo.$inject = ['$scope'];
+
+// @ngInject
+// lacks trailing semicolon
+bar.foo = function($scope) {
+}
+bar.foo.$inject = ['$scope'];
+
 // let's zip-zag indentation to make sure that the $inject array lines up properly
     // @ngInject
     function foo($scope) {}

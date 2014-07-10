@@ -64,6 +64,11 @@ function visitNodeFollowingNgInjectComment(node, ctx) {
         addRemoveInjectArray(d0.init.params, isSemicolonTerminated ? nr1 : d0.init.range[1], d0.id.name);
     } else if (ctx.isFunctionDeclarationWithArgs(node)) {
         addRemoveInjectArray(node.params, nr1, node.id.name);
+    } else if (node.type === "ExpressionStatement" && node.expression.type === "AssignmentExpression" &&
+        ctx.isFunctionExpressionWithArgs(node.expression.right)) {
+        const isSemicolonTerminated = (ctx.src[nr1 - 1] === ";");
+        const name = ctx.srcForRange(node.expression.left.range);
+        addRemoveInjectArray(node.expression.right.params, isSemicolonTerminated ? nr1 : node.expression.right.range[1], name);
     }
 
     function getIndent(pos) {
@@ -90,7 +95,7 @@ function visitNodeFollowingNgInjectComment(node, ctx) {
             const hasInjectArray = (nextNode.type === "ExpressionStatement" && assignment.type === "AssignmentExpression" &&
                 assignment.operator === "=" &&
                 (lvalue = assignment.left).type === "MemberExpression" &&
-                lvalue.computed === false && lvalue.object.name === name && lvalue.property.name === "$inject");
+                lvalue.computed === false && ctx.srcForRange(lvalue.object.range) === name && lvalue.property.name === "$inject");
 
             if (ctx.mode === "rebuild" && hasInjectArray) {
                 ctx.fragments.push({
