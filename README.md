@@ -60,7 +60,7 @@ Use the `--stats` option to print statistics on stderr (*experimental*).
 ## Highly recommended: enable ng-strict-di in your minified builds
 `<div ng-app="myApp" ng-strict-di>`
 
-Do that in your ng-annotate processed builds and AngularJS will let you in case there are
+Do that in your ng-annotate processed builds and AngularJS will let you know if there are
 any missing dependency injection annotations. This is an upcoming feature in AngularJS 1.3
 ([docs](https://docs.angularjs.org/api/ng/directive/ngApp)).
 
