@@ -118,7 +118,7 @@ function runAnnotate(err, src) {
             }
             // the require below may throw an exception on parse-error
             try {
-                require(absPath)
+                return require(absPath);
             } catch (e) {
                 // node will already print file:line and offending line to stderr
                 exit(fmt("error: couldn't require(\"{0}\")", absPath));
