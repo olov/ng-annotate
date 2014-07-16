@@ -51,6 +51,9 @@ Use the `--single_quotes` option to output `'$scope'` instead of `"$scope"`.
 Use the `--regexp` option to restrict matching further or to expand matching.
 See description further down.
 
+Use the `--rename` option to rename providers (services, factories, controllers, etc.) with
+a new name when declared and referenced through annotation.
+
 Use the `--plugin` option to load a user plugin with the provided path (*experimental*, 
 0.9.x may change API). See [plugin-example.js](plugin-example.js) for more info.
 
