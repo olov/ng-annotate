@@ -82,7 +82,7 @@ function visitNodeFollowingNgInjectComment(node, ctx) {
 
     function addRemoveInjectArray(params, posAfterFunctionDeclaration, name) {
         const indent = getIndent(posAfterFunctionDeclaration);
-        const str = fmt("\n{0}{1}.$inject = {2};", indent, name, ctx.stringify(params, ctx.quot));
+        const str = fmt("\n{0}{1}.$inject = {2};", indent, name, ctx.stringify(ctx, params, ctx.quot));
 
         ctx.triggers.add({
             pos: posAfterFunctionDeclaration,
