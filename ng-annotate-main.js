@@ -323,7 +323,7 @@ function removeArray(array, fragments) {
 }
 
 function replaceString(ctx, string, fragments, quot) {
-    var customReplace = getReplaceString(ctx, string.value);
+    let customReplace = getReplaceString(ctx, string.value);
     fragments.push({
         start: string.range[0],
         end: string.range[1],

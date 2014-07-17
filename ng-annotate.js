@@ -132,9 +132,9 @@ function runAnnotate(err, src) {
     }
 
     if (config.rename) {
-        var flattenRename = config.rename.split(" ");
-        var renameMap = {};
-        for (var i = 0; i < flattenRename.length; i = i + 2) {
+        let flattenRename = config.rename.split(" ");
+        let renameMap = {};
+        for (let i = 0; i < flattenRename.length; i = i + 2) {
             renameMap[flattenRename[i]]= flattenRename[i+1];
         }
         config.rename = renameMap;
