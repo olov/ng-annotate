@@ -20,6 +20,18 @@ function test(correct, got, name) {
     }
 }
 
+const renameOptions = {
+  "$a": "$aRenamed",
+  "$b": "$bRenamed",
+  "$c": "$cRenamed",
+  "$d": "$dRenamed",
+  "$e": "$eRenamed",
+  "$f": "$fRenamed",
+  "$g": "$gRenamed",
+  "$h": "$hRenamed",
+  "$i": "$iRenamed"
+};
+
 const original = slurp("tests/original.js");
 
 console.log("testing adding annotations");
@@ -33,19 +45,17 @@ test(slurp("tests/with_annotations_single.js"), annotatedSingleQuotes, "with_ann
 console.log("testing adding annotations and renaming");
 const annotatedRenamed = ngAnnotate(original, {
   add: true,
-  rename: {
-    "$a": "$aRenamed",
-    "$b": "$bRenamed",
-    "$c": "$cRenamed",
-    "$d": "$dRenamed",
-    "$e": "$eRenamed",
-    "$f": "$fRenamed",
-    "$g": "$gRenamed",
-    "$h": "$hRenamed",
-    "$i": "$iRenamed"
-  }
+  rename: renameOptions
 }).src;
 test(slurp("tests/with_annotations_renamed.js"), annotatedRenamed, "with_annotations_renamed.js");
+
+console.log("testing adding annotations and renaming using single quotes");
+const annotatedSingleRenamed = ngAnnotate(original, {
+  add: true,
+  single_quotes: true,
+  rename: renameOptions
+}).src;
+test(slurp("tests/with_annotations_single_renamed.js"), annotatedSingleRenamed, "with_annotations_single_renamed.js");
 
 console.log("testing removing annotations");
 test(original, ngAnnotate(annotated, {remove: true}).src, "original.js");

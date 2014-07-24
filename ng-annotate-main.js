@@ -333,11 +333,12 @@ function removeArray(array, fragments) {
 }
 
 function replaceString(ctx, string, fragments, quot) {
-    let customReplace = getReplaceString(ctx, string.value);
+    const customReplace = getReplaceString(ctx, string.value);
+    const originalQuotes = string.raw.substr(0,1);
     fragments.push({
         start: string.range[0],
         end: string.range[1],
-        str: quot + customReplace + quot
+        str: originalQuotes + customReplace + originalQuotes
     });
 }
 
