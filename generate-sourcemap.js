@@ -14,14 +14,17 @@ function findStartOfLines(str) {
 	return indices;
 }
 
-function SourceMapper(src, out, fragments, sourceRoot) {
-	this.generator = new SourceMapGenerator();
+function SourceMapper(src, out, fragments, inFile, sourceRoot) {
+	this.generator = new SourceMapGenerator({ sourceRoot: sourceRoot });
 	this.inIndex = 0;
 	this.outIndex = 0;
 	this.lineStarts = findStartOfLines(src);
 	this.fragments = stableSort(fragments, function (a, b) { return a.start - b.start; });
 	this.inProps = charProps(src);
 	this.outProps = charProps(out);
+	this.inFile = inFile || "source.js";
+
+	this.generator.setSourceContent(this.inFile, src);
 }
 
 SourceMapper.prototype.generate = function () {
@@ -61,7 +64,7 @@ SourceMapper.prototype.addNextLineMapping = function () {
 
 SourceMapper.prototype.addMapping = function () {
 	this.generator.addMapping({
-		source: "source.js",
+		source: this.inFile,
 		original: {
 			line: this.inProps.lineAt(this.inIndex) + 1,
 			column: this.inProps.columnAt(this.inIndex)
@@ -73,6 +76,6 @@ SourceMapper.prototype.addMapping = function () {
 	});
 }
 
-module.exports = function generateSourcemap(src, out, fragments, sourceRoot) {
-	return new SourceMapper(src, out, fragments, sourceRoot).generate();
+module.exports = function generateSourcemap(src, out, fragments, inFile, sourceRoot) {
+	return new SourceMapper(src, out, fragments, inFile, sourceRoot).generate();
 }

@@ -6,10 +6,12 @@
 
 const t0 = Date.now();
 const fs = require("fs");
+const os = require("os");
 const fmt = require("simple-fmt");
 const tryor = require("tryor");
 const ngAnnotate = require("./ng-annotate-main");
 const version = require("./package.json").version;
+const convertSourceMap = require("convert-source-map");
 const optimist = require("optimist")
     .usage("ng-annotate v" + version + "\n\nUsage: ng-annotate OPTIONS <file>\n\n" +
         "provide - instead of <file> to read from stdin\n" +
@@ -26,6 +28,13 @@ const optimist = require("optimist")
     })
     .options("o", {
         describe: "write output to <file>. output is written to stdout by default",
+    })
+    .options("sourcemap", {
+        boolean: true,
+        describe: "generate an inline sourcemap"
+    })
+    .options("sourceroot", {
+        describe: "set the sourceRoot property of the generated sourcemap"
     })
     .options("single_quotes", {
         boolean: true,
@@ -89,6 +98,11 @@ function slurpFile(cb) {
     fs.readFile(filename, cb);
 }
 
+function insertSourcemap(src, map) {
+    return convertSourceMap.removeMapFileComments(src) + os.EOL +
+        convertSourceMap.fromJSON(map).toComment();
+}
+
 function runAnnotate(err, src) {
     if (err) {
         exit(err.message);
@@ -100,8 +114,11 @@ function runAnnotate(err, src) {
         return JSON.parse(String(fs.readFileSync("ng-annotate-config.json")));
     }, {});
 
+    if (filename !== "-") {
+        config.inFile = filename;
+    }
 
-    ["add", "remove", "o", "regexp", "single_quotes", "plugin", "stats"].forEach(function(opt) {
+    ["add", "remove", "o", "sourcemap", "sourceroot", "regexp", "single_quotes", "plugin", "stats"].forEach(function(opt) {
         if (opt in argv) {
             config[opt] = argv[opt];
         }
@@ -151,13 +168,17 @@ function runAnnotate(err, src) {
         process.stderr.write(fmt("[%] esprima: {0}, nga init: {1}, nga run: {2}\n", pct(all_esprima), pct(nga_init), pct(nga_run)));
     }
 
+    const output = config.sourcemap ?
+       insertSourcemap(ret.src, ret.map) :
+       ret.src;
+
     if (ret.src && config.o) {
         try {
-            fs.writeFileSync(config.o, ret.src);
+            fs.writeFileSync(config.o, output);
         } catch (e) {
             exit(e.message);
         }
     } else if (ret.src) {
-        process.stdout.write(ret.src);
+        process.stdout.write(output);
     }
 }

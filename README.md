@@ -46,6 +46,10 @@ Use the `-o` option to write output to file.
 
 Provide `-` instead of an input `<file>` to read input from stdin.
 
+Use the `--sourcemap` option to generate an inline sourcemap.
+
+Use the `--sourceroot` option to set the sourceRoot property of the generated sourcemap.
+
 Use the `--single_quotes` option to output `'$scope'` instead of `"$scope"`.
 
 Use the `--regexp` option to restrict matching further or to expand matching.
@@ -238,6 +242,7 @@ options and return value.
 
     var ngAnnotate = require("ng-annotate");
     var somePlugin = require("./some/path/some-plugin");
-    var res = ngAnnotate(src, {add: true, plugin: [somePlugin]})
+    var res = ngAnnotate(src, {add: true, plugin: [somePlugin], sourceroot: "/path/to/source/root"})
     var errorstringArray = res.errors;
     var transformedSource = res.src;
+    var transformedSourceMap = res.map;
