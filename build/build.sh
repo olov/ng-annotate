@@ -3,7 +3,7 @@ echo "beginning ng-annotate defs-build"
 rm -rf es5
 mkdir es5
 
-declare -a files=(heap.js ng-annotate.js ng-annotate-main.js nginject-comments.js run-tests.js)
+declare -a files=(generate-sourcemap.js heap.js ng-annotate.js ng-annotate-main.js nginject-comments.js run-tests.js)
 DEFS="../node_modules/.bin/defs"
 if [[ ! -f "$DEFS" ]]; then DEFS="../../../../node_modules/.bin/defs" ; fi
 if [[ ! -f "$DEFS" ]]; then DEFS="defs" ; fi

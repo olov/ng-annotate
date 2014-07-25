@@ -11,6 +11,7 @@ const alter = require("alter");
 const traverse = require("ordered-ast-traverse");
 const Heap = require("./heap");
 const ngInjectComments = require("./nginject-comments");
+const generateSourcemap = require("./generate-sourcemap");
 
 const chainedRouteProvider = 1;
 const chainedUrlRouterProvider = 2;
@@ -502,9 +503,11 @@ module.exports = function ngAnnotate(src, options) {
     judgeSuspects(ctx);
 
     const out = alter(src, fragments);
+    const sourcemap = generateSourcemap(src, out, fragments, "sourceRoot");
 
     return {
         src: out,
+        map: sourcemap,
         _stats: stats,
     };
 }
