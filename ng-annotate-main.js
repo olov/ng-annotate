@@ -204,6 +204,16 @@ function matchRegular(node, ctx) {
     const obj = callee.object; // identifier or expression
     const method = callee.property; // identifier
 
+    // short-cut implicit config special case:
+    // angular.module("MyMod", function(a) {})
+    if (obj.name === "angular" && method.name === "module") {
+        const args = node.arguments;
+        if (args.length >= 2) {
+            last(args).$always = true;
+            return last(args);
+        }
+    }
+
     const matchAngularModule = (obj.$chained === chainedRegular || isReDef(obj, ctx) || isLongDef(obj)) &&
         is.someof(method.name, ["provider", "value", "constant", "bootstrap", "config", "factory", "directive", "filter", "run", "controller", "service", "decorator", "animation", "invoke"]);
     if (!matchAngularModule) {

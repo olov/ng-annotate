@@ -1,3 +1,6 @@
+## next
+ * match implicit config function: angular.module("MyMod", function(dep) {})
+
 ## v0.9.7 2014-07-11
  * more capable /* @ngInject */ (support function expression assignment)
 

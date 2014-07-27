@@ -24,6 +24,11 @@ myMod.animation("foo", function($scope, $timeout) {
 myMod.invoke("foo", function($scope, $timeout) {
 });
 
+// implicit config function
+angular.module("MyMod", function($interpolateProvider) {});
+angular.module("MyMod", ["OtherMod"], function($interpolateProvider) {});
+angular.module("MyMod", ["OtherMod"], function($interpolateProvider) {}).controller("foo", function($scope) {});
+
 // object property
 var myObj = {};
 myObj.myMod = angular.module("MyMod");
