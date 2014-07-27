@@ -145,6 +145,10 @@ ng-annotate understands `$modal.open` ([angular-ui/bootstrap](http://angular-ui.
 
 ng-annotate understands chaining.
 
+ng-annotate understands IIFE's and attempts to match through them, so
+`(function() { return function($scope) .. })()` works anywhere
+`function($scope) ..` does (for any IIFE args and params).
+
 
 ## Explicit annotations
 You can prepend a function expression with `/* @ngInject */` to explicitly state that this
