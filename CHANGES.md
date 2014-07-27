@@ -1,4 +1,4 @@
-## next
+## v0.9.8 2014-07-28
  * match implicit config function: angular.module("MyMod", function(dep) {})
  * match through IIFE's
 
