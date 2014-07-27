@@ -428,3 +428,21 @@ myMod.controller("donttouchme", function() {
         return note.page.uid === page.uid;
     });
 });
+
+
+// IIFE-jumping (primarily for compile-to-JS langs)
+angular.module("MyMod").directive("foo", ["$a", "$b", function($a, $b) {
+    $modal.open({
+        resolve: {
+            collection: (function(_this) {
+                return ["$c", function($c) {
+                }];
+            })(this),
+        },
+    });
+}]);
+
+var x = /*@ngInject*/ (function() {
+    return ["$a", function($a) {
+    }];
+})();

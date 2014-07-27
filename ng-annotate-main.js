@@ -334,7 +334,7 @@ function judgeSuspects(ctx) {
     const quot = ctx.quot;
 
     for (let i = 0; i < suspects.length; i++) {
-        const target = suspects[i];
+        let target = suspects[i];
 
         if (target.$once) {
             continue;
@@ -350,6 +350,8 @@ function judgeSuspects(ctx) {
             }
         }
 
+        target = jumpOverIife(target);
+
         if (mode === "rebuild" && isAnnotatedArray(target)) {
             replaceArray(target, fragments, quot);
         } else if (mode === "remove" && isAnnotatedArray(target)) {
@@ -358,6 +360,18 @@ function judgeSuspects(ctx) {
             insertArray(target, fragments, quot);
         }
     }
+}
+
+function jumpOverIife(node) {
+    let outerfn;
+    let outerbody;
+    if (node.type === "CallExpression" &&
+        (outerfn = node.callee).type === "FunctionExpression" &&
+        (outerbody = outerfn.body.body).length === 1 &&
+        outerbody[0].type === "ReturnStatement" && outerbody[0].argument) {
+        return outerbody[0].argument;
+    }
+    return node;
 }
 
 function addModuleContextDependentSuspect(target, ctx) {
