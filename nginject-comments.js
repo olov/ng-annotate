@@ -42,7 +42,8 @@ function nestedObjectValues(node, res) {
 
 function visitNodeFollowingNgInjectComment(node, ctx) {
     // handle most common case: /*@ngInject*/ prepended to an array or function expression
-    if (node.type === "ArrayExpression" || node.type === "FunctionExpression") {
+    // (or call expression, in case of IIFE jumping)
+    if (node.type === "ArrayExpression" || node.type === "FunctionExpression" || node.type === "CallExpression") {
         ctx.addModuleContextIndependentSuspect(node, ctx);
         return;
     }

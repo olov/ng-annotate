@@ -204,6 +204,16 @@ function matchRegular(node, ctx) {
     const obj = callee.object; // identifier or expression
     const method = callee.property; // identifier
 
+    // short-cut implicit config special case:
+    // angular.module("MyMod", function(a) {})
+    if (obj.name === "angular" && method.name === "module") {
+        const args = node.arguments;
+        if (args.length >= 2) {
+            last(args).$always = true;
+            return last(args);
+        }
+    }
+
     const matchAngularModule = (obj.$chained === chainedRegular || isReDef(obj, ctx) || isLongDef(obj)) &&
         is.someof(method.name, ["provider", "value", "constant", "bootstrap", "config", "factory", "directive", "filter", "run", "controller", "service", "decorator", "animation", "invoke"]);
     if (!matchAngularModule) {
@@ -338,7 +348,7 @@ function judgeSuspects(ctx) {
     const quot = ctx.quot;
 
     for (let i = 0; i < suspects.length; i++) {
-        const target = suspects[i];
+        let target = suspects[i];
 
         if (target.$once) {
             continue;
@@ -354,6 +364,8 @@ function judgeSuspects(ctx) {
             }
         }
 
+        target = jumpOverIife(target);
+
         if (mode === "rebuild" && isAnnotatedArray(target)) {
             replaceArray(ctx, target, fragments, quot);
         } else if (mode === "remove" && isAnnotatedArray(target)) {
@@ -364,6 +376,18 @@ function judgeSuspects(ctx) {
             replaceString(ctx, target, fragments, quot);
         }
     }
+}
+
+function jumpOverIife(node) {
+    let outerfn;
+    let outerbody;
+    if (node.type === "CallExpression" &&
+        (outerfn = node.callee).type === "FunctionExpression" &&
+        (outerbody = outerfn.body.body).length === 1 &&
+        outerbody[0].type === "ReturnStatement" && outerbody[0].argument) {
+        return outerbody[0].argument;
+    }
+    return node;
 }
 
 function addModuleContextDependentSuspect(target, ctx) {

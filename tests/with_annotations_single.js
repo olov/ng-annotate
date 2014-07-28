@@ -24,6 +24,11 @@ myMod.animation("foo", ['$scope', '$timeout', function($scope, $timeout) {
 myMod.invoke("foo", ['$scope', '$timeout', function($scope, $timeout) {
 }]);
 
+// implicit config function
+angular.module("MyMod", ['$interpolateProvider', function($interpolateProvider) {}]);
+angular.module("MyMod", ["OtherMod"], ['$interpolateProvider', function($interpolateProvider) {}]);
+angular.module("MyMod", ["OtherMod"], ['$interpolateProvider', function($interpolateProvider) {}]).controller("foo", ['$scope', function($scope) {}]);
+
 // object property
 var myObj = {};
 myObj.myMod = angular.module("MyMod");
@@ -423,3 +428,21 @@ myMod.controller("donttouchme", function() {
         return note.page.uid === page.uid;
     });
 });
+
+
+// IIFE-jumping (primarily for compile-to-JS langs)
+angular.module("MyMod").directive("foo", ['$a', '$b', function($a, $b) {
+    $modal.open({
+        resolve: {
+            collection: (function(_this) {
+                return ['$c', function($c) {
+                }];
+            })(this),
+        },
+    });
+}]);
+
+var x = /*@ngInject*/ (function() {
+    return ['$a', function($a) {
+    }];
+})();

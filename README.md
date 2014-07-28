@@ -122,6 +122,9 @@ example `--regexp "^require(.*)$"` to detect and transform
 `--regexp "^[a-zA-Z0-9_\$\.\s]+$"`, which means that the callee can be a (non-unicode)
 identifier (`foo`), possibly with dot notation (`foo.bar`).
 
+ng-annotate understands `angular.module("MyMod", function(dep) ..)` as an alternative to
+`angular.module("MyMod").config(function(dep) ..)`.
+
 ng-annotate understands `this.$get = function($scope) ..` and
 `{.., $get: function($scope) ..}` inside a `provider`. `self` and `that` can be used as
 aliases for `this`.
@@ -144,6 +147,10 @@ ng-annotate understands `$modal.open` ([angular-ui/bootstrap](http://angular-ui.
 *experimental*
 
 ng-annotate understands chaining.
+
+ng-annotate understands IIFE's and attempts to match through them, so
+`(function() { return function($scope) .. })()` works anywhere
+`function($scope) ..` does (for any IIFE args and params).
 
 
 ## Explicit annotations
