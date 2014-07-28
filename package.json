@@ -22,7 +22,8 @@
   },
   "devDependencies": {
     "defs": "~0.6.2",
-    "diff": "~1.0.8"
+    "diff": "~1.0.8",
+    "find-line-column": "^0.5.2"
   },
   "keywords": [
     "angular",
