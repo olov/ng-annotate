@@ -1,81 +1,90 @@
 "use strict";
 
-const charProps = require("char-props");
 const SourceMapGenerator = require("source-map").SourceMapGenerator;
 const stableSort = require("stable");
 
-function findStartOfLines(str) {
-	const matchLineWithContent = /^(\s*)[^\s]/gm;
-	const indices = [];
-	let match;
-	while (match = matchLineWithContent.exec(str)) {
-		indices.push(match.index + match[1].length);
-	}
-	return indices;
-}
-
-function SourceMapper(src, out, fragments, inFile, sourceRoot) {
+function SourceMapper(src, fragments, inFile, sourceRoot) {
 	this.generator = new SourceMapGenerator({ sourceRoot: sourceRoot });
-	this.inIndex = 0;
-	this.outIndex = 0;
-	this.lineStarts = findStartOfLines(src);
+	this.src = src;
 	this.fragments = stableSort(fragments, function (a, b) { return a.start - b.start; });
-	this.inProps = charProps(src);
-	this.outProps = charProps(out);
 	this.inFile = inFile || "source.js";
 
 	this.generator.setSourceContent(this.inFile, src);
 }
 
 SourceMapper.prototype.generate = function () {
-	while (this.fragments.length > 0 || this.lineStarts.length > 0) {
-		if (this.isNextMappingAFragment())
-			this.addNextFragmentMapping();
-		else
-			this.addNextLineMapping();
+	let inIndex = 0;
+	let inLine = 1;
+	let inColumn = 0;
+	let outLine = 1;
+	let outColumn = 0;
+	let createMappingAfterWhitespace = true;
+
+	while (inIndex < this.src.length) {
+		if (createMappingAfterWhitespace && !/\s/.test(this.src[inIndex])) {
+			this.addMapping(inLine, inColumn, outLine, outColumn);
+			createMappingAfterWhitespace = false;
+		}
+
+		if (this.fragments[0] && this.fragments[0].start === inIndex) {
+			this.addMapping(inLine, inColumn, outLine, outColumn);
+
+			// iterate over input string
+			for (; inIndex < this.fragments[0].end; inIndex++) {
+				if (this.src[inIndex] === '\n') {
+					inLine++;
+					inColumn = 0;
+				} else {
+					inColumn++;
+				}
+			}
+
+			// iterate over output string
+			for (let outIndex = 0; outIndex < this.fragments[0].str.length; outIndex++) {
+				if (this.fragments[0].str[outIndex] === '\n') {
+					outLine++;
+					outColumn = 0;
+				} else {
+					outColumn++;
+				}
+			}
+
+			this.fragments.shift();
+			createMappingAfterWhitespace = true;
+		}
+
+		else {
+			if (this.src[inIndex] === '\n') {
+				inLine++;
+				outLine++;
+				inColumn = 0;
+				outColumn = 0;
+				createMappingAfterWhitespace = true;
+			} else {
+				inColumn++;
+				outColumn++;
+			}
+			inIndex++;
+		}
 	}
+
 	return this.generator.toString();
 }
 
-SourceMapper.prototype.isNextMappingAFragment = function () {
-	return !this.lineStarts.length ||
-		this.fragments.length && this.fragments[0].start < this.lineStarts[0];
-}
-
-SourceMapper.prototype.addNextFragmentMapping = function () {
-	this.outIndex += this.fragments[0].start - this.inIndex;
-	this.inIndex = this.fragments[0].start;
-	this.addMapping();
-
-	this.outIndex += this.fragments[0].str.length
-	this.inIndex = this.fragments[0].end;
-	this.addMapping();
-
-	this.fragments.shift();
-}
-
-SourceMapper.prototype.addNextLineMapping = function () {
-	this.outIndex += this.lineStarts[0] - this.inIndex;
-	this.inIndex = this.lineStarts[0];
-	this.addMapping();
-
-	this.lineStarts.shift();
-}
-
-SourceMapper.prototype.addMapping = function () {
+SourceMapper.prototype.addMapping = function (inLine, inColumn, outLine, outColumn) {
 	this.generator.addMapping({
 		source: this.inFile,
 		original: {
-			line: this.inProps.lineAt(this.inIndex) + 1,
-			column: this.inProps.columnAt(this.inIndex)
+			line: inLine,
+			column: inColumn
 		},
 		generated: {
-			line: this.outProps.lineAt(this.outIndex) + 1,
-			column: this.outProps.columnAt(this.outIndex)
+			line: outLine,
+			column: outColumn
 		}
 	});
 }
 
-module.exports = function generateSourcemap(src, out, fragments, inFile, sourceRoot) {
-	return new SourceMapper(src, out, fragments, inFile, sourceRoot).generate();
+module.exports = function generateSourcemap(src, fragments, inFile, sourceRoot) {
+	return new SourceMapper(src, fragments, inFile, sourceRoot).generate();
 }
