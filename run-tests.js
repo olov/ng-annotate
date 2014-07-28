@@ -30,6 +30,23 @@ console.log("testing adding annotations using single quotes");
 const annotatedSingleQuotes = ngAnnotate(original, {add: true, single_quotes: true}).src;
 test(slurp("tests/with_annotations_single.js"), annotatedSingleQuotes, "with_annotations_single.js");
 
+console.log("testing adding annotations and renaming");
+const annotatedRenamed = ngAnnotate(original, {
+  add: true,
+  rename: {
+    "$a": "$aRenamed",
+    "$b": "$bRenamed",
+    "$c": "$cRenamed",
+    "$d": "$dRenamed",
+    "$e": "$eRenamed",
+    "$f": "$fRenamed",
+    "$g": "$gRenamed",
+    "$h": "$hRenamed",
+    "$i": "$iRenamed"
+  }
+}).src;
+test(slurp("tests/with_annotations_renamed.js"), annotatedRenamed, "with_annotations_renamed.js");
+
 console.log("testing removing annotations");
 test(original, ngAnnotate(annotated, {remove: true}).src, "original.js");
 
