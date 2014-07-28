@@ -503,11 +503,14 @@ module.exports = function ngAnnotate(src, options) {
     judgeSuspects(ctx);
 
     const out = alter(src, fragments);
-    const sourcemap = generateSourcemap(src, out, fragments, options.inFile, options.sourceroot);
-
-    return {
+    const result = {
         src: out,
-        map: sourcemap,
-        _stats: stats,
+        _stats: stats
     };
+
+    if (options.sourcemap) {
+        result.map = generateSourcemap(src, out, fragments, options.inFile, options.sourceroot);
+    }
+    
+    return result;
 }
