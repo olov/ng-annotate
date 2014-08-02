@@ -505,7 +505,7 @@ module.exports = function ngAnnotate(src, options) {
     const out = alter(src, fragments);
     const result = {
         src: out,
-        _stats: stats
+        _stats: stats,
     };
 
     if (options.sourcemap) {
@@ -513,6 +513,6 @@ module.exports = function ngAnnotate(src, options) {
         result.map = generateSourcemap(src, fragments, options.inFile, options.sourceroot);
         stats.sourcemap_t1 = Date.now();
     }
-    
+
     return result;
 }
