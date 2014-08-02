@@ -1,3 +1,6 @@
+## v0.9.9 2014-08-02
+ * --sourcemap option for generating inline source maps
+
 ## v0.9.8 2014-07-28
  * match implicit config function: angular.module("MyMod", function(dep) {})
  * match through IIFE's
