@@ -6,7 +6,7 @@ const stableSort = require("stable");
 function SourceMapper(src, fragments, inFile, sourceRoot) {
 	this.generator = new SourceMapGenerator({ sourceRoot: sourceRoot });
 	this.src = src;
-	this.fragments = stableSort(fragments, function (a, b) { return a.start - b.start; });
+    this.fragments = stableSort(fragments.slice(0), function(a, b) { return a.start - b.start });
 	this.inFile = inFile || "source.js";
 
 	this.generator.setSourceContent(this.inFile, src);
