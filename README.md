@@ -242,7 +242,7 @@ options and return value.
 
     var ngAnnotate = require("ng-annotate");
     var somePlugin = require("./some/path/some-plugin");
-    var res = ngAnnotate(src, {add: true, plugin: [somePlugin], sourceroot: "/path/to/source/root"})
+    var res = ngAnnotate(src, {add: true, plugin: [somePlugin], sourcemap: true, sourceroot: "/path/to/source/root"});
     var errorstringArray = res.errors;
     var transformedSource = res.src;
     var transformedSourceMap = res.map;
