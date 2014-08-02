@@ -9,17 +9,21 @@
   },
   "dependencies": {
     "alter": "~0.2.0",
-    "simple-fmt": "~0.1.0",
-    "simple-is": "~0.2.0",
-    "tryor": "~0.1.2",
+    "convert-source-map": "^0.4.0",
     "esprima": "~1.2.0",
     "optimist": "~0.6.1",
     "ordered-ast-traverse": "~0.1.1",
-    "priorityqueuejs": "~0.2.0"
+    "priorityqueuejs": "~0.2.0",
+    "simple-fmt": "~0.1.0",
+    "simple-is": "~0.2.0",
+    "source-map": "^0.1.37",
+    "stable": "^0.1.5",
+    "tryor": "~0.1.2"
   },
   "devDependencies": {
     "defs": "~0.6.2",
-    "diff": "~1.0.8"
+    "diff": "~1.0.8",
+    "find-line-column": "^0.5.2"
   },
   "keywords": [
     "angular",

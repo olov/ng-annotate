@@ -7,6 +7,9 @@
 const ngAnnotate = require("./ng-annotate-main");
 const fs = require("fs");
 const diff = require("diff");
+const findLineColumn = require("find-line-column");
+const fmt = require("simple-fmt");
+const SourceMapConsumer = require("source-map").SourceMapConsumer;
 
 function slurp(filename) {
     return String(fs.readFileSync(filename));
@@ -18,6 +21,32 @@ function test(correct, got, name) {
         process.stderr.write(patch);
         process.exit(-1);
     }
+}
+
+function testSourcemap(original, got, sourcemap) {
+    const smc = new SourceMapConsumer(sourcemap);
+
+    function testMapping(needle) {
+        const gotPosition = findLineColumn(got, needle.exec(got).index);
+        const originalPosition = smc.originalPositionFor({ line: gotPosition.line, column: gotPosition.col });
+        const expectedPosition = findLineColumn(original, needle.exec(original).index);
+
+        if (originalPosition.line !== expectedPosition.line || originalPosition.column !== expectedPosition.col) {
+            process.stderr.write(fmt("Sourcemap mapping error for {0}. Expected: ({1},{2}) => ({3},{4}). Got: ({5},{6}) => ({3},{4}).",
+                needle,
+                expectedPosition.line, expectedPosition.col,
+                gotPosition.line, gotPosition.col,
+                originalPosition.line, originalPosition.column));
+            process.exit(-1);
+        }
+    }
+
+    testMapping(/\/\* before \*\//);
+    for (let i = 1; i <= 4; i++) {
+        testMapping(new RegExp("function( ctrl" + i + ")?\\(ctrl" + i + "_param1"));
+        testMapping(new RegExp("/\\* ctrl" + i + " body \\*/"));
+    }
+    testMapping(/\/\* after \*\//);
 }
 
 const original = slurp("tests/original.js");
@@ -33,6 +62,11 @@ test(slurp("tests/with_annotations_single.js"), annotatedSingleQuotes, "with_ann
 console.log("testing removing annotations");
 test(original, ngAnnotate(annotated, {remove: true}).src, "original.js");
 
+console.log("testing sourcemaps");
+const originalSourcemaps = slurp("tests/sourcemaps.js");
+const annotatedSourcemaps = ngAnnotate(originalSourcemaps, {remove: true, add: true, sourcemap: true, sourceroot: "/source/root/dir"});
+test(slurp("tests/sourcemaps.annotated.js"), annotatedSourcemaps.src, "sourcemaps.annotated.js");
+testSourcemap(originalSourcemaps, annotatedSourcemaps.src, annotatedSourcemaps.map, "sourcemaps.annotated.js.map");
 
 const ngminOriginal = slurp("tests/ngmin-tests/ngmin_original.js");
 
