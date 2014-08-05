@@ -13,12 +13,13 @@
     "esprima": "~1.2.0",
     "optimist": "~0.6.1",
     "ordered-ast-traverse": "~0.1.1",
-    "priorityqueuejs": "~0.2.0",
     "simple-fmt": "~0.1.0",
     "simple-is": "~0.2.0",
     "source-map": "^0.1.37",
     "stable": "^0.1.5",
-    "tryor": "~0.1.2"
+    "tryor": "~0.1.2",
+    "stringmap": "~0.2.2",
+    "stringset": "~0.2.1"
   },
   "devDependencies": {
     "defs": "~0.6.2",
