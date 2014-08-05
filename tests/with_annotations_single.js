@@ -446,3 +446,20 @@ var x = /*@ngInject*/ (function() {
     return ['$a', function($a) {
     }];
 })();
+
+
+// reference support
+function MyCtrl1(a, b) {
+}
+MyCtrl1.$inject = ['a', 'b'];
+if (true) {
+    // proper scope analysis including shadowing
+    let MyCtrl1 = ['c', function(c) {
+    }]
+    angular.module("MyMod").directive("foo", MyCtrl1);
+}
+angular.module("MyMod").controller("bar", MyCtrl1);
+function MyCtrl2(z) {
+}
+MyCtrl2.$inject = ['z'];
+funcall(/*@ngInject*/ MyCtrl2); // explicit annotation on reference flows back to definition

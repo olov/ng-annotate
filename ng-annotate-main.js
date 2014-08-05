@@ -11,9 +11,11 @@ const is = require("simple-is");
 const alter = require("alter");
 const traverse = require("ordered-ast-traverse");
 const EOL = require("os").EOL;
+const assert = require("assert");
 const ngInjectComments = require("./nginject-comments");
 const generateSourcemap = require("./generate-sourcemap");
 const Lut = require("./lut");
+const scopeTools = require("./scopetools");
 
 const chainedRouteProvider = 1;
 const chainedUrlRouterProvider = 2;
@@ -354,6 +356,14 @@ function judgeSuspects(ctx) {
         }
 
         target = jumpOverIife(target);
+        const followedTarget = followReference(target);
+        if (followedTarget) {
+            if (followedTarget.$once) {
+                continue;
+            }
+            followedTarget.$once = true;
+            target = followedTarget;
+        }
 
         if (mode === "rebuild" && isAnnotatedArray(target)) {
             replaceArray(target, fragments, quot);
@@ -366,6 +376,33 @@ function judgeSuspects(ctx) {
             judgeInjectArraySuspect(target, ctx);
         }
     }
+}
+
+function followReference(node) {
+    if (!scopeTools.isReference(node)) {
+        return null;
+    }
+
+    const scope = node.$scope.lookup(node.name);
+    if (!scope) {
+        return null;
+    }
+
+    const parent = scope.getNode(node.name).$parent;
+    const kind = scope.getKind(node.name);
+    const ptype = parent.type;
+
+    if (is.someof(kind, ["const", "let", "var"])) {
+        assert(ptype === "VariableDeclarator");
+        return parent.init;
+    } else if (kind === "fun") {
+        assert(ptype === "FunctionDeclaration" || ptype === "FunctionExpression")
+        return parent;
+    }
+
+    // other kinds should not be handled ("param", "caught")
+
+    return null;
 }
 
 function judgeInjectArraySuspect(node, ctx) {
@@ -522,6 +559,8 @@ module.exports = function ngAnnotate(src, options) {
     const suspects = [];
 
     const lut = new Lut(ast, src);
+
+    scopeTools.setupScopeAndReferences(ast);
 
     const ctx = {
         mode: mode,
