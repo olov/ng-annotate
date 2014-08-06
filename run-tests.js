@@ -77,4 +77,23 @@ test(slurp("tests/ngmin-tests/ngmin_with_annotations.js"), ngminAnnotated, "ngmi
 console.log("testing removing annotations (imported tests)");
 test(ngminOriginal, ngAnnotate(ngminAnnotated, {remove: true, regexp: "^myMod"}).src, "ngmin_original.js");
 
+if (fs.existsSync("package.json")) {
+    console.log("testing package.json")
+    try {
+        const json = JSON.parse(slurp("package.json"));
+        const substr = JSON.stringify({
+            dependencies: json.dependencies,
+            devDependencies: json.devDependencies,
+        }, null, 4);
+        if (/\^/g.test(substr)) {
+            console.error("package.json error: shouldn't use the ^ operator");
+            console.error(substr);
+            process.exit(-1);
+        }
+    } catch(e) {
+        console.error("package.json error: invalid json");
+        process.exit(-1);
+    }
+}
+
 console.log("all ok");
