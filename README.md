@@ -155,6 +155,24 @@ ng-annotate understands IIFE's and attempts to match through them, so
 `function($scope) ..` does (for any IIFE args and params).
 
 
+## Reference-following
+*experimental*
+
+ng-annotate follows references. This works iff the referenced declaration is
+a) a function declaration or
+b) a variable declaration with an initializer.
+Modifications to a reference outside of its declaration site are ignored by ng-annotate.
+
+These examples will get annotated:
+
+    function MyCtrl($scope, $timeout) {
+    }
+    var MyCtrl2 = function($scope) {};
+
+    angular.module("MyMod").controller("MyCtrl", MyCtrl);
+    angular.module("MyMod").controller("MyCtrl", MyCtrl2);
+
+
 ## Explicit annotations
 You can prepend a function expression with `/* @ngInject */` to explicitly state that this
 function should get annotated. ng-annotate will leave the comment intact and will thus still
