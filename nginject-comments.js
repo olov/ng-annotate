@@ -26,13 +26,31 @@ function ngInjectCommentsInit(ctx) {
         }
 
         if (target.type === "ObjectExpression") {
-            nestedObjectValues(target).forEach(function(n) {
-                ctx.addModuleContextIndependentSuspect(n, ctx);
-            });
+            // /*@ngInject*/ {f1: function(a), .., {f2: function(b)}}
+            addObjectExpression(target, ctx);
+        } else if (target.type === "AssignmentExpression" && target.right.type === "ObjectExpression") {
+            // /*@ngInject*/ f(x.y = {f1: function(a), .., {f2: function(b)}})
+            addObjectExpression(target.right, ctx);
+        } else if (target.type === "ExpressionStatement" && target.expression.type === "AssignmentExpression" && target.expression.right.type === "ObjectExpression") {
+            // /*@ngInject*/ x.y = {f1: function(a), .., {f2: function(b)}}
+            addObjectExpression(target.expression.right, ctx);
+        } else if (target.type === "VariableDeclaration" && target.declarations.length === 1 && target.declarations[0].init && target.declarations[0].init.type === "ObjectExpression") {
+            // /*@ngInject*/ var x = {f1: function(a), .., {f2: function(b)}}
+            addObjectExpression(target.declarations[0].init, ctx);
+        } else if (target.type === "Property") {
+            // {/*@ngInject*/ justthisone: function(a), ..}
+            ctx.addModuleContextIndependentSuspect(target.value, ctx);
         } else {
+            // /*@ngInject*/ function(a) {}
             ctx.addModuleContextIndependentSuspect(target, ctx);
         }
     }
+}
+
+function addObjectExpression(node, ctx) {
+    nestedObjectValues(node).forEach(function(n) {
+        ctx.addModuleContextIndependentSuspect(n, ctx);
+    });
 }
 
 function nestedObjectValues(node, res) {

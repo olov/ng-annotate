@@ -337,6 +337,38 @@ obj = /*@ngInject*/ {
     but: { onlythrough: ["object literals", {donttouch: function(me) {}}]},
 };
 
+obj = {
+    /*@ngInject*/
+    foo: function(a) {},
+    bar: function(b, c) {},
+};
+
+/*@ngInject*/
+obj = {
+    foo: function(a) {},
+    bar: function(b, c) {},
+    val: 42,
+    inner: {
+        circle: function(d) {},
+        alalalala: "long",
+    },
+    nest: { many: {levels: function(x) {}}},
+    but: { onlythrough: ["object literals", {donttouch: function(me) {}}]},
+};
+
+/*@ngInject*/
+var obj = {
+    foo: function(a) {},
+    bar: function(b, c) {},
+    val: 42,
+    inner: {
+        circle: function(d) {},
+        alalalala: "long",
+    },
+    nest: { many: {levels: function(x) {}}},
+    but: { onlythrough: ["object literals", {donttouch: function(me) {}}]},
+};
+
 // @ngInject
 function foo($scope) {
 }
