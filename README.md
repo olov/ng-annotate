@@ -80,6 +80,7 @@ automatically so you don't have to think about it.
 * [Broccoli](https://github.com/broccolijs/broccoli): [broccoli-ng-annotate](https://www.npmjs.org/package/broccoli-ng-annotate) by [Gilad Peleg](https://github.com/pgilad)
 * [Rails asset pipeline](http://guides.rubyonrails.org/asset_pipeline.html): [ngannotate-rails](https://rubygems.org/gems/ngannotate-rails) by [Kari Ikonen](https://github.com/kikonen)
 * [Grails asset pipeline](https://github.com/bertramdev/asset-pipeline): [angular-annotate-asset-pipeline](https://github.com/craigburke/angular-annotate-asset-pipeline) by [Craig Burke](https://github.com/craigburke)
+* [Webpack](http://webpack.github.io/): [ng-annotate-webpack-plugin](https://www.npmjs.org/package/ng-annotate-webpack-plugin) by [Chris Liechty](https://github.com/cliechty)
 * Something missing? Contributions welcome - create plugin and submit a README pull request!
 
 
