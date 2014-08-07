@@ -433,6 +433,23 @@ myMod.controller("foo", /*@ngInject*/ function($scope, $timeout) {
 
 
 
+// explicit annotations using ngInject() instead of /*@ngInject*/
+var x = ngInject(function($scope) {});
+
+obj = ngInject({
+    foo: function(a) {},
+    bar: function(b, c) {},
+    val: 42,
+    inner: {
+        circle: function(d) {},
+        alalalala: "long",
+    },
+    nest: { many: {levels: function(x) {}}},
+    but: { onlythrough: ["object literals", {donttouch: function(me) {}}]},
+});
+
+
+
 // snippets that shouldn't fool ng-annotate into generating false positives,
 //   whether we're inside an angular module or not
 myMod.controller("donttouchme", function() {

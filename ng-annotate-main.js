@@ -12,7 +12,7 @@ const alter = require("alter");
 const traverse = require("ordered-ast-traverse");
 const EOL = require("os").EOL;
 const assert = require("assert");
-const ngInjectComments = require("./nginject-comments");
+const ngInject = require("./nginject-comments");
 const generateSourcemap = require("./generate-sourcemap");
 const Lut = require("./lut");
 const scopeTools = require("./scopetools");
@@ -594,7 +594,7 @@ module.exports = function ngAnnotate(src, options) {
     }
     const matchPluginsOrNull = (plugins.length === 0 ? null : matchPlugins);
 
-    ngInjectComments.init(ctx);
+    ngInject.inspectComments(ctx);
     plugins.forEach(function(plugin) {
         plugin.init(ctx);
     });
@@ -606,6 +606,7 @@ module.exports = function ngAnnotate(src, options) {
         if (node.type === "CallExpression") {
             callerIds.push(node);
             recentCaller = node;
+            ngInject.inspectCallExpression(node, ctx);
         }
 
     }, post: function(node) {

@@ -157,38 +157,55 @@ ng-annotate understands IIFE's and attempts to match through them, so
 ## Explicit annotations
 You can prepend a function expression with `/* @ngInject */` to explicitly state that this
 function should get annotated. ng-annotate will leave the comment intact and will thus still
-be able to also remove or rewrite such annotations. Use `/* @ngInject */` as an occasional
+be able to also remove or rewrite such annotations. Alternatively, you can wrap an expression
+inside an `ngInject(..)` function call. Use `/* @ngInject */` or `ngInject(..)` as an occasional
 workaround when ng-annotate doesn't support your code style but feel free to open an issue
 also.
 
-    var x = /* @ngInject */ function($scope) {};
+    x = /* @ngInject */ function($scope) {};
     obj = {controller: /*@ngInject*/ function($scope) {}};
     obj.bar = /*@ngInject*/ function($scope) {};
 
+    function ngInject(f) { return f } // define this once in your program
+    x = ngInject(function($scope) {});
+    obj = {controller: ngInject(function($scope) {})};
+    obj.bar = ngInject(function($scope) {});
+
     =>
 
-    var x = /* @ngInject */ ["$scope", function($scope) {}];
+    x = /* @ngInject */ ["$scope", function($scope) {}];
     obj = {controller: /*@ngInject*/ ["$scope", function($scope) {}]};
     obj.bar = /*@ngInject*/ ["$scope", function($scope) {}];
+
+    function ngInject(f) { return f } // define this once in your program
+    x = ngInject(["$scope", function($scope) {}]);
+    obj = {controller: ngInject(["$scope", function($scope) {}])};
+    obj.bar = ngInject(["$scope", function($scope) {}]);
 
 Prepended to an object literal, `/* @ngInject */` will annotate all of its contained
 function expressions, recursively:
 
 	obj = /*@ngInject*/ {
 	    controller: function($scope) {},
-	    resolve: {
-	        data: function(Service) {},
-	    },
+	    resolve: { data: function(Service) {} },
 	};
+
+	obj = ngInject({
+	    controller: function($scope) {},
+	    resolve: { data: function(Service) {} },
+	});
 
 	=>
 
 	obj = /*@ngInject*/ {
 	    controller: ["$scope", function($scope) {}],
-	    resolve: {
-	        data: ["Service", function(Service) {}],
-	    },
+	    resolve: { data: ["Service", function(Service) {}] },
 	};
+
+	obj = ngInject({
+	    controller: ["$scope", function($scope) {}],
+	    resolve: { data: ["Service", function(Service) {}] },
+	});
 
 
 Prepended to a function statement, to a single variable declaration initialized with a
