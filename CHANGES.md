@@ -1,3 +1,8 @@
+## v0.9.10 2014-08-07
+ * reference-following (experimental)
+ * ngInject(..) as an alternative to /* @ngInject */ ..
+ * more flexible /* @ngInject */ placement (object literals)
+
 ## v0.9.9 2014-08-02
  * --sourcemap option for generating inline source maps
 
