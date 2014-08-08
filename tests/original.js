@@ -380,51 +380,51 @@ function Foo($scope) {
 
 // @ngInject
 // has trailing semicolon
-var foo = function($scope) {
+var foo1 = function($scope) {
 };
 
 // @ngInject
 // lacks trailing semicolon
-var foo = function($scope) {
+var foo2 = function($scope) {
 }
 
 // @ngInject
 // has trailing semicolon
-bar.foo = function($scope) {
+bar.foo1 = function($scope) {
 };
 
 // @ngInject
 // lacks trailing semicolon
-bar.foo = function($scope) {
+bar.foo2 = function($scope) {
 }
 
 // let's zip-zag indentation to make sure that the $inject array lines up properly
     // @ngInject
-    function foo($scope) {}
+    function foo1($scope) {}
         // @ngInject
-        function foo($scope) {
+        function foo2($scope) {
         }
-/* @ngInject */ function foo($scope) {}
-            /* @ngInject */ function foo($scope) {
+/* @ngInject */ function foo3($scope) {}
+            /* @ngInject */ function foo4($scope) {
             }
 
     // @ngInject
-    var foo = function($scope) {
+    var foo1 = function($scope) {
     };
         // @ngInject
-        var foo = function($scope) {};
+        var foo2 = function($scope) {};
 // @ngInject
-var foo = function($scope) {
+var foo3 = function($scope) {
 }
             // @ngInject
-            var foo = function($scope) {}
+            var foo4 = function($scope) {}
 
-    /* @ngInject */ var foo = function($scope) {
+    /* @ngInject */ var foo5 = function($scope) {
     };
-        /* @ngInject */var foo = function($scope) {};
-/* @ngInject */var foo = function($scope) {
+        /* @ngInject */var foo6 = function($scope) {};
+/* @ngInject */var foo7 = function($scope) {
 }
-            /* @ngInject */var foo = function($scope) {}
+            /* @ngInject */var foo8 = function($scope) {}
 
 
 // adding an explicit annotation where it isn't needed should work fine

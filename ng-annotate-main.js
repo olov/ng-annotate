@@ -410,18 +410,19 @@ function judgeInjectArraySuspect(node, ctx) {
     // /*@ngInject*/ function foo($scope) {} and
     // /*@ngInject*/ foo.bar[0] = function($scope) {}
     let d0 = null;
+    const nr0 = node.range[0];
     const nr1 = node.range[1];
     if (node.type === "VariableDeclaration" && node.declarations.length === 1 &&
         (d0 = node.declarations[0]).init && ctx.isFunctionExpressionWithArgs(d0.init)) {
         const isSemicolonTerminated = (ctx.src[nr1 - 1] === ";");
-        addRemoveInjectArray(d0.init.params, isSemicolonTerminated ? nr1 : d0.init.range[1], d0.id.name);
+        addRemoveInjectArray(d0.init.params, nr0, isSemicolonTerminated ? nr1 : d0.init.range[1], d0.id.name);
     } else if (ctx.isFunctionDeclarationWithArgs(node)) {
-        addRemoveInjectArray(node.params, nr1, node.id.name);
+        addRemoveInjectArray(node.params, nr0, nr1, node.id.name);
     } else if (node.type === "ExpressionStatement" && node.expression.type === "AssignmentExpression" &&
         ctx.isFunctionExpressionWithArgs(node.expression.right)) {
         const isSemicolonTerminated = (ctx.src[nr1 - 1] === ";");
         const name = ctx.srcForRange(node.expression.left.range);
-        addRemoveInjectArray(node.expression.right.params, isSemicolonTerminated ? nr1 : node.expression.right.range[1], name);
+        addRemoveInjectArray(node.expression.right.params, nr0, isSemicolonTerminated ? nr1 : node.expression.right.range[1], name);
     }
 
     function getIndent(pos) {
@@ -433,35 +434,53 @@ function judgeInjectArraySuspect(node, ctx) {
         return src.slice(lineStart, i);
     }
 
-    function addRemoveInjectArray(params, posAfterFunctionDeclaration, name) {
+    function addRemoveInjectArray(params, posBeforeFunctionDeclaration, posAfterFunctionDeclaration, name) {
         const indent = getIndent(posAfterFunctionDeclaration);
 
         const nextNode = ctx.lut.findNodeFromPos(posAfterFunctionDeclaration);
-        if (!nextNode) {
-            return;
+        const prevNode = ctx.lut.findNodeBeforePos(posBeforeFunctionDeclaration);
+
+        function hasInjectArray(node) {
+            let lvalue;
+            let assignment;
+            return (node && node.type === "ExpressionStatement" && (assignment = node.expression).type === "AssignmentExpression" &&
+                assignment.operator === "=" &&
+                (lvalue = assignment.left).type === "MemberExpression" &&
+                ((lvalue.computed === false && ctx.srcForRange(lvalue.object.range) === name && lvalue.property.name === "$inject") ||
+                    (lvalue.computed === true && ctx.srcForRange(lvalue.object.range) === name && lvalue.property.type === "Literal" && lvalue.property.value === "$inject")));
         }
 
-        const str = fmt("{0}{1}{2}.$inject = {3};", EOL, indent, name, ctx.stringify(params, ctx.quot));
-        const assignment = nextNode.expression;
-        let lvalue;
-        const hasInjectArray = (nextNode.type === "ExpressionStatement" && assignment.type === "AssignmentExpression" &&
-            assignment.operator === "=" &&
-            (lvalue = assignment.left).type === "MemberExpression" &&
-            lvalue.computed === false && ctx.srcForRange(lvalue.object.range) === name && lvalue.property.name === "$inject");
+        function skipNewline(pos) {
+            if (ctx.src[pos] === "\n") {
+                return pos + 1;
+            } else if (ctx.src.slice(pos, pos + 2) === "\r\n") {
+                return pos + 2;
+            }
+            return pos;
+        }
 
-        if (ctx.mode === "rebuild" && hasInjectArray) {
+        const hasArrayBefore = hasInjectArray(prevNode);
+        const hasArrayAfter = hasInjectArray(nextNode);
+
+        const hasArray = hasArrayBefore || hasArrayAfter;
+        const start = hasArrayBefore ? prevNode.range[0]: posAfterFunctionDeclaration;
+        const end = hasArrayBefore ? skipNewline(prevNode.range[1]) : nextNode.range[1];
+
+        const str = fmt("{0}{1}{2}.$inject = {3};", EOL, indent, name, ctx.stringify(params, ctx.quot));
+
+        if (ctx.mode === "rebuild" && hasArray) {
             ctx.fragments.push({
-                start: posAfterFunctionDeclaration,
-                end: nextNode.range[1],
+                start: start,
+                end: end,
                 str: str,
             });
-        } else if (ctx.mode === "remove" && hasInjectArray) {
+        } else if (ctx.mode === "remove" && hasArray) {
             ctx.fragments.push({
-                start: posAfterFunctionDeclaration,
-                end: nextNode.range[1],
+                start: start,
+                end: end,
                 str: "",
             });
-        } else if (is.someof(ctx.mode, ["add", "rebuild"]) && !hasInjectArray) {
+        } else if (is.someof(ctx.mode, ["add", "rebuild"]) && !hasArray) {
             ctx.fragments.push({
                 start: posAfterFunctionDeclaration,
                 end: posAfterFunctionDeclaration,

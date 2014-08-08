@@ -382,67 +382,67 @@ Foo.$inject = ["$scope"];
 
 // @ngInject
 // has trailing semicolon
-var foo = function($scope) {
+var foo1 = function($scope) {
 };
-foo.$inject = ["$scope"];
+foo1.$inject = ["$scope"];
 
 // @ngInject
 // lacks trailing semicolon
-var foo = function($scope) {
+var foo2 = function($scope) {
 }
-foo.$inject = ["$scope"];
+foo2.$inject = ["$scope"];
 
 // @ngInject
 // has trailing semicolon
-bar.foo = function($scope) {
+bar.foo1 = function($scope) {
 };
-bar.foo.$inject = ["$scope"];
+bar.foo1.$inject = ["$scope"];
 
 // @ngInject
 // lacks trailing semicolon
-bar.foo = function($scope) {
+bar.foo2 = function($scope) {
 }
-bar.foo.$inject = ["$scope"];
+bar.foo2.$inject = ["$scope"];
 
 // let's zip-zag indentation to make sure that the $inject array lines up properly
     // @ngInject
-    function foo($scope) {}
-    foo.$inject = ["$scope"];
+    function foo1($scope) {}
+    foo1.$inject = ["$scope"];
         // @ngInject
-        function foo($scope) {
+        function foo2($scope) {
         }
-        foo.$inject = ["$scope"];
-/* @ngInject */ function foo($scope) {}
-foo.$inject = ["$scope"];
-            /* @ngInject */ function foo($scope) {
+        foo2.$inject = ["$scope"];
+/* @ngInject */ function foo3($scope) {}
+foo3.$inject = ["$scope"];
+            /* @ngInject */ function foo4($scope) {
             }
-            foo.$inject = ["$scope"];
+            foo4.$inject = ["$scope"];
 
     // @ngInject
-    var foo = function($scope) {
+    var foo1 = function($scope) {
     };
-    foo.$inject = ["$scope"];
+    foo1.$inject = ["$scope"];
         // @ngInject
-        var foo = function($scope) {};
-        foo.$inject = ["$scope"];
+        var foo2 = function($scope) {};
+        foo2.$inject = ["$scope"];
 // @ngInject
-var foo = function($scope) {
+var foo3 = function($scope) {
 }
-foo.$inject = ["$scope"];
+foo3.$inject = ["$scope"];
             // @ngInject
-            var foo = function($scope) {}
-            foo.$inject = ["$scope"];
+            var foo4 = function($scope) {}
+            foo4.$inject = ["$scope"];
 
-    /* @ngInject */ var foo = function($scope) {
+    /* @ngInject */ var foo5 = function($scope) {
     };
-    foo.$inject = ["$scope"];
-        /* @ngInject */var foo = function($scope) {};
-        foo.$inject = ["$scope"];
-/* @ngInject */var foo = function($scope) {
+    foo5.$inject = ["$scope"];
+        /* @ngInject */var foo6 = function($scope) {};
+        foo6.$inject = ["$scope"];
+/* @ngInject */var foo7 = function($scope) {
 }
-foo.$inject = ["$scope"];
-            /* @ngInject */var foo = function($scope) {}
-            foo.$inject = ["$scope"];
+foo7.$inject = ["$scope"];
+            /* @ngInject */var foo8 = function($scope) {}
+            foo8.$inject = ["$scope"];
 
 
 // adding an explicit annotation where it isn't needed should work fine

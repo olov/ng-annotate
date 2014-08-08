@@ -62,6 +62,12 @@ test(slurp("tests/with_annotations_single.js"), annotatedSingleQuotes, "with_ann
 console.log("testing removing annotations");
 test(original, ngAnnotate(annotated, {remove: true}).src, "original.js");
 
+console.log("testing adding existing $inject annotations (no change)");
+test(slurp("tests/has_inject.js"), ngAnnotate(slurp("tests/has_inject.js"), {add: true}).src);
+
+console.log("testing removing existing $inject annotations");
+test(slurp("tests/has_inject_removed.js"), ngAnnotate(slurp("tests/has_inject.js"), {remove: true}).src);
+
 console.log("testing sourcemaps");
 const originalSourcemaps = slurp("tests/sourcemaps.js");
 const annotatedSourcemaps = ngAnnotate(originalSourcemaps, {remove: true, add: true, sourcemap: true, sourceroot: "/source/root/dir"});
