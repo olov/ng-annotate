@@ -1,3 +1,6 @@
+## v0.9.11 2014-08-09
+ * improved detection of existing fn.$inject = [..] arrays
+
 ## v0.9.10 2014-08-07
  * reference-following (experimental)
  * ngInject(..) as an alternative to /* @ngInject */ ..
