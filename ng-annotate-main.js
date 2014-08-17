@@ -434,11 +434,11 @@ function judgeInjectArraySuspect(node, ctx) {
         return src.slice(lineStart, i);
     }
 
-    function addRemoveInjectArray(params, posBeforeFunctionDeclaration, posAfterFunctionDeclaration, name) {
+    function addRemoveInjectArray(params, posAtFunctionDeclaration, posAfterFunctionDeclaration, name) {
         const indent = getIndent(posAfterFunctionDeclaration);
 
         const nextNode = ctx.lut.findNodeFromPos(posAfterFunctionDeclaration);
-        const prevNode = ctx.lut.findNodeBeforePos(posBeforeFunctionDeclaration);
+        const prevNode = ctx.lut.findNodeBeforePos(posAtFunctionDeclaration);
 
         function hasInjectArray(node) {
             let lvalue;
