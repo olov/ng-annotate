@@ -417,6 +417,7 @@ function judgeInjectArraySuspect(node, ctx) {
         const isSemicolonTerminated = (ctx.src[nr1 - 1] === ";");
         addRemoveInjectArray(d0.init.params, nr0, isSemicolonTerminated ? nr1 : d0.init.range[1], d0.id.name);
     } else if (ctx.isFunctionDeclarationWithArgs(node)) {
+        console.dir(node.$parent)
         addRemoveInjectArray(node.params, nr0, nr1, node.id.name);
     } else if (node.type === "ExpressionStatement" && node.expression.type === "AssignmentExpression" &&
         ctx.isFunctionExpressionWithArgs(node.expression.right)) {
