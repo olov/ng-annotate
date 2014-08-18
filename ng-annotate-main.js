@@ -16,6 +16,7 @@ const ngInject = require("./nginject");
 const generateSourcemap = require("./generate-sourcemap");
 const Lut = require("./lut");
 const scopeTools = require("./scopetools");
+const stringmap = require("stringmap");
 
 const chainedRouteProvider = 1;
 const chainedUrlRouterProvider = 2;
@@ -282,7 +283,10 @@ function matchResolve(props) {
 };
 
 function getReplaceString(ctx, originalString) {
-    return (ctx.rename[originalString] || originalString);
+    if (ctx.rename) {
+        return ctx.rename.get(originalString) || originalString;
+    }
+    return originalString;
 }
 
 function stringify(ctx, arr, quot) {
@@ -535,9 +539,6 @@ function isFunctionExpressionWithArgs(node) {
 function isFunctionDeclarationWithArgs(node) {
     return node.type === "FunctionDeclaration" && node.params.length >= 1;
 }
-function isGenericProviderName(node) {
-    return node.type === "Literal" && is.string(node.value);
-}
 
 module.exports = function ngAnnotate(src, options) {
     const mode = (options.add && options.remove ? "rebuild" :
@@ -550,7 +551,12 @@ module.exports = function ngAnnotate(src, options) {
 
     const quot = options.single_quotes ? "'" : '"';
     const re = (options.regexp ? new RegExp(options.regexp) : /^[a-zA-Z0-9_\$\.\s]+$/);
-    const rename = options.rename || {};
+    const rename = new stringmap();
+    if (options.rename) {
+        options.rename.forEach(function(value) {
+            rename.set(value.from, value.to);
+        });
+    }
     let ast;
     const stats = {};
     try {

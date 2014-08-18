@@ -12,6 +12,7 @@ const tryor = require("tryor");
 const ngAnnotate = require("./ng-annotate-main");
 const version = require("./package.json").version;
 const convertSourceMap = require("convert-source-map");
+const stringmap = require("stringmap");
 const optimist = require("optimist")
     .usage("ng-annotate v" + version + "\n\nUsage: ng-annotate OPTIONS <file>\n\n" +
         "provide - instead of <file> to read from stdin\n" +
@@ -150,11 +151,11 @@ function runAnnotate(err, src) {
 
     if (config.rename) {
         const flattenRename = config.rename.split(" ");
-        const renameMap = {};
+        const renameArray = [];
         for (let i = 0; i < flattenRename.length; i = i + 2) {
-            renameMap[flattenRename[i]] = flattenRename[i+1];
+            renameArray.push({"from": flattenRename[i], "to": flattenRename[i+1]});
         }
-        config.rename = renameMap;
+        config.rename = renameArray;
     }
 
     const run_t0 = Date.now();

@@ -10,6 +10,7 @@ const diff = require("diff");
 const findLineColumn = require("find-line-column");
 const fmt = require("simple-fmt");
 const SourceMapConsumer = require("source-map").SourceMapConsumer;
+const stringmap = require("stringmap");
 
 function slurp(filename) {
     return String(fs.readFileSync(filename));
@@ -23,17 +24,17 @@ function test(correct, got, name) {
     }
 }
 
-const renameOptions = {
-  "$a": "$aRenamed",
-  "$b": "$bRenamed",
-  "$c": "$cRenamed",
-  "$d": "$dRenamed",
-  "$e": "$eRenamed",
-  "$f": "$fRenamed",
-  "$g": "$gRenamed",
-  "$h": "$hRenamed",
-  "$i": "$iRenamed"
-};
+const renameOptions = [
+    {"from":"$a", "to": "$aRenamed"},
+    {"from":"$b", "to": "$bRenamed"},
+    {"from":"$c", "to": "$cRenamed"},
+    {"from":"$d", "to": "$dRenamed"},
+    {"from":"$e", "to": "$eRenamed"},
+    {"from":"$f", "to": "$fRenamed"},
+    {"from":"$g", "to": "$gRenamed"},
+    {"from":"$h", "to": "$hRenamed"},
+    {"from":"$i", "to": "$iRenamed"}
+];
 
 function testSourcemap(original, got, sourcemap) {
     const smc = new SourceMapConsumer(sourcemap);
