@@ -390,6 +390,8 @@ function judgeSuspects(ctx) {
             removeArray(target, fragments);
         } else if (is.someof(mode, ["add", "rebuild"]) && isFunctionExpressionWithArgs(target)) {
             insertArray(ctx, target, fragments, quot);
+        } else if (isGenericProviderName(target)) {
+            replaceString(ctx, target, fragments, quot);
         } else {
             // if it's not array or function-expression, then it's a candidate for foo.$inject = [..]
             judgeInjectArraySuspect(target, ctx);
@@ -538,6 +540,9 @@ function isFunctionExpressionWithArgs(node) {
 }
 function isFunctionDeclarationWithArgs(node) {
     return node.type === "FunctionDeclaration" && node.params.length >= 1;
+}
+function isGenericProviderName(node) {
+    return node.type === "Literal" && is.string(node.value);
 }
 
 module.exports = function ngAnnotate(src, options) {

@@ -9,6 +9,8 @@ angular.module("MyMod", ["OtherMod"]).controller("MyCtrl", ["$cRenamed", "$dRena
 }]);
 
 // simple
+myMod.service("$aRenamed", ["$bRenamed", function($b) {
+}]);
 myMod.controller("foo", ["$aRenamed", "$bRenamed", function($a, $b) {
 }]);
 myMod.service("foo", ["$cRenamed", "$dRenamed", function($c, $d) {
