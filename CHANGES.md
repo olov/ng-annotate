@@ -1,3 +1,14 @@
+## v0.9.11 2014-08-09
+ * improved detection of existing fn.$inject = [..] arrays
+
+## v0.9.10 2014-08-07
+ * reference-following (experimental)
+ * ngInject(..) as an alternative to /* @ngInject */ ..
+ * more flexible /* @ngInject */ placement (object literals)
+
+## v0.9.9 2014-08-02
+ * --sourcemap option for generating inline source maps
+
 ## v0.9.8 2014-07-28
  * match implicit config function: angular.module("MyMod", function(dep) {})
  * match through IIFE's

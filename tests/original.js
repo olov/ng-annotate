@@ -337,6 +337,38 @@ obj = /*@ngInject*/ {
     but: { onlythrough: ["object literals", {donttouch: function(me) {}}]},
 };
 
+obj = {
+    /*@ngInject*/
+    foo: function(a) {},
+    bar: function(b, c) {},
+};
+
+/*@ngInject*/
+obj = {
+    foo: function(a) {},
+    bar: function(b, c) {},
+    val: 42,
+    inner: {
+        circle: function(d) {},
+        alalalala: "long",
+    },
+    nest: { many: {levels: function(x) {}}},
+    but: { onlythrough: ["object literals", {donttouch: function(me) {}}]},
+};
+
+/*@ngInject*/
+var obj = {
+    foo: function(a) {},
+    bar: function(b, c) {},
+    val: 42,
+    inner: {
+        circle: function(d) {},
+        alalalala: "long",
+    },
+    nest: { many: {levels: function(x) {}}},
+    but: { onlythrough: ["object literals", {donttouch: function(me) {}}]},
+};
+
 // @ngInject
 function foo($scope) {
 }
@@ -348,55 +380,72 @@ function Foo($scope) {
 
 // @ngInject
 // has trailing semicolon
-var foo = function($scope) {
+var foo1 = function($scope) {
 };
 
 // @ngInject
 // lacks trailing semicolon
-var foo = function($scope) {
+var foo2 = function($scope) {
 }
 
 // @ngInject
 // has trailing semicolon
-bar.foo = function($scope) {
+bar.foo1 = function($scope) {
 };
 
 // @ngInject
 // lacks trailing semicolon
-bar.foo = function($scope) {
+bar.foo2 = function($scope) {
 }
 
 // let's zip-zag indentation to make sure that the $inject array lines up properly
     // @ngInject
-    function foo($scope) {}
+    function foo1($scope) {}
         // @ngInject
-        function foo($scope) {
+        function foo2($scope) {
         }
-/* @ngInject */ function foo($scope) {}
-            /* @ngInject */ function foo($scope) {
+/* @ngInject */ function foo3($scope) {}
+            /* @ngInject */ function foo4($scope) {
             }
 
     // @ngInject
-    var foo = function($scope) {
+    var foo1 = function($scope) {
     };
         // @ngInject
-        var foo = function($scope) {};
+        var foo2 = function($scope) {};
 // @ngInject
-var foo = function($scope) {
+var foo3 = function($scope) {
 }
             // @ngInject
-            var foo = function($scope) {}
+            var foo4 = function($scope) {}
 
-    /* @ngInject */ var foo = function($scope) {
+    /* @ngInject */ var foo5 = function($scope) {
     };
-        /* @ngInject */var foo = function($scope) {};
-/* @ngInject */var foo = function($scope) {
+        /* @ngInject */var foo6 = function($scope) {};
+/* @ngInject */var foo7 = function($scope) {
 }
-            /* @ngInject */var foo = function($scope) {}
+            /* @ngInject */var foo8 = function($scope) {}
 
 
 // adding an explicit annotation where it isn't needed should work fine
 myMod.controller("foo", /*@ngInject*/ function($scope, $timeout) {
+});
+
+
+
+// explicit annotations using ngInject() instead of /*@ngInject*/
+var x = ngInject(function($scope) {});
+
+obj = ngInject({
+    foo: function(a) {},
+    bar: function(b, c) {},
+    val: 42,
+    inner: {
+        circle: function(d) {},
+        alalalala: "long",
+    },
+    nest: { many: {levels: function(x) {}}},
+    but: { onlythrough: ["object literals", {donttouch: function(me) {}}]},
 });
 
 
@@ -428,3 +477,18 @@ var x = /*@ngInject*/ (function() {
     return function($a) {
     };
 })();
+
+
+// reference support
+function MyCtrl1(a, b) {
+}
+if (true) {
+    // proper scope analysis including shadowing
+    let MyCtrl1 = function(c) {
+    }
+    angular.module("MyMod").directive("foo", MyCtrl1);
+}
+angular.module("MyMod").controller("bar", MyCtrl1);
+function MyCtrl2(z) {
+}
+funcall(/*@ngInject*/ MyCtrl2); // explicit annotation on reference flows back to definition

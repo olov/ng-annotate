@@ -6,11 +6,16 @@
 const esprima_require_t0 = Date.now();
 const esprima = require("esprima").parse;
 const esprima_require_t1 = Date.now();
+const fmt = require("simple-fmt");
 const is = require("simple-is");
 const alter = require("alter");
 const traverse = require("ordered-ast-traverse");
-const Heap = require("./heap");
-const ngInjectComments = require("./nginject-comments");
+const EOL = require("os").EOL;
+const assert = require("assert");
+const ngInject = require("./nginject");
+const generateSourcemap = require("./generate-sourcemap");
+const Lut = require("./lut");
+const scopeTools = require("./scopetools");
 
 const chainedRouteProvider = 1;
 const chainedUrlRouterProvider = 2;
@@ -366,6 +371,14 @@ function judgeSuspects(ctx) {
         }
 
         target = jumpOverIife(target);
+        const followedTarget = followReference(target);
+        if (followedTarget) {
+            if (followedTarget.$once) {
+                continue;
+            }
+            followedTarget.$once = true;
+            target = followedTarget;
+        }
 
         if (mode === "rebuild" && isAnnotatedArray(target)) {
             replaceArray(ctx, target, fragments, quot);
@@ -373,8 +386,121 @@ function judgeSuspects(ctx) {
             removeArray(target, fragments);
         } else if (is.someof(mode, ["add", "rebuild"]) && isFunctionExpressionWithArgs(target)) {
             insertArray(ctx, target, fragments, quot);
-        } else if (isGenericProviderName(target)) {
-            replaceString(ctx, target, fragments, quot);
+        } else {
+            // if it's not array or function-expression, then it's a candidate for foo.$inject = [..]
+            judgeInjectArraySuspect(target, ctx);
+        }
+    }
+}
+
+function followReference(node) {
+    if (!scopeTools.isReference(node)) {
+        return null;
+    }
+
+    const scope = node.$scope.lookup(node.name);
+    if (!scope) {
+        return null;
+    }
+
+    const parent = scope.getNode(node.name).$parent;
+    const kind = scope.getKind(node.name);
+    const ptype = parent.type;
+
+    if (is.someof(kind, ["const", "let", "var"])) {
+        assert(ptype === "VariableDeclarator");
+        return parent.init;
+    } else if (kind === "fun") {
+        assert(ptype === "FunctionDeclaration" || ptype === "FunctionExpression")
+        return parent;
+    }
+
+    // other kinds should not be handled ("param", "caught")
+
+    return null;
+}
+
+function judgeInjectArraySuspect(node, ctx) {
+    // /*@ngInject*/ var foo = function($scope) {} and
+    // /*@ngInject*/ function foo($scope) {} and
+    // /*@ngInject*/ foo.bar[0] = function($scope) {}
+    let d0 = null;
+    const nr0 = node.range[0];
+    const nr1 = node.range[1];
+    if (node.type === "VariableDeclaration" && node.declarations.length === 1 &&
+        (d0 = node.declarations[0]).init && ctx.isFunctionExpressionWithArgs(d0.init)) {
+        const isSemicolonTerminated = (ctx.src[nr1 - 1] === ";");
+        addRemoveInjectArray(d0.init.params, nr0, isSemicolonTerminated ? nr1 : d0.init.range[1], d0.id.name);
+    } else if (ctx.isFunctionDeclarationWithArgs(node)) {
+        addRemoveInjectArray(node.params, nr0, nr1, node.id.name);
+    } else if (node.type === "ExpressionStatement" && node.expression.type === "AssignmentExpression" &&
+        ctx.isFunctionExpressionWithArgs(node.expression.right)) {
+        const isSemicolonTerminated = (ctx.src[nr1 - 1] === ";");
+        const name = ctx.srcForRange(node.expression.left.range);
+        addRemoveInjectArray(node.expression.right.params, nr0, isSemicolonTerminated ? nr1 : node.expression.right.range[1], name);
+    }
+
+    function getIndent(pos) {
+        const src = ctx.src;
+        const lineStart = src.lastIndexOf("\n", pos - 1) + 1;
+        let i = lineStart;
+        for (; src[i] === " " || src[i] === "\t"; i++) {
+        }
+        return src.slice(lineStart, i);
+    }
+
+    function addRemoveInjectArray(params, posBeforeFunctionDeclaration, posAfterFunctionDeclaration, name) {
+        const indent = getIndent(posAfterFunctionDeclaration);
+
+        const nextNode = ctx.lut.findNodeFromPos(posAfterFunctionDeclaration);
+        const prevNode = ctx.lut.findNodeBeforePos(posBeforeFunctionDeclaration);
+
+        function hasInjectArray(node) {
+            let lvalue;
+            let assignment;
+            return (node && node.type === "ExpressionStatement" && (assignment = node.expression).type === "AssignmentExpression" &&
+                assignment.operator === "=" &&
+                (lvalue = assignment.left).type === "MemberExpression" &&
+                ((lvalue.computed === false && ctx.srcForRange(lvalue.object.range) === name && lvalue.property.name === "$inject") ||
+                    (lvalue.computed === true && ctx.srcForRange(lvalue.object.range) === name && lvalue.property.type === "Literal" && lvalue.property.value === "$inject")));
+        }
+
+        function skipNewline(pos) {
+            if (ctx.src[pos] === "\n") {
+                return pos + 1;
+            } else if (ctx.src.slice(pos, pos + 2) === "\r\n") {
+                return pos + 2;
+            }
+            return pos;
+        }
+
+        const hasArrayBefore = hasInjectArray(prevNode);
+        const hasArrayAfter = hasInjectArray(nextNode);
+
+        const hasArray = hasArrayBefore || hasArrayAfter;
+        const start = hasArrayBefore ? prevNode.range[0]: posAfterFunctionDeclaration;
+        const end = hasArrayBefore ? skipNewline(prevNode.range[1]) : nextNode.range[1];
+
+        const str = fmt("{0}{1}{2}.$inject = {3};", EOL, indent, name, ctx.stringify(ctx, params, ctx.quot));
+
+        if (ctx.mode === "rebuild" && hasArray) {
+            ctx.fragments.push({
+                start: start,
+                end: end,
+                str: str,
+            });
+        } else if (ctx.mode === "remove" && hasArray) {
+            ctx.fragments.push({
+                start: start,
+                end: end,
+                str: "",
+            });
+        } else if (is.someof(ctx.mode, ["add", "rebuild"]) && !hasArray) {
+            ctx.fragments.push({
+                start: posAfterFunctionDeclaration,
+                end: posAfterFunctionDeclaration,
+                str: str,
+            });
         }
     }
 }
@@ -447,7 +573,7 @@ module.exports = function ngAnnotate(src, options) {
     // Fix Program node range (https://code.google.com/p/esprima/issues/detail?id=541)
     ast.range[0] = 0;
 
-    // append a dummy-node to ast to catch any remaining triggers
+    // append a dummy-node to ast so that lut.findNodeFromPos(lastPos) returns something
     ast.body.push({
         type: "DebuggerStatement",
         range: [ast.range[1], ast.range[1]],
@@ -462,10 +588,6 @@ module.exports = function ngAnnotate(src, options) {
     // fragments array, later sent to alter in one shot
     const fragments = [];
 
-    // triggers contains functions to trigger when traverse hits the
-    // first node at (or after) a certain pos
-    const triggers = new Heap();
-
     // suspects is built up with suspect nodes by match.
     // A suspect node will get annotations added / removed if it
     // fulfills the arrayexpression or functionexpression look,
@@ -473,6 +595,10 @@ module.exports = function ngAnnotate(src, options) {
     // module definition) - alternatively is forced to ignore
     // context with node.$always = true
     const suspects = [];
+
+    const lut = new Lut(ast, src);
+
+    scopeTools.setupScopeAndReferences(ast);
 
     const ctx = {
         mode: mode,
@@ -485,8 +611,8 @@ module.exports = function ngAnnotate(src, options) {
         rename: rename,
         comments: comments,
         fragments: fragments,
-        triggers: triggers,
         suspects: suspects,
+        lut: lut,
         isFunctionExpressionWithArgs: isFunctionExpressionWithArgs,
         isFunctionDeclarationWithArgs: isFunctionDeclarationWithArgs,
         isAnnotatedArray: isAnnotatedArray,
@@ -507,7 +633,7 @@ module.exports = function ngAnnotate(src, options) {
     }
     const matchPluginsOrNull = (plugins.length === 0 ? null : matchPlugins);
 
-    ngInjectComments.init(ctx);
+    ngInject.inspectComments(ctx);
     plugins.forEach(function(plugin) {
         plugin.init(ctx);
     });
@@ -519,13 +645,9 @@ module.exports = function ngAnnotate(src, options) {
         if (node.type === "CallExpression") {
             callerIds.push(node);
             recentCaller = node;
+            ngInject.inspectCallExpression(node, ctx);
         }
 
-        const pos = node.range[0];
-        while (pos >= triggers.pos) {
-            const trigger = triggers.getAndRemoveNext();
-            trigger.fn.call(null, node, trigger.ctx);
-        }
     }, post: function(node) {
         if (node === recentCaller) {
             callerIds.pop();
@@ -548,9 +670,16 @@ module.exports = function ngAnnotate(src, options) {
     judgeSuspects(ctx);
 
     const out = alter(src, fragments);
-
-    return {
+    const result = {
         src: out,
         _stats: stats,
     };
+
+    if (options.sourcemap) {
+        stats.sourcemap_t0 = Date.now();
+        result.map = generateSourcemap(src, fragments, options.inFile, options.sourceroot);
+        stats.sourcemap_t1 = Date.now();
+    }
+
+    return result;
 }

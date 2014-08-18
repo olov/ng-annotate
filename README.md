@@ -46,6 +46,10 @@ Use the `-o` option to write output to file.
 
 Provide `-` instead of an input `<file>` to read input from stdin.
 
+Use the `--sourcemap` option to generate an inline sourcemap.
+
+Use the `--sourceroot` option to set the sourceRoot property of the generated sourcemap.
+
 Use the `--single_quotes` option to output `'$scope'` instead of `"$scope"`.
 
 Use the `--regexp` option to restrict matching further or to expand matching.
@@ -79,6 +83,7 @@ automatically so you don't have to think about it.
 * [Broccoli](https://github.com/broccolijs/broccoli): [broccoli-ng-annotate](https://www.npmjs.org/package/broccoli-ng-annotate) by [Gilad Peleg](https://github.com/pgilad)
 * [Rails asset pipeline](http://guides.rubyonrails.org/asset_pipeline.html): [ngannotate-rails](https://rubygems.org/gems/ngannotate-rails) by [Kari Ikonen](https://github.com/kikonen)
 * [Grails asset pipeline](https://github.com/bertramdev/asset-pipeline): [angular-annotate-asset-pipeline](https://github.com/craigburke/angular-annotate-asset-pipeline) by [Craig Burke](https://github.com/craigburke)
+* [Webpack](http://webpack.github.io/): [ng-annotate-webpack-plugin](https://www.npmjs.org/package/ng-annotate-webpack-plugin) by [Chris Liechty](https://github.com/cliechty)
 * Something missing? Contributions welcome - create plugin and submit a README pull request!
 
 
@@ -153,41 +158,76 @@ ng-annotate understands IIFE's and attempts to match through them, so
 `function($scope) ..` does (for any IIFE args and params).
 
 
+## Reference-following
+*experimental*
+
+ng-annotate follows references. This works iff the referenced declaration is
+a) a function declaration or
+b) a variable declaration with an initializer.
+Modifications to a reference outside of its declaration site are ignored by ng-annotate.
+
+These examples will get annotated:
+
+    function MyCtrl($scope, $timeout) {
+    }
+    var MyCtrl2 = function($scope) {};
+
+    angular.module("MyMod").controller("MyCtrl", MyCtrl);
+    angular.module("MyMod").controller("MyCtrl", MyCtrl2);
+
+
 ## Explicit annotations
 You can prepend a function expression with `/* @ngInject */` to explicitly state that this
 function should get annotated. ng-annotate will leave the comment intact and will thus still
-be able to also remove or rewrite such annotations. Use `/* @ngInject */` as an occasional
+be able to also remove or rewrite such annotations. Alternatively, you can wrap an expression
+inside an `ngInject(..)` function call. Use `/* @ngInject */` or `ngInject(..)` as an occasional
 workaround when ng-annotate doesn't support your code style but feel free to open an issue
 also.
 
-    var x = /* @ngInject */ function($scope) {};
+    x = /* @ngInject */ function($scope) {};
     obj = {controller: /*@ngInject*/ function($scope) {}};
     obj.bar = /*@ngInject*/ function($scope) {};
 
+    function ngInject(f) { return f } // define this once in your program
+    x = ngInject(function($scope) {});
+    obj = {controller: ngInject(function($scope) {})};
+    obj.bar = ngInject(function($scope) {});
+
     =>
 
-    var x = /* @ngInject */ ["$scope", function($scope) {}];
+    x = /* @ngInject */ ["$scope", function($scope) {}];
     obj = {controller: /*@ngInject*/ ["$scope", function($scope) {}]};
     obj.bar = /*@ngInject*/ ["$scope", function($scope) {}];
+
+    function ngInject(f) { return f } // define this once in your program
+    x = ngInject(["$scope", function($scope) {}]);
+    obj = {controller: ngInject(["$scope", function($scope) {}])};
+    obj.bar = ngInject(["$scope", function($scope) {}]);
 
 Prepended to an object literal, `/* @ngInject */` will annotate all of its contained
 function expressions, recursively:
 
 	obj = /*@ngInject*/ {
 	    controller: function($scope) {},
-	    resolve: {
-	        data: function(Service) {},
-	    },
+	    resolve: { data: function(Service) {} },
 	};
+
+	obj = ngInject({
+	    controller: function($scope) {},
+	    resolve: { data: function(Service) {} },
+	});
 
 	=>
 
 	obj = /*@ngInject*/ {
 	    controller: ["$scope", function($scope) {}],
-	    resolve: {
-	        data: ["Service", function(Service) {}],
-	    },
+	    resolve: { data: ["Service", function(Service) {}] },
 	};
+
+	obj = ngInject({
+	    controller: ["$scope", function($scope) {}],
+	    resolve: { data: ["Service", function(Service) {}] },
+	});
 
 
 Prepended to a function statement, to a single variable declaration initialized with a
@@ -248,6 +288,7 @@ options and return value.
 
     var ngAnnotate = require("ng-annotate");
     var somePlugin = require("./some/path/some-plugin");
-    var res = ngAnnotate(src, {add: true, plugin: [somePlugin]})
+    var res = ngAnnotate(src, {add: true, plugin: [somePlugin], sourcemap: true, sourceroot: "/path/to/source/root"});
     var errorstringArray = res.errors;
     var transformedSource = res.src;
+    var transformedSourceMap = res.map;
