@@ -406,43 +406,43 @@ bar.foo2.$inject = ['$scope'];
 
 // let's zip-zag indentation to make sure that the $inject array lines up properly
     // @ngInject
-    function foo1($scope) {}
-    foo1.$inject = ['$scope'];
+    function foo3($scope) {}
+    foo3.$inject = ['$scope'];
         // @ngInject
-        function foo2($scope) {
+        function foo4($scope) {
         }
-        foo2.$inject = ['$scope'];
-/* @ngInject */ function foo3($scope) {}
-foo3.$inject = ['$scope'];
-            /* @ngInject */ function foo4($scope) {
+        foo4.$inject = ['$scope'];
+/* @ngInject */ function foo5($scope) {}
+foo5.$inject = ['$scope'];
+            /* @ngInject */ function foo6($scope) {
             }
-            foo4.$inject = ['$scope'];
+            foo6.$inject = ['$scope'];
 
     // @ngInject
-    var foo1 = function($scope) {
+    var foo7 = function($scope) {
     };
-    foo1.$inject = ['$scope'];
+    foo7.$inject = ['$scope'];
         // @ngInject
-        var foo2 = function($scope) {};
-        foo2.$inject = ['$scope'];
+        var foo8 = function($scope) {};
+        foo8.$inject = ['$scope'];
 // @ngInject
-var foo3 = function($scope) {
+var foo9 = function($scope) {
 }
-foo3.$inject = ['$scope'];
+foo9.$inject = ['$scope'];
             // @ngInject
-            var foo4 = function($scope) {}
-            foo4.$inject = ['$scope'];
+            var foo10 = function($scope) {}
+            foo10.$inject = ['$scope'];
 
-    /* @ngInject */ var foo5 = function($scope) {
+    /* @ngInject */ var foo11 = function($scope) {
     };
-    foo5.$inject = ['$scope'];
-        /* @ngInject */var foo6 = function($scope) {};
-        foo6.$inject = ['$scope'];
-/* @ngInject */var foo7 = function($scope) {
+    foo11.$inject = ['$scope'];
+        /* @ngInject */var foo12 = function($scope) {};
+        foo12.$inject = ['$scope'];
+/* @ngInject */var foo13 = function($scope) {
 }
-foo7.$inject = ['$scope'];
-            /* @ngInject */var foo8 = function($scope) {}
-            foo8.$inject = ['$scope'];
+foo13.$inject = ['$scope'];
+            /* @ngInject */var foo14 = function($scope) {}
+            foo14.$inject = ['$scope'];
 
 
 // adding an explicit annotation where it isn't needed should work fine

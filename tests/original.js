@@ -400,31 +400,31 @@ bar.foo2 = function($scope) {
 
 // let's zip-zag indentation to make sure that the $inject array lines up properly
     // @ngInject
-    function foo1($scope) {}
+    function foo3($scope) {}
         // @ngInject
-        function foo2($scope) {
+        function foo4($scope) {
         }
-/* @ngInject */ function foo3($scope) {}
-            /* @ngInject */ function foo4($scope) {
+/* @ngInject */ function foo5($scope) {}
+            /* @ngInject */ function foo6($scope) {
             }
 
     // @ngInject
-    var foo1 = function($scope) {
+    var foo7 = function($scope) {
     };
         // @ngInject
-        var foo2 = function($scope) {};
+        var foo8 = function($scope) {};
 // @ngInject
-var foo3 = function($scope) {
+var foo9 = function($scope) {
 }
             // @ngInject
-            var foo4 = function($scope) {}
+            var foo10 = function($scope) {}
 
-    /* @ngInject */ var foo5 = function($scope) {
+    /* @ngInject */ var foo11 = function($scope) {
     };
-        /* @ngInject */var foo6 = function($scope) {};
-/* @ngInject */var foo7 = function($scope) {
+        /* @ngInject */var foo12 = function($scope) {};
+/* @ngInject */var foo13 = function($scope) {
 }
-            /* @ngInject */var foo8 = function($scope) {}
+            /* @ngInject */var foo14 = function($scope) {}
 
 
 // adding an explicit annotation where it isn't needed should work fine

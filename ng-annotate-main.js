@@ -405,10 +405,36 @@ function followReference(node) {
     return null;
 }
 
+// O(srclength) so should only be used for debugging purposes, else replace with lut
+function posToLine(pos, src) {
+    if (pos >= src.length) {
+        pos = src.length - 1;
+    }
+
+    if (pos <= -1) {
+        return -1;
+    }
+
+    let line = 1;
+    for (let i = 0; i < pos; i++) {
+        if (src[i] === "\n") {
+            ++line;
+        }
+    }
+
+    return line;
+}
+
 function judgeInjectArraySuspect(node, ctx) {
     // /*@ngInject*/ var foo = function($scope) {} and
     // /*@ngInject*/ function foo($scope) {} and
     // /*@ngInject*/ foo.bar[0] = function($scope) {}
+
+    // suspect must be inside of a block or at the top-level (i.e. inside of node.$parent.body[])
+    if (!node.$parent || is.noneof(node.$parent.type, ["Program", "BlockStatement"])) {
+        return;
+    }
+
     let d0 = null;
     const nr0 = node.range[0];
     const nr1 = node.range[1];
@@ -417,7 +443,6 @@ function judgeInjectArraySuspect(node, ctx) {
         const isSemicolonTerminated = (ctx.src[nr1 - 1] === ";");
         addRemoveInjectArray(d0.init.params, nr0, isSemicolonTerminated ? nr1 : d0.init.range[1], d0.id.name);
     } else if (ctx.isFunctionDeclarationWithArgs(node)) {
-        console.dir(node.$parent)
         addRemoveInjectArray(node.params, nr0, nr1, node.id.name);
     } else if (node.type === "ExpressionStatement" && node.expression.type === "AssignmentExpression" &&
         ctx.isFunctionExpressionWithArgs(node.expression.right)) {
@@ -436,10 +461,33 @@ function judgeInjectArraySuspect(node, ctx) {
     }
 
     function addRemoveInjectArray(params, posAtFunctionDeclaration, posAfterFunctionDeclaration, name) {
+        // if an existing something.$inject = [..] exists then is will always be recycled when rebuilding
+
         const indent = getIndent(posAfterFunctionDeclaration);
 
-        const nextNode = ctx.lut.findNodeFromPos(posAfterFunctionDeclaration);
-        const prevNode = ctx.lut.findNodeBeforePos(posAtFunctionDeclaration);
+        let foundSuspectInBody = false;
+        let existingExpressionStatementWithArray = null;
+        let hasTroublesomeReturn = false;
+        node.$parent.body.forEach(function(bnode) {
+            if (bnode === node) {
+                foundSuspectInBody = true;
+            }
+
+            if (hasInjectArray(bnode)) {
+                if (existingExpressionStatementWithArray) {
+                    throw fmt("conflicting inject arrays at line {0} and {1}",
+                        posToLine(existingExpressionStatementWithArray.range[0], ctx.src),
+                        posToLine(bnode.range[0], ctx.src));
+                }
+                existingExpressionStatementWithArray = bnode;
+            }
+
+            // there's a return statement before our function
+            if (!foundSuspectInBody && bnode.type === "ReturnStatement") {
+                hasTroublesomeReturn = true;
+            }
+        });
+        assert(foundSuspectInBody);
 
         function hasInjectArray(node) {
             let lvalue;
@@ -460,28 +508,38 @@ function judgeInjectArraySuspect(node, ctx) {
             return pos;
         }
 
-        const hasArrayBefore = hasInjectArray(prevNode);
-        const hasArrayAfter = hasInjectArray(nextNode);
+        function skipPrevNewline(pos) {
+            let prevLF = ctx.src.lastIndexOf("\n", pos);
+            if (prevLF === -1) {
+                return pos;
+            }
+            if (prevLF >= 1 && ctx.src[prevLF] === "\r") {
+                --prevLF;
+            }
 
-        const hasArray = hasArrayBefore || hasArrayAfter;
-        const start = hasArrayBefore ? prevNode.range[0]: posAfterFunctionDeclaration;
-        const end = hasArrayBefore ? skipNewline(prevNode.range[1]) : nextNode.range[1];
+            if (/\S/g.test(ctx.src.slice(prevLF, pos - 1))) {
+                return pos;
+            }
+
+            return prevLF;
+        }
 
         const str = fmt("{0}{1}{2}.$inject = {3};", EOL, indent, name, ctx.stringify(params, ctx.quot));
 
-        if (ctx.mode === "rebuild" && hasArray) {
+        if (ctx.mode === "rebuild" && existingExpressionStatementWithArray) {
             ctx.fragments.push({
-                start: start,
-                end: end,
+                start: existingExpressionStatementWithArray.range[0],
+                end: existingExpressionStatementWithArray.range[1],
                 str: str,
             });
-        } else if (ctx.mode === "remove" && hasArray) {
+        } else if (ctx.mode === "remove" && existingExpressionStatementWithArray) {
+//            console.log(existingExpressionStatementWithArray.range)
             ctx.fragments.push({
-                start: start,
-                end: end,
+                start: skipPrevNewline(existingExpressionStatementWithArray.range[0]),
+                end: existingExpressionStatementWithArray.range[1],
                 str: "",
             });
-        } else if (is.someof(ctx.mode, ["add", "rebuild"]) && !hasArray) {
+        } else if (is.someof(ctx.mode, ["add", "rebuild"]) && !existingExpressionStatementWithArray) {
             ctx.fragments.push({
                 start: posAfterFunctionDeclaration,
                 end: posAfterFunctionDeclaration,
@@ -648,7 +706,13 @@ module.exports = function ngAnnotate(src, options) {
         }
     }});
 
-    judgeSuspects(ctx);
+    try {
+        judgeSuspects(ctx);
+    } catch(e) {
+        return {
+            errors: ["error: " + e],
+        };
+    }
 
     const out = alter(src, fragments);
     const result = {
