@@ -525,3 +525,26 @@ function MyCtrl2(z) {
 }
 MyCtrl2.$inject = ['z'];
 funcall(/*@ngInject*/ MyCtrl2); // explicit annotation on reference flows back to definition
+
+angular.module("MyMod").directive("foo", MyDirective);
+
+function MyDirective($stateProvider) {
+    $stateProvider.state('astate', {
+        resolve: {
+            yoyo: ['ma', function(ma) {
+            }],
+        }
+    });
+}
+MyDirective.$inject = ['$stateProvider'];
+
+/* @ngInject */
+function MyDirective2($stateProvider) {
+    $stateProvider.state('astate', {
+        resolve: {
+            yoyo: ['ma', function(ma) {
+            }],
+        }
+    });
+}
+MyDirective2.$inject = ['$stateProvider'];

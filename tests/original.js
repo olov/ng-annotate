@@ -504,3 +504,24 @@ angular.module("MyMod").controller("bar", MyCtrl1);
 function MyCtrl2(z) {
 }
 funcall(/*@ngInject*/ MyCtrl2); // explicit annotation on reference flows back to definition
+
+angular.module("MyMod").directive("foo", MyDirective);
+
+function MyDirective($stateProvider) {
+    $stateProvider.state('astate', {
+        resolve: {
+            yoyo: function(ma) {
+            },
+        }
+    });
+}
+
+/* @ngInject */
+function MyDirective2($stateProvider) {
+    $stateProvider.state('astate', {
+        resolve: {
+            yoyo: function(ma) {
+            },
+        }
+    });
+}
