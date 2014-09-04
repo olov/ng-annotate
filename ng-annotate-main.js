@@ -214,7 +214,7 @@ function matchRegular(node, ctx) {
     if (obj.name === "angular" && method.name === "module") {
         const args = node.arguments;
         if (args.length >= 2) {
-            last(args).$always = true;
+            node.$chained = chainedRegular;
             return last(args);
         }
     }
@@ -235,9 +235,6 @@ function matchRegular(node, ctx) {
         args.length === 1 && args[0] :
         args.length === 2 && args[0].type === "Literal" && is.string(args[0].value) && args[1]);
 
-    if (target) {
-        target.$always = true;
-    }
     return target;
 }
 
@@ -333,36 +330,38 @@ function removeArray(array, fragments) {
 }
 
 function judgeSuspects(ctx) {
-    const suspects = ctx.suspects;
     const mode = ctx.mode;
     const fragments = ctx.fragments;
     const quot = ctx.quot;
 
-    for (let i = 0; i < suspects.length; i++) {
-        let target = suspects[i];
+    const suspects = makeUnique(ctx.suspects, 1);
 
-        if (target.$once) {
-            continue;
-        }
-        target.$once = true;
+    detectModuleContext(suspects);
 
-        if (!target.$always) {
-            let $caller = target.$caller;
-            for (; $caller && $caller.$chained !== chainedRegular; $caller = $caller.$caller) {
-            }
-            if (!$caller) {
-                continue;
+    // create final suspects by jumping, following, uniq'ing
+    const finalSuspects = makeUnique(suspects.map(function(target) {
+        const jumped = jumpOverIife(target);
+        if (jumped !== target) { // we did skip an IIFE
+            if (target.$chained === chainedRegular) {
+                jumped.$chained = chainedRegular;
             }
         }
 
-        target = jumpOverIife(target);
-        const followedTarget = followReference(target);
-        if (followedTarget) {
-            if (followedTarget.$once) {
-                continue;
+        const jumpedAndFollowed = followReference(jumped) || jumped;
+        if (jumpedAndFollowed !== jumped) { // we did follow a reference
+            if (jumped.$chained === chainedRegular) {
+                jumpedAndFollowed.$chained = chainedRegular;
             }
-            followedTarget.$once = true;
-            target = followedTarget;
+        }
+
+        return jumpedAndFollowed;
+    }), 3);
+
+    detectModuleContext(finalSuspects);
+
+    finalSuspects.forEach(function(target) {
+        if (target.$chained !== chainedRegular) {
+            return;
         }
 
         if (mode === "rebuild" && isAnnotatedArray(target)) {
@@ -375,6 +374,32 @@ function judgeSuspects(ctx) {
             // if it's not array or function-expression, then it's a candidate for foo.$inject = [..]
             judgeInjectArraySuspect(target, ctx);
         }
+    });
+
+
+    function isInsideModuleContext(node) {
+        let $parent = node.$parent;
+        for (; $parent && $parent.$chained !== chainedRegular; $parent = $parent.$parent) {
+        }
+        return Boolean($parent);
+    }
+
+    function detectModuleContext(suspects) {
+        suspects.forEach(function(target) {
+            if (target.$chained !== chainedRegular && isInsideModuleContext(target)) {
+                target.$chained = chainedRegular;
+            }
+        });
+    }
+
+    function makeUnique(suspects, val) {
+        return suspects.filter(function(target) {
+            if (target.$seen === val) {
+                return false;
+            }
+            target.$seen = val;
+            return true;
+        });
     }
 }
 
@@ -569,7 +594,7 @@ function addModuleContextDependentSuspect(target, ctx) {
 }
 
 function addModuleContextIndependentSuspect(target, ctx) {
-    target.$always = true;
+    target.$chained = chainedRegular;
     ctx.suspects.push(target);
 }
 
@@ -635,8 +660,7 @@ module.exports = function ngAnnotate(src, options) {
     // A suspect node will get annotations added / removed if it
     // fulfills the arrayexpression or functionexpression look,
     // and if it is in the correct context (inside an angular
-    // module definition) - alternatively is forced to ignore
-    // context with node.$always = true
+    // module definition)
     const suspects = [];
 
     const lut = new Lut(ast, src);
