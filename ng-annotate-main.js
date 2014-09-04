@@ -467,7 +467,7 @@ function judgeInjectArraySuspect(node, ctx) {
 
         let foundSuspectInBody = false;
         let existingExpressionStatementWithArray = null;
-        let hasTroublesomeReturn = false;
+        let troublesomeReturn = false;
         node.$parent.body.forEach(function(bnode) {
             if (bnode === node) {
                 foundSuspectInBody = true;
@@ -484,10 +484,14 @@ function judgeInjectArraySuspect(node, ctx) {
 
             // there's a return statement before our function
             if (!foundSuspectInBody && bnode.type === "ReturnStatement") {
-                hasTroublesomeReturn = true;
+                troublesomeReturn = bnode;
             }
         });
         assert(foundSuspectInBody);
+
+        if (troublesomeReturn && !existingExpressionStatementWithArray) {
+            posAfterFunctionDeclaration = skipPrevNewline(troublesomeReturn.range[0]);
+        }
 
         function hasInjectArray(node) {
             let lvalue;
@@ -533,7 +537,6 @@ function judgeInjectArraySuspect(node, ctx) {
                 str: str,
             });
         } else if (ctx.mode === "remove" && existingExpressionStatementWithArray) {
-//            console.log(existingExpressionStatementWithArray.range)
             ctx.fragments.push({
                 start: skipPrevNewline(existingExpressionStatementWithArray.range[0]),
                 end: existingExpressionStatementWithArray.range[1],

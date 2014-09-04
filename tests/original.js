@@ -432,6 +432,18 @@ myMod.controller("foo", /*@ngInject*/ function($scope, $timeout) {
 });
 
 
+// troublesome return forces different placement of $inject array
+function outer() {
+    foo;
+    return {
+        controller: MyCtrl,
+    };
+
+    // @ngInject
+    function MyCtrl(a) {
+    }
+}
+
 
 // explicit annotations using ngInject() instead of /*@ngInject*/
 var x = ngInject(function($scope) {});
