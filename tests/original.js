@@ -113,6 +113,19 @@ myMod.provider("foo", {
     }
 });
 
+myMod.provider("foo", fooprov);
+
+function fooprov(a) {
+    this.$get = fooget;
+}
+
+function fooget(b) {
+    this.$get = fooget2;
+}
+
+function fooget2(c) {
+}
+
 // chaining
 myMod.directive("foo", function($a, $b) {
     a;

@@ -113,6 +113,22 @@ myMod.provider("foo", {
     }
 });
 
+myMod.provider("foo", fooprov);
+
+function fooprov(a) {
+    this.$get = fooget;
+}
+fooprov.$inject = ["a"];
+
+function fooget(b) {
+    this.$get = fooget2;
+}
+fooget.$inject = ["b"];
+
+function fooget2(c) {
+}
+fooget2.$inject = ["c"];
+
 // chaining
 myMod.directive("foo", ["$a", "$b", function($a, $b) {
     a;

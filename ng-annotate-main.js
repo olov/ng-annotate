@@ -336,28 +336,21 @@ function judgeSuspects(ctx) {
 
     const suspects = makeUnique(ctx.suspects, 1);
 
-    detectModuleContext(suspects);
+    for (let n = 0; n < 42; n++) {
+        // could be while(true), above is just a safety-net
+        // in practice it will loop just a couple of times
+        propagateModuleContext(suspects);
+        if (!setChainedThroughIifesAndReferences(suspects)) {
+            break;
+        }
+    }
 
     // create final suspects by jumping, following, uniq'ing
     const finalSuspects = makeUnique(suspects.map(function(target) {
         const jumped = jumpOverIife(target);
-        if (jumped !== target) { // we did skip an IIFE
-            if (target.$chained === chainedRegular) {
-                jumped.$chained = chainedRegular;
-            }
-        }
-
         const jumpedAndFollowed = followReference(jumped) || jumped;
-        if (jumpedAndFollowed !== jumped) { // we did follow a reference
-            if (jumped.$chained === chainedRegular) {
-                jumpedAndFollowed.$chained = chainedRegular;
-            }
-        }
-
         return jumpedAndFollowed;
-    }), 3);
-
-    detectModuleContext(finalSuspects);
+    }), 2);
 
     finalSuspects.forEach(function(target) {
         if (target.$chained !== chainedRegular) {
@@ -377,19 +370,41 @@ function judgeSuspects(ctx) {
     });
 
 
-    function isInsideModuleContext(node) {
-        let $parent = node.$parent;
-        for (; $parent && $parent.$chained !== chainedRegular; $parent = $parent.$parent) {
-        }
-        return Boolean($parent);
-    }
-
-    function detectModuleContext(suspects) {
+    function propagateModuleContext(suspects) {
         suspects.forEach(function(target) {
             if (target.$chained !== chainedRegular && isInsideModuleContext(target)) {
                 target.$chained = chainedRegular;
             }
         });
+    }
+
+    function setChainedThroughIifesAndReferences(suspects) {
+        let modified = false;
+        suspects.forEach(function(target) {
+            const jumped = jumpOverIife(target);
+            if (jumped !== target) { // we did skip an IIFE
+                if (target.$chained === chainedRegular && jumped.$chained !== chainedRegular) {
+                    modified = true;
+                    jumped.$chained = chainedRegular;
+                }
+            }
+
+            const jumpedAndFollowed = followReference(jumped) || jumped;
+            if (jumpedAndFollowed !== jumped) { // we did follow a reference
+                if (jumped.$chained === chainedRegular && jumpedAndFollowed.$chained !== chainedRegular) {
+                    modified = true;
+                    jumpedAndFollowed.$chained = chainedRegular;
+                }
+            }
+        });
+        return modified;
+    }
+
+    function isInsideModuleContext(node) {
+        let $parent = node.$parent;
+        for (; $parent && $parent.$chained !== chainedRegular; $parent = $parent.$parent) {
+        }
+        return Boolean($parent);
     }
 
     function makeUnique(suspects, val) {
