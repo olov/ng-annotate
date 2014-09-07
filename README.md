@@ -5,13 +5,17 @@ No lost comments or moved lines.
 
 Without annotations:
 
-    angular.module("MyMod").controller("MyCtrl", function($scope, $timeout) {
-    });
+```js
+angular.module("MyMod").controller("MyCtrl", function($scope, $timeout) {
+});
+```
 
 With annotations:
 
-    angular.module("MyMod").controller("MyCtrl", ["$scope", "$timeout", function($scope, $timeout) {
-    }]);
+```js
+angular.module("MyMod").controller("MyCtrl", ["$scope", "$timeout", function($scope, $timeout) {
+}]);
+```
 
 Annotations are useful because with them you're able to minify your source code using your
 favorite JS minifier.
@@ -33,7 +37,10 @@ with `ngAnnotate` in their Gruntfile. Scroll down for information about other to
 
 
 ## Installation and usage
-    npm install -g ng-annotate
+
+```bash
+npm install -g ng-annotate
+```
 
 Then run it as `ng-annotate OPTIONS <file>`. The errors (if any) will go to stderr,
 the transpiled output to stdout.
@@ -102,13 +109,17 @@ ng-annotate understands the two common declaration forms:
 
 Long form:
 
-    angular.module("MyMod").controller("MyCtrl", function($scope, $timeout) {
-    });
+```js
+angular.module("MyMod").controller("MyCtrl", function($scope, $timeout) {
+});
+```
 
 Short form:
 
-    myMod.controller("MyCtrl", function($scope, $timeout) {
-    });
+```js
+myMod.controller("MyCtrl", function($scope, $timeout) {
+});
+```
 
 It's not limited to `.controller` of course. It understands `.config`, `.factory`,
 `.directive`, `.filter`, `.run`, `.controller`, `.provider`, `.service`, `.animation` and
@@ -165,13 +176,14 @@ Modifications to a reference outside of its declaration site are ignored by ng-a
 
 These examples will get annotated:
 
-    function MyCtrl($scope, $timeout) {
-    }
-    var MyCtrl2 = function($scope) {};
+```js
+function MyCtrl($scope, $timeout) {
+}
+var MyCtrl2 = function($scope) {};
 
-    angular.module("MyMod").controller("MyCtrl", MyCtrl);
-    angular.module("MyMod").controller("MyCtrl", MyCtrl2);
-
+angular.module("MyMod").controller("MyCtrl", MyCtrl);
+angular.module("MyMod").controller("MyCtrl", MyCtrl2);
+```
 
 ## Explicit annotations
 You can prepend a function expression with `/* @ngInject */` to explicitly state that this
@@ -181,79 +193,83 @@ inside an `ngInject(..)` function call. Use `/* @ngInject */` or `ngInject(..)` 
 workaround when ng-annotate doesn't support your code style but feel free to open an issue
 also.
 
-    x = /* @ngInject */ function($scope) {};
-    obj = {controller: /*@ngInject*/ function($scope) {}};
-    obj.bar = /*@ngInject*/ function($scope) {};
+```js
+x = /* @ngInject */ function($scope) {};
+obj = {controller: /*@ngInject*/ function($scope) {}};
+obj.bar = /*@ngInject*/ function($scope) {};
 
-    function ngInject(f) { return f } // define this once in your program
-    x = ngInject(function($scope) {});
-    obj = {controller: ngInject(function($scope) {})};
-    obj.bar = ngInject(function($scope) {});
+function ngInject(f) { return f } // define this once in your program
+x = ngInject(function($scope) {});
+obj = {controller: ngInject(function($scope) {})};
+obj.bar = ngInject(function($scope) {});
 
-    =>
+=>
 
-    x = /* @ngInject */ ["$scope", function($scope) {}];
-    obj = {controller: /*@ngInject*/ ["$scope", function($scope) {}]};
-    obj.bar = /*@ngInject*/ ["$scope", function($scope) {}];
+x = /* @ngInject */ ["$scope", function($scope) {}];
+obj = {controller: /*@ngInject*/ ["$scope", function($scope) {}]};
+obj.bar = /*@ngInject*/ ["$scope", function($scope) {}];
 
-    function ngInject(f) { return f } // define this once in your program
-    x = ngInject(["$scope", function($scope) {}]);
-    obj = {controller: ngInject(["$scope", function($scope) {}])};
-    obj.bar = ngInject(["$scope", function($scope) {}]);
+function ngInject(f) { return f } // define this once in your program
+x = ngInject(["$scope", function($scope) {}]);
+obj = {controller: ngInject(["$scope", function($scope) {}])};
+obj.bar = ngInject(["$scope", function($scope) {}]);
+```
 
 Prepended to an object literal, `/* @ngInject */` will annotate all of its contained
 function expressions, recursively:
 
-	obj = /*@ngInject*/ {
-	    controller: function($scope) {},
-	    resolve: { data: function(Service) {} },
-	};
+```js
+obj = /*@ngInject*/ {
+    controller: function($scope) {},
+    resolve: { data: function(Service) {} },
+};
 
-	obj = ngInject({
-	    controller: function($scope) {},
-	    resolve: { data: function(Service) {} },
-	});
+obj = ngInject({
+    controller: function($scope) {},
+    resolve: { data: function(Service) {} },
+});
 
-	=>
+=>
 
-	obj = /*@ngInject*/ {
-	    controller: ["$scope", function($scope) {}],
-	    resolve: { data: ["Service", function(Service) {}] },
-	};
+obj = /*@ngInject*/ {
+    controller: ["$scope", function($scope) {}],
+    resolve: { data: ["Service", function(Service) {}] },
+};
 
-	obj = ngInject({
-	    controller: ["$scope", function($scope) {}],
-	    resolve: { data: ["Service", function(Service) {}] },
-	});
-
+obj = ngInject({
+    controller: ["$scope", function($scope) {}],
+    resolve: { data: ["Service", function(Service) {}] },
+});
+```
 
 Prepended to a function statement, to a single variable declaration initialized with a
 function expression or to an assignment where the rvalue is a function expression,
  `/* @ngInject */` will attach an `$inject` array to the function:
 
-    // @ngInject
-    function Foo($scope) {}
+```js
+// @ngInject
+function Foo($scope) {}
 
-    // @ngInject
-    var foo = function($scope) {}
+// @ngInject
+var foo = function($scope) {}
 
-    // @ngInject
-    module.exports = function($scope) {}
+// @ngInject
+module.exports = function($scope) {}
 
-    =>
+=>
 
-    // @ngInject
-    function Foo($scope) {}
-    Foo.$inject = ["$scope"];
+// @ngInject
+function Foo($scope) {}
+Foo.$inject = ["$scope"];
 
-    // @ngInject
-    var foo = function($scope) {}
-    foo.$inject = ["$scope"];
+// @ngInject
+var foo = function($scope) {}
+foo.$inject = ["$scope"];
 
-    // @ngInject
-    module.exports = function($scope) {}
-    module.exports.$inject = ["$scope"];
-
+// @ngInject
+module.exports = function($scope) {}
+module.exports.$inject = ["$scope"];
+```
 
 ## Issues and compatibility
 If ng-annotate does not handle a construct you're using, if there's a bug or if you have a feature
@@ -283,9 +299,11 @@ decompilation step.
 ng-annotate can be used as a library. See [ng-annotate.js](ng-annotate.js) for further info about
 options and return value.
 
-    var ngAnnotate = require("ng-annotate");
-    var somePlugin = require("./some/path/some-plugin");
-    var res = ngAnnotate(src, {add: true, plugin: [somePlugin], sourcemap: true, sourceroot: "/path/to/source/root"});
-    var errorstringArray = res.errors;
-    var transformedSource = res.src;
-    var transformedSourceMap = res.map;
+```js
+var ngAnnotate = require("ng-annotate");
+var somePlugin = require("./some/path/some-plugin");
+var res = ngAnnotate(src, {add: true, plugin: [somePlugin], sourcemap: true, sourceroot: "/path/to/source/root"});
+var errorstringArray = res.errors;
+var transformedSource = res.src;
+var transformedSourceMap = res.map;
+```
