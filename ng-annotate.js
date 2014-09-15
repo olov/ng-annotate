@@ -12,7 +12,6 @@ const tryor = require("tryor");
 const ngAnnotate = require("./ng-annotate-main");
 const version = require("./package.json").version;
 const convertSourceMap = require("convert-source-map");
-const stringmap = require("stringmap");
 const optimist = require("optimist")
     .usage("ng-annotate v" + version + "\n\nUsage: ng-annotate OPTIONS <file>\n\n" +
         "provide - instead of <file> to read from stdin\n" +

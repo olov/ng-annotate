@@ -10,7 +10,6 @@ const diff = require("diff");
 const findLineColumn = require("find-line-column");
 const fmt = require("simple-fmt");
 const SourceMapConsumer = require("source-map").SourceMapConsumer;
-const stringmap = require("stringmap");
 
 function slurp(filename) {
     return String(fs.readFileSync(filename));
