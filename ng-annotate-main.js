@@ -810,22 +810,12 @@ module.exports = function ngAnnotate(src, options) {
         plugin.init(ctx);
     });
 
-    let recentCaller = undefined; // micro-optimization
-    const callerIds = [];
     traverse(ast, {pre: function(node) {
-        node.$caller = recentCaller;
         if (node.type === "CallExpression") {
-            callerIds.push(node);
-            recentCaller = node;
             ngInject.inspectCallExpression(node, ctx);
         }
 
     }, post: function(node) {
-        if (node === recentCaller) {
-            callerIds.pop();
-            recentCaller = last(callerIds);
-        }
-
         let targets = match(node, ctx, matchPluginsOrNull);
         if (!targets) {
             return;
