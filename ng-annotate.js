@@ -43,6 +43,11 @@ const optimist = require("optimist")
     .options("regexp", {
         describe: "detect short form myMod.controller(...) iff myMod matches regexp",
     })
+    .options("rename", {
+        describe: "rename declarations and annotated references\n" +
+            "oldname1 newname1 oldname2 newname2 ...",
+        default: ""
+    })
     .options("plugin", {
         describe: "use plugin with path (experimental)",
     })
@@ -118,7 +123,7 @@ function runAnnotate(err, src) {
         config.inFile = filename;
     }
 
-    ["add", "remove", "o", "sourcemap", "sourceroot", "regexp", "single_quotes", "plugin", "stats"].forEach(function(opt) {
+    ["add", "remove", "o", "sourcemap", "sourceroot", "regexp", "rename", "single_quotes", "plugin", "stats"].forEach(function(opt) {
         if (opt in argv) {
             config[opt] = argv[opt];
         }
@@ -141,6 +146,21 @@ function runAnnotate(err, src) {
                 exit(fmt("error: couldn't require(\"{0}\")", absPath));
             }
         });
+    }
+
+    const trimmedRename = config.rename && config.rename.trim();
+    if (trimmedRename) {
+        const flattenRename = trimmedRename.split(" ");
+        const renameArray = [];
+        for (let i = 0; i < flattenRename.length; i = i + 2) {
+            renameArray.push({
+                "from": flattenRename[i],
+                "to": flattenRename[i + 1],
+            });
+        }
+        config.rename = renameArray;
+    } else {
+        config.rename = null;
     }
 
     const run_t0 = Date.now();

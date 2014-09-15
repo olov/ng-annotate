@@ -23,6 +23,18 @@ function test(correct, got, name) {
     }
 }
 
+const renameOptions = [
+    {"from": "$a", "to": "$aRenamed"},
+    {"from": "$b", "to": "$bRenamed"},
+    {"from": "$c", "to": "$cRenamed"},
+    {"from": "$d", "to": "$dRenamed"},
+    {"from": "$e", "to": "$eRenamed"},
+    {"from": "$f", "to": "$fRenamed"},
+    {"from": "$g", "to": "$gRenamed"},
+    {"from": "$h", "to": "$hRenamed"},
+    {"from": "$i", "to": "$iRenamed"},
+];
+
 function testSourcemap(original, got, sourcemap) {
     const smc = new SourceMapConsumer(sourcemap);
 
@@ -58,6 +70,15 @@ test(slurp("tests/with_annotations.js"), annotated, "with_annotations.js");
 console.log("testing adding annotations using single quotes");
 const annotatedSingleQuotes = ngAnnotate(original, {add: true, single_quotes: true}).src;
 test(slurp("tests/with_annotations_single.js"), annotatedSingleQuotes, "with_annotations_single.js");
+
+const rename = slurp("tests/rename.js");
+
+console.log("testing adding annotations and renaming");
+const annotatedRenamed = ngAnnotate(rename, {
+    add: true,
+    rename: renameOptions,
+}).src;
+test(slurp("tests/rename.annotated.js"), annotatedRenamed, "rename.annotated.js");
 
 console.log("testing removing annotations");
 test(original, ngAnnotate(annotated, {remove: true}).src, "original.js");
@@ -96,7 +117,7 @@ if (fs.existsSync("package.json")) {
             console.error(substr);
             process.exit(-1);
         }
-    } catch(e) {
+    } catch (e) {
         console.error("package.json error: invalid json");
         process.exit(-1);
     }
