@@ -119,6 +119,9 @@ function matchNgUi(node) {
     // $stateProvider.state("myState", {... resolve: {f: function($scope) {}, ..} ..})
     // $stateProvider.state("myState", {... views: {... somename: {... controller: fn, controllerProvider: fn, templateProvider: fn, resolve: {f: fn}}}})
     //
+    // stateHelperProvider.setNestedState({ sameasregularstate, children: [sameasregularstate, ..]})
+    // stateHelperProvider.setNestedState({ sameasregularstate, children: [sameasregularstate, ..]}, true)
+    //
     // $urlRouterProvider.when(.., function($scope) {})
     //
     // $modal.open({.. controller: fn, resolve: {f: function($scope) {}, ..}});
@@ -148,53 +151,70 @@ function matchNgUi(node) {
         return false;
     }
 
-    // everything below is for $stateProvider alone
-    if (!(obj.$chained === chainedStateProvider || (obj.type === "Identifier" && obj.name === "$stateProvider"))) {
+    // everything below is for $stateProvider and stateHelperProvider alone
+    if (!(obj.$chained === chainedStateProvider || (obj.type === "Identifier" && is.someof(obj.name, ["$stateProvider", "stateHelperProvider"])))) {
         return false;
     }
     node.$chained = chainedStateProvider;
 
-    if (method.name !== "state") {
+    if (is.noneof(method.name, ["state", "setNestedState"])) {
         return false;
     }
 
     // $stateProvider.state({ ... }) and $stateProvider.state("name", { ... })
+    // stateHelperProvider.setNestedState({ .. }) and stateHelperProvider.setNestedState({ .. }, true)
     if (!(args.length >= 1 && args.length <= 2)) {
         return false;
     }
 
-    const configArg = last(args);
+    const configArg = (method.name === "state" ? last(args) : args[0]);
     if (configArg.type !== "ObjectExpression") {
         return false;
     }
 
-    const props = configArg.properties;
-    const res = [
-        matchProp("controller", props),
-        matchProp("controllerProvider", props),
-        matchProp("templateProvider", props),
-        matchProp("onEnter", props),
-        matchProp("onExit", props),
-    ];
+    const childrenArrayExpression = matchProp("children", configArg.properties);
+    const children = childrenArrayExpression && childrenArrayExpression.elements;
 
-    // {resolve: ..}
-    res.push.apply(res, matchResolve(props));
-
-    // {view: ...}
-    const viewObject = matchProp("views", props);
-    if (viewObject && viewObject.type === "ObjectExpression") {
-        viewObject.properties.forEach(function(prop) {
-            if (prop.value.type === "ObjectExpression") {
-                res.push(matchProp("controller", prop.value.properties));
-                res.push(matchProp("controllerProvider", prop.value.properties));
-                res.push(matchProp("templateProvider", prop.value.properties));
-                res.push.apply(res, matchResolve(prop.value.properties));
+    const res = [];
+    matchStateProps(configArg.properties, res);
+    if (children) {
+        children.forEach(function(child) {
+            if (child.properties) {
+                matchStateProps(child.properties, res);
             }
         });
     }
 
     const filteredRes = res.filter(Boolean);
     return (filteredRes.length === 0 ? false : filteredRes);
+
+
+    function matchStateProps(props, res) {
+        const simple = [
+            matchProp("controller", props),
+            matchProp("controllerProvider", props),
+            matchProp("templateProvider", props),
+            matchProp("onEnter", props),
+            matchProp("onExit", props),
+        ];
+        res.push.apply(res, simple);
+
+        // {resolve: ..}
+        res.push.apply(res, matchResolve(props));
+
+        // {view: ...}
+        const viewObject = matchProp("views", props);
+        if (viewObject && viewObject.type === "ObjectExpression") {
+            viewObject.properties.forEach(function(prop) {
+                if (prop.value.type === "ObjectExpression") {
+                    res.push(matchProp("controller", prop.value.properties));
+                    res.push(matchProp("controllerProvider", prop.value.properties));
+                    res.push(matchProp("templateProvider", prop.value.properties));
+                    res.push.apply(res, matchResolve(prop.value.properties));
+                }
+            });
+        }
+    }
 }
 
 function matchHttpProvider(node) {

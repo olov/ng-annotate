@@ -245,6 +245,46 @@ angular.module("MyMod").directive("pleasematchthis", function() {
     $urlRouterProvider.otherwise("", function(a) { a; });
     $urlRouterProvider.rule(function(a) { a; }).anything().when("/", function($location) { a; });
 
+    stateHelperProvider.setNestedState({
+        controller: function($scope, simpleObj, promiseObj, translations) { c },
+
+        children: [
+            {
+                name: "a",
+                controller: function(a) {},
+                resolve: {
+                    f: function($a) {},
+                },
+            },
+            {
+                name: "b",
+                controller: function(b) {},
+                views: {
+                    viewa: {
+                        controller: function($scope, myParam) {},
+                        controllerProvider: function($stateParams) {},
+                        templateProvider: function($scope) {},
+                        dontAlterMe: function(arg) {},
+                        resolve: {
+                            myParam: function($stateParams) {
+                                return $stateParams.paramFromDI;
+                            }
+                        },
+                    },
+                    viewb: {
+                        dontAlterMe: function(arg) {},
+                        templateProvider: function($scope) {},
+                        controller: function($scope) {},
+                    },
+                    dontAlterMe: null,
+                },
+            },
+        ],
+    });
+    stateHelperProvider.setNestedState({
+        controller: function($scope, simpleObj, promiseObj, translations) { c },
+    }, true);
+
     // angular ui / ui-bootstrap $modal
     $modal.open({
         templateUrl: "str",
