@@ -12,6 +12,7 @@ const tryor = require("tryor");
 const ngAnnotate = require("./ng-annotate-main");
 const version = require("./package.json").version;
 const convertSourceMap = require("convert-source-map");
+const stringmap = require("stringmap");
 const optimist = require("optimist")
     .usage("ng-annotate v" + version + "\n\nUsage: ng-annotate OPTIONS <file>\n\n" +
         "provide - instead of <file> to read from stdin\n" +
@@ -42,6 +43,11 @@ const optimist = require("optimist")
     })
     .options("regexp", {
         describe: "detect short form myMod.controller(...) iff myMod matches regexp",
+    })
+    .options("rename", {
+        describe: "rename declarations and annotated refernces\n" +
+            "originalName newName anotherOriginalName anotherNewName ...",
+        default: ""
     })
     .options("plugin", {
         describe: "use plugin with path (experimental)",
@@ -118,7 +124,7 @@ function runAnnotate(err, src) {
         config.inFile = filename;
     }
 
-    ["add", "remove", "o", "sourcemap", "sourceroot", "regexp", "single_quotes", "plugin", "stats"].forEach(function(opt) {
+    ["add", "remove", "o", "sourcemap", "sourceroot", "regexp", "rename", "single_quotes", "plugin", "stats"].forEach(function(opt) {
         if (opt in argv) {
             config[opt] = argv[opt];
         }
@@ -141,6 +147,15 @@ function runAnnotate(err, src) {
                 exit(fmt("error: couldn't require(\"{0}\")", absPath));
             }
         });
+    }
+
+    if (config.rename) {
+        const flattenRename = config.rename.split(" ");
+        const renameArray = [];
+        for (let i = 0; i < flattenRename.length; i = i + 2) {
+            renameArray.push({"from": flattenRename[i], "to": flattenRename[i+1]});
+        }
+        config.rename = renameArray;
     }
 
     const run_t0 = Date.now();

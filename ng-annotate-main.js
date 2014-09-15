@@ -16,6 +16,7 @@ const ngInject = require("./nginject");
 const generateSourcemap = require("./generate-sourcemap");
 const Lut = require("./lut");
 const scopeTools = require("./scopetools");
+const stringmap = require("stringmap");
 
 const chainedRouteProvider = 1;
 const chainedUrlRouterProvider = 2;
@@ -262,7 +263,7 @@ function matchRegular(node, ctx) {
     const args = node.arguments;
     const target = (is.someof(method.name, ["config", "run"]) ?
         args.length === 1 && args[0] :
-        args.length === 2 && args[0].type === "Literal" && is.string(args[0].value) && args[1]);
+        args.length === 2 && args[0].type === "Literal" && is.string(args[0].value) && [args[0], args[1]]);
 
     target.$methodName = method.name;
 
@@ -309,16 +310,23 @@ function matchResolve(props) {
     return [];
 };
 
-function stringify(arr, quot) {
+function getReplaceString(ctx, originalString) {
+    if (ctx.rename) {
+        return ctx.rename.get(originalString) || originalString;
+    }
+    return originalString;
+}
+
+function stringify(ctx, arr, quot) {
     return "[" + arr.map(function(arg) {
-        return quot + arg.name + quot;
+        return quot + getReplaceString(ctx, arg.name) + quot;
     }).join(", ") + "]";
 }
 
-function insertArray(functionExpression, fragments, quot) {
+function insertArray(ctx, functionExpression, fragments, quot) {
     const range = functionExpression.range;
 
-    const args = stringify(functionExpression.params, quot);
+    const args = stringify(ctx, functionExpression.params, quot);
     fragments.push({
         start: range[0],
         end: range[0],
@@ -331,13 +339,14 @@ function insertArray(functionExpression, fragments, quot) {
     });
 }
 
-function replaceArray(array, fragments, quot) {
+function replaceArray(ctx, array, fragments, quot) {
     const functionExpression = last(array.elements);
 
     if (functionExpression.params.length === 0) {
         return removeArray(array, fragments);
     }
-    const args = stringify(functionExpression.params, quot);
+
+    const args = stringify(ctx, functionExpression.params, quot);
     fragments.push({
         start: array.range[0],
         end: functionExpression.range[0],
@@ -357,6 +366,16 @@ function removeArray(array, fragments) {
         start: functionExpression.range[1],
         end: array.range[1],
         str: "",
+    });
+}
+
+function replaceString(ctx, string, fragments, quot) {
+    const customReplace = getReplaceString(ctx, string.value);
+    const originalQuotes = string.raw.substr(0,1);
+    fragments.push({
+        start: string.range[0],
+        end: string.range[1],
+        str: originalQuotes + customReplace + originalQuotes
     });
 }
 
@@ -394,11 +413,13 @@ function judgeSuspects(ctx) {
         }
 
         if (mode === "rebuild" && isAnnotatedArray(target)) {
-            replaceArray(target, fragments, quot);
+            replaceArray(ctx, target, fragments, quot);
         } else if (mode === "remove" && isAnnotatedArray(target)) {
             removeArray(target, fragments);
         } else if (is.someof(mode, ["add", "rebuild"]) && isFunctionExpressionWithArgs(target)) {
-            insertArray(target, fragments, quot);
+            insertArray(ctx, target, fragments, quot);
+        } else if (isGenericProviderName(target)) {
+            replaceString(ctx, target, fragments, quot);
         } else {
             // if it's not array or function-expression, then it's a candidate for foo.$inject = [..]
             judgeInjectArraySuspect(target, ctx);
@@ -625,7 +646,7 @@ function judgeInjectArraySuspect(node, ctx) {
             return prevLF;
         }
 
-        const str = fmt("{0}{1}{2}.$inject = {3};", EOL, indent, name, ctx.stringify(params, ctx.quot));
+        const str = fmt("{0}{1}{2}.$inject = {3};", EOL, indent, name, ctx.stringify(ctx, params, ctx.quot));
 
         if (ctx.mode === "rebuild" && existingExpressionStatementWithArray) {
             ctx.fragments.push({
@@ -679,6 +700,9 @@ function isFunctionExpressionWithArgs(node) {
 function isFunctionDeclarationWithArgs(node) {
     return node.type === "FunctionDeclaration" && node.params.length >= 1;
 }
+function isGenericProviderName(node) {
+    return node.type === "Literal" && is.string(node.value);
+}
 
 module.exports = function ngAnnotate(src, options) {
     const mode = (options.add && options.remove ? "rebuild" :
@@ -691,6 +715,12 @@ module.exports = function ngAnnotate(src, options) {
 
     const quot = options.single_quotes ? "'" : '"';
     const re = (options.regexp ? new RegExp(options.regexp) : /^[a-zA-Z0-9_\$\.\s]+$/);
+    const rename = new stringmap();
+    if (options.rename) {
+        options.rename.forEach(function(value) {
+            rename.set(value.from, value.to);
+        });
+    }
     let ast;
     const stats = {};
     try {
@@ -747,6 +777,7 @@ module.exports = function ngAnnotate(src, options) {
             return src.slice(range[0], range[1]);
         },
         re: re,
+        rename: rename,
         comments: comments,
         fragments: fragments,
         suspects: suspects,
