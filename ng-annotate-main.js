@@ -263,10 +263,15 @@ function matchRegular(node, ctx) {
     const args = node.arguments;
     const target = (is.someof(method.name, ["config", "run"]) ?
         args.length === 1 && args[0] :
-        args.length === 2 && args[0].type === "Literal" && is.string(args[0].value) && [args[0], args[1]]);
+        args.length === 2 && args[0].type === "Literal" && is.string(args[0].value) && args[1]);
 
     target.$methodName = method.name;
 
+    if (ctx.rename && args.length === 2 && target) {
+        // for eventual rename purposes
+        const somethingNameLiteral = args[0];
+        return [somethingNameLiteral, target];
+    }
     return target;
 }
 
