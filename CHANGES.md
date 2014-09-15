@@ -1,3 +1,11 @@
+## v0.10.0 2014-09-15
+ * support stateHelperProvider.setNestedState
+ * optional renaming of declarations and references (experimental)
+ * further improved detection of existing fn.$inject = [..] arrays
+ * improved insertion of $inject arrays in case of early return
+ * improved angular module detection (reference-following)
+ * restrict matching based on method context (directive, provider)
+
 ## v0.9.11 2014-08-09
  * improved detection of existing fn.$inject = [..] arrays
 
