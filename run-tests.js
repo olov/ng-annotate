@@ -25,15 +25,15 @@ function test(correct, got, name) {
 }
 
 const renameOptions = [
-    {"from":"$a", "to": "$aRenamed"},
-    {"from":"$b", "to": "$bRenamed"},
-    {"from":"$c", "to": "$cRenamed"},
-    {"from":"$d", "to": "$dRenamed"},
-    {"from":"$e", "to": "$eRenamed"},
-    {"from":"$f", "to": "$fRenamed"},
-    {"from":"$g", "to": "$gRenamed"},
-    {"from":"$h", "to": "$hRenamed"},
-    {"from":"$i", "to": "$iRenamed"}
+    {"from": "$a", "to": "$aRenamed"},
+    {"from": "$b", "to": "$bRenamed"},
+    {"from": "$c", "to": "$cRenamed"},
+    {"from": "$d", "to": "$dRenamed"},
+    {"from": "$e", "to": "$eRenamed"},
+    {"from": "$f", "to": "$fRenamed"},
+    {"from": "$g", "to": "$gRenamed"},
+    {"from": "$h", "to": "$hRenamed"},
+    {"from": "$i", "to": "$iRenamed"},
 ];
 
 function testSourcemap(original, got, sourcemap) {
@@ -76,8 +76,8 @@ const rename = slurp("tests/rename.js");
 
 console.log("testing adding annotations and renaming");
 const annotatedRenamed = ngAnnotate(rename, {
-  add: true,
-  rename: renameOptions
+    add: true,
+    rename: renameOptions,
 }).src;
 test(slurp("tests/rename.annotated.js"), annotatedRenamed, "rename.annotated.js");
 
@@ -118,7 +118,7 @@ if (fs.existsSync("package.json")) {
             console.error(substr);
             process.exit(-1);
         }
-    } catch(e) {
+    } catch (e) {
         console.error("package.json error: invalid json");
         process.exit(-1);
     }
