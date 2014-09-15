@@ -315,7 +315,7 @@ function matchResolve(props) {
     return [];
 };
 
-function getReplaceString(ctx, originalString) {
+function renamedString(ctx, originalString) {
     if (ctx.rename) {
         return ctx.rename.get(originalString) || originalString;
     }
@@ -324,7 +324,7 @@ function getReplaceString(ctx, originalString) {
 
 function stringify(ctx, arr, quot) {
     return "[" + arr.map(function(arg) {
-        return quot + getReplaceString(ctx, arg.name) + quot;
+        return quot + renamedString(ctx, arg.name) + quot;
     }).join(", ") + "]";
 }
 
@@ -374,13 +374,11 @@ function removeArray(array, fragments) {
     });
 }
 
-function replaceString(ctx, string, fragments, quot) {
-    const customReplace = getReplaceString(ctx, string.value);
-    const originalQuotes = string.raw.substr(0,1);
+function renameProviderDeclarationSite(ctx, literalNode, fragments) {
     fragments.push({
-        start: string.range[0],
-        end: string.range[1],
-        str: originalQuotes + customReplace + originalQuotes
+        start: literalNode.range[0] + 1,
+        end: literalNode.range[1] - 1,
+        str: renamedString(ctx, literalNode.value),
     });
 }
 
@@ -424,7 +422,7 @@ function judgeSuspects(ctx) {
         } else if (is.someof(mode, ["add", "rebuild"]) && isFunctionExpressionWithArgs(target)) {
             insertArray(ctx, target, fragments, quot);
         } else if (isGenericProviderName(target)) {
-            replaceString(ctx, target, fragments, quot);
+            renameProviderDeclarationSite(ctx, target, fragments);
         } else {
             // if it's not array or function-expression, then it's a candidate for foo.$inject = [..]
             judgeInjectArraySuspect(target, ctx);
