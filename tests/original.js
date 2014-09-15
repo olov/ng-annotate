@@ -113,10 +113,18 @@ myMod.provider("foo", {
     }
 });
 
-myMod.provider("foo", fooprov);
+myMod.provider("foo", function(x) {
+    this.$get = function(a,b) {};
+});
 
-function fooprov(a) {
+myMod.provider("foo", extprov);
+function extprov(x) {
+    this.$get = function(a,b) {};
     this.$get = fooget;
+    this.$get = inner;
+
+    function inner(c, d) {
+    }
 }
 
 function fooget(b) {
@@ -485,6 +493,25 @@ myMod.controller("donttouchme", function() {
     });
 });
 
+// $get is only valid inside provider
+myMod.service("donttouch", function() {
+    this.$get = function(me) {
+    };
+});
+myMod.service("donttouch", mefn);
+function mefn() {
+    this.$get = function(me) {
+    };
+}
+
+// directive return object is only valid inside directive
+myMod.service("donttouch", function() {
+    return {
+        controller: function($scope, $timeout) {
+            bar;
+        }
+    }
+});
 
 // IIFE-jumping (primarily for compile-to-JS langs)
 angular.module("MyMod").directive("foo", function($a, $b) {

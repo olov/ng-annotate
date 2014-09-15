@@ -39,23 +39,32 @@ function match(node, ctx, matchPlugins) {
 }
 
 function matchDirectiveReturnObject(node) {
+    // only matches inside directives
     // return { .. controller: function($scope, $timeout), ...}
 
-    return node.type === "ReturnStatement" &&
+    return limit("directive", node.type === "ReturnStatement" &&
         node.argument && node.argument.type === "ObjectExpression" &&
-        matchProp("controller", node.argument.properties);
+        matchProp("controller", node.argument.properties));
+}
+
+function limit(name, node) {
+    if (node) {
+        node.$limitToMethodName = name;
+    }
+    return node;
 }
 
 function matchProviderGet(node) {
+    // only matches inside providers
     // (this|self|that).$get = function($scope, $timeout)
     // { ... $get: function($scope, $timeout), ...}
     let memberExpr;
     let self;
-    return (node.type === "AssignmentExpression" && (memberExpr = node.left).type === "MemberExpression" &&
+    return limit("provider", (node.type === "AssignmentExpression" && (memberExpr = node.left).type === "MemberExpression" &&
         memberExpr.property.name === "$get" &&
         ((self = memberExpr.object).type === "ThisExpression" || (self.type === "Identifier" && is.someof(self.name, ["self", "that"]))) &&
         node.right) ||
-        (node.type === "ObjectExpression" && matchProp("$get", node.properties));
+        (node.type === "ObjectExpression" && matchProp("$get", node.properties)));
 }
 
 function matchNgRoute(node) {
@@ -235,6 +244,8 @@ function matchRegular(node, ctx) {
         args.length === 1 && args[0] :
         args.length === 2 && args[0].type === "Literal" && is.string(args[0].value) && args[1]);
 
+    target.$methodName = method.name;
+
     return target;
 }
 
@@ -339,8 +350,8 @@ function judgeSuspects(ctx) {
     for (let n = 0; n < 42; n++) {
         // could be while(true), above is just a safety-net
         // in practice it will loop just a couple of times
-        propagateModuleContext(suspects);
-        if (!setChainedThroughIifesAndReferences(suspects)) {
+        propagateModuleContextAndMethodName(suspects);
+        if (!setChainedAndMethodNameThroughIifesAndReferences(suspects)) {
             break;
         }
     }
@@ -349,8 +360,13 @@ function judgeSuspects(ctx) {
     const finalSuspects = makeUnique(suspects.map(function(target) {
         const jumped = jumpOverIife(target);
         const jumpedAndFollowed = followReference(jumped) || jumped;
+
+        if (target.$limitToMethodName && findOuterMethodName(target) !== target.$limitToMethodName) {
+            return null;
+        }
+
         return jumpedAndFollowed;
-    }), 2);
+    }).filter(Boolean), 2);
 
     finalSuspects.forEach(function(target) {
         if (target.$chained !== chainedRegular) {
@@ -370,15 +386,28 @@ function judgeSuspects(ctx) {
     });
 
 
-    function propagateModuleContext(suspects) {
+    function propagateModuleContextAndMethodName(suspects) {
         suspects.forEach(function(target) {
             if (target.$chained !== chainedRegular && isInsideModuleContext(target)) {
                 target.$chained = chainedRegular;
             }
+
+            if (!target.$methodName) {
+                const methodName = findOuterMethodName(target);
+                if (methodName) {
+                    target.$methodName = methodName;
+                }
+            }
         });
     }
 
-    function setChainedThroughIifesAndReferences(suspects) {
+    function findOuterMethodName(node) {
+        for (; node && !node.$methodName; node = node.$parent) {
+        }
+        return node ? node.$methodName : null;
+    }
+
+    function setChainedAndMethodNameThroughIifesAndReferences(suspects) {
         let modified = false;
         suspects.forEach(function(target) {
             const jumped = jumpOverIife(target);
@@ -387,6 +416,10 @@ function judgeSuspects(ctx) {
                     modified = true;
                     jumped.$chained = chainedRegular;
                 }
+                if (target.$methodName && !jumped.$methodName) {
+                    modified = true;
+                    jumped.$methodName = target.$methodName;
+                }
             }
 
             const jumpedAndFollowed = followReference(jumped) || jumped;
@@ -394,6 +427,10 @@ function judgeSuspects(ctx) {
                 if (jumped.$chained === chainedRegular && jumpedAndFollowed.$chained !== chainedRegular) {
                     modified = true;
                     jumpedAndFollowed.$chained = chainedRegular;
+                }
+                if (jumped.$methodName && !jumpedAndFollowed.$methodName) {
+                    modified = true;
+                    jumpedAndFollowed.$methodName = jumped.$methodName;
                 }
             }
         });
