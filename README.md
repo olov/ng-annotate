@@ -62,13 +62,14 @@ Use the `--single_quotes` option to output `'$scope'` instead of `"$scope"`.
 Use the `--regexp` option to restrict matching further or to expand matching.
 See description further down.
 
-Use the `--rename` option to rename providers (services, factories, controllers, etc.) with
-a new name when declared and referenced through annotation.
+*experimental* Use the `--rename` option to rename providers (services, factories,
+controllers, etc.) with a new name when declared and referenced through annotation.
+Use it like this: `--rename oldname1 newname1 oldname2 newname2`
 
-Use the `--plugin` option to load a user plugin with the provided path (*experimental*, 
+*experimental* Use the `--plugin` option to load a user plugin with the provided path,
 0.9.x may change API). See [plugin-example.js](plugin-example.js) for more info.
 
-Use the `--stats` option to print statistics on stderr (*experimental*).
+*experimental* Use the `--stats` option to print statistics on stderr.
 
 
 ## Highly recommended: enable ng-strict-di in your minified builds
@@ -305,7 +306,13 @@ options and return value.
 ```js
 var ngAnnotate = require("ng-annotate");
 var somePlugin = require("./some/path/some-plugin");
-var res = ngAnnotate(src, {add: true, plugin: [somePlugin], sourcemap: true, sourceroot: "/path/to/source/root"});
+var res = ngAnnotate(src, {
+    add: true,
+    plugin: [somePlugin],
+    rename: [{from: "generalname", to: "uniquename"}, {from: "alpha", to: "beta"}],
+    sourcemap: true,
+    sourceroot: "/path/to/source/root",
+});
 var errorstringArray = res.errors;
 var transformedSource = res.src;
 var transformedSourceMap = res.map;
