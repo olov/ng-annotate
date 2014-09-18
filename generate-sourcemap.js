@@ -1,5 +1,8 @@
 "use strict";
 
+const os = require("os");
+const convertSourceMap = require("convert-source-map");
+const SourceMapConsumer = require("source-map").SourceMapConsumer;
 const SourceMapGenerator = require("source-map").SourceMapGenerator;
 const stableSort = require("stable");
 
@@ -68,7 +71,7 @@ SourceMapper.prototype.generate = function() {
         }
     }
 
-    return this.generator.toString();
+    return this.generator;
 }
 
 SourceMapper.prototype.addMapping = function(inLine, inColumn, outLine, outColumn) {
@@ -85,6 +88,18 @@ SourceMapper.prototype.addMapping = function(inLine, inColumn, outLine, outColum
     });
 }
 
-module.exports = function generateSourcemap(src, fragments, inFile, sourceRoot) {
-    return new SourceMapper(src, fragments, inFile, sourceRoot).generate();
+module.exports = function generateSourcemap(result, src, fragments, mapOpts) {
+    var generator = new SourceMapper(src, fragments, mapOpts.inFile, mapOpts.sourceRoot).generate();
+
+    if (mapOpts.inline) {
+        var existingMap = convertSourceMap.fromSource(result.src);
+        if (existingMap)
+            generator.applySourceMap(new SourceMapConsumer(existingMap.toObject()));
+
+        result.src = convertSourceMap.removeMapFileComments(result.src) +
+            os.EOL +
+            convertSourceMap.fromJSON(generator.toString()).toComment();
+    } else {
+        result.map = generator.toString();
+    }
 }

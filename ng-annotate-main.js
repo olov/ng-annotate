@@ -844,8 +844,10 @@ module.exports = function ngAnnotate(src, options) {
     };
 
     if (options.sourcemap) {
+        if (typeof(options.sourcemap) !== 'object')
+            options.sourcemap = {};
         stats.sourcemap_t0 = Date.now();
-        result.map = generateSourcemap(src, fragments, options.inFile, options.sourceroot);
+        generateSourcemap(result, src, fragments, options.sourcemap);
         stats.sourcemap_t1 = Date.now();
     }
 

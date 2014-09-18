@@ -6,10 +6,13 @@
 
 const ngAnnotate = require("./ng-annotate-main");
 const fs = require("fs");
+const os = require("os");
 const diff = require("diff");
 const findLineColumn = require("find-line-column");
 const fmt = require("simple-fmt");
 const SourceMapConsumer = require("source-map").SourceMapConsumer;
+const coffee = require("coffee-script");
+const convertSourceMap = require("convert-source-map");
 
 function slurp(filename) {
     return String(fs.readFileSync(filename));
@@ -38,10 +41,30 @@ const renameOptions = [
 function testSourcemap(original, got, sourcemap) {
     const smc = new SourceMapConsumer(sourcemap);
 
+    function commentRegExp(commentText) {
+        return new RegExp("(###|[/][*]) " + commentText + " (###|[*][/])");
+    }
+
+    function functionRegExp(functionName) {
+        return new RegExp("(" + functionName + " = )?(function)?\\(" + functionName + "_param1, " + functionName + "_param2\\)")
+    }
+
     function testMapping(needle) {
-        const gotPosition = findLineColumn(got, needle.exec(got).index);
+        const gotResult = needle.exec(got);
+        if (gotResult == null) {
+            process.stderr.write(fmt("Couldn't find {0} in output source", needle));
+            process.exit(-1);
+        }
+
+        const expectedResult = needle.exec(original);
+        if (expectedResult == null) {
+            process.stderr.write(fmt("Couldn't find {0} in expected source", needle));
+            process.exit(-1);
+        }
+
+        const gotPosition = findLineColumn(got, gotResult.index);
         const originalPosition = smc.originalPositionFor({ line: gotPosition.line, column: gotPosition.col });
-        const expectedPosition = findLineColumn(original, needle.exec(original).index);
+        const expectedPosition = findLineColumn(original, expectedResult.index);
 
         if (originalPosition.line !== expectedPosition.line || originalPosition.column !== expectedPosition.col) {
             process.stderr.write(fmt("Sourcemap mapping error for {0}. Expected: ({1},{2}) => ({3},{4}). Got: ({5},{6}) => ({3},{4}).",
@@ -53,12 +76,12 @@ function testSourcemap(original, got, sourcemap) {
         }
     }
 
-    testMapping(/\/\* before \*\//);
+    testMapping(commentRegExp("before"));
     for (let i = 1; i <= 4; i++) {
-        testMapping(new RegExp("function( ctrl" + i + ")?\\(ctrl" + i + "_param1"));
-        testMapping(new RegExp("/\\* ctrl" + i + " body \\*/"));
+        testMapping(functionRegExp("ctrl" + i));
+        testMapping(commentRegExp("ctrl" + i + " body"));
     }
-    testMapping(/\/\* after \*\//);
+    testMapping(commentRegExp("after"));
 }
 
 const original = slurp("tests/original.js");
@@ -90,10 +113,20 @@ console.log("testing removing existing $inject annotations");
 test(slurp("tests/has_inject_removed.js"), ngAnnotate(slurp("tests/has_inject.js"), {remove: true}).src);
 
 console.log("testing sourcemaps");
-const originalSourcemaps = slurp("tests/sourcemaps.js");
-const annotatedSourcemaps = ngAnnotate(originalSourcemaps, {remove: true, add: true, sourcemap: true, sourceroot: "/source/root/dir"});
+const originalSourcemaps = slurp("tests/sourcemaps.coffee");
+const compiledSourcemaps = coffee.compile(originalSourcemaps, { sourceFiles: ["sourcemaps.coffee"], generatedFile: "sourcemaps.js", sourceMap: true });
+const annotatedSourcemaps = ngAnnotate(compiledSourcemaps.js, {remove: true, add: true, sourcemap: { sourceRoot: "/source/root/dir" }});
 test(slurp("tests/sourcemaps.annotated.js"), annotatedSourcemaps.src, "sourcemaps.annotated.js");
-testSourcemap(originalSourcemaps, annotatedSourcemaps.src, annotatedSourcemaps.map, "sourcemaps.annotated.js.map");
+testSourcemap(compiledSourcemaps.js, annotatedSourcemaps.src, annotatedSourcemaps.map, "sourcemaps.annotated.js.map");
+
+console.log("testing sourcemap combination");
+const inlinedCompiledSourcemaps = compiledSourcemaps.js +
+    os.EOL +
+    convertSourceMap.fromJSON(compiledSourcemaps.v3SourceMap).toComment();
+const combinedSourcemaps = ngAnnotate(inlinedCompiledSourcemaps, {remove: true, add: true, sourcemap: { inline: true, inFile: "sourcemaps.js", sourceRoot: "/source/root/dir" }});
+const combinedSourcemapsSrc = convertSourceMap.removeMapFileComments(combinedSourcemaps.src);
+const combinedSourcemapsMap = convertSourceMap.fromSource(combinedSourcemaps.src).toJSON();
+testSourcemap(originalSourcemaps, combinedSourcemapsSrc, combinedSourcemapsMap, "sourcemaps.annotated.js.map");
 
 const ngminOriginal = slurp("tests/ngmin-tests/ngmin_original.js");
 
