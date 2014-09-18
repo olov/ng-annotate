@@ -19,7 +19,8 @@
     "stable": "~0.1.5",
     "stringmap": "~0.2.2",
     "stringset": "~0.2.1",
-    "tryor": "~0.1.2"
+    "tryor": "~0.1.2",
+    "compact-source-mappings": "~0.0.0"
   },
   "devDependencies": {
     "coffee-script": "~1.8.0",

@@ -5,6 +5,7 @@ const convertSourceMap = require("convert-source-map");
 const SourceMapConsumer = require("source-map").SourceMapConsumer;
 const SourceMapGenerator = require("source-map").SourceMapGenerator;
 const stableSort = require("stable");
+const compact = require("compact-source-mappings");
 
 function SourceMapper(src, fragments, inFile, sourceRoot) {
     this.generator = new SourceMapGenerator({ sourceRoot: sourceRoot });
@@ -21,14 +22,8 @@ SourceMapper.prototype.generate = function() {
     let inColumn = 0;
     let outLine = 1;
     let outColumn = 0;
-    let createMappingAfterWhitespace = true;
 
     while (inIndex < this.src.length) {
-        if (createMappingAfterWhitespace && !/\s/.test(this.src[inIndex])) {
-            this.addMapping(inLine, inColumn, outLine, outColumn);
-            createMappingAfterWhitespace = false;
-        }
-
         if (this.fragments[0] && this.fragments[0].start === inIndex) {
             this.addMapping(inLine, inColumn, outLine, outColumn);
 
@@ -53,7 +48,6 @@ SourceMapper.prototype.generate = function() {
             }
 
             this.fragments.shift();
-            createMappingAfterWhitespace = true;
         }
 
         else {
@@ -62,8 +56,9 @@ SourceMapper.prototype.generate = function() {
                 outLine++;
                 inColumn = 0;
                 outColumn = 0;
-                createMappingAfterWhitespace = true;
             } else {
+                if (!/\s/.test(this.src[inIndex]))
+                    this.addMapping(inLine, inColumn, outLine, outColumn);
                 inColumn++;
                 outColumn++;
             }
@@ -89,16 +84,17 @@ SourceMapper.prototype.addMapping = function(inLine, inColumn, outLine, outColum
 }
 
 module.exports = function generateSourcemap(result, src, fragments, mapOpts) {
-    var generator = new SourceMapper(src, fragments, mapOpts.inFile, mapOpts.sourceRoot).generate();
+    const existingMap = convertSourceMap.fromSource(src);
+    src = convertSourceMap.removeMapFileComments(src);
+
+    const generator = new SourceMapper(src, fragments, mapOpts.inFile, mapOpts.sourceRoot).generate();
 
     if (mapOpts.inline) {
-        var existingMap = convertSourceMap.fromSource(result.src);
         if (existingMap)
             generator.applySourceMap(new SourceMapConsumer(existingMap.toObject()));
-
         result.src = convertSourceMap.removeMapFileComments(result.src) +
             os.EOL +
-            convertSourceMap.fromJSON(generator.toString()).toComment();
+            convertSourceMap.fromObject(compact(generator.toString())).toComment();
     } else {
         result.map = generator.toString();
     }

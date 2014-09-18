@@ -46,7 +46,7 @@ function testSourcemap(original, got, sourcemap) {
     }
 
     function functionRegExp(functionName) {
-        return new RegExp("(" + functionName + " = )?(function)?\\(" + functionName + "_param1, " + functionName + "_param2\\)")
+        return new RegExp("(function)?\\(" + functionName + "_param1, " + functionName + "_param2\\)")
     }
 
     function testMapping(needle) {
