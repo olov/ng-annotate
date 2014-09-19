@@ -26,7 +26,8 @@
     "coffee-script": "~1.8.0",
     "defs": "~0.6.2",
     "diff": "~1.0.8",
-    "find-line-column": "~0.5.2"
+    "find-line-column": "~0.5.2",
+    "angular": "~1.2.23"
   },
   "keywords": [
     "angular",

@@ -7,6 +7,7 @@
 const ngAnnotate = require("./ng-annotate-main");
 const fs = require("fs");
 const os = require("os");
+const path = require("path");
 const diff = require("diff");
 const findLineColumn = require("find-line-column");
 const fmt = require("simple-fmt");
@@ -155,5 +156,22 @@ if (fs.existsSync("package.json")) {
         process.exit(-1);
     }
 }
+
+console.log("testing performance");
+const ngPath = path.resolve(require.resolve("angular"), "../lib/angular.js");
+const ng1 = fs.readFileSync(ngPath);
+const ng5 = ng1 + ng1 + ng1 + ng1 + ng1;
+(function () {
+    const startTime = Date.now();
+    ngAnnotate(ng5, {add: true});
+    const endTime = Date.now();
+    console.log(fmt("  ng5 processed in {0} ms", endTime - startTime));
+})();
+(function () {
+    const startTime = Date.now();
+    ngAnnotate(ng5, {add: true, sourcemap: true});
+    const endTime = Date.now();
+    console.log(fmt("  ng5 processed with sourcemaps in {0} ms", endTime - startTime));
+})();
 
 console.log("all ok");
