@@ -259,6 +259,24 @@ angular.module("MyMod").directive("pleasematchthis", function() {
                 resolve: {
                     f: ['$a', function($a) {}],
                 },
+                children: [
+                    {
+                        name: "ab",
+                        controller: ['ab', function(ab) {}],
+                        resolve: {
+                            f: ['$ab', function($ab) {}],
+                        },
+                        children: [
+                            {
+                                name: "abc",
+                                controller: ['abc', function(abc) {}],
+                                resolve: {
+                                    f: ['$abc', function($abc) {}],
+                                },
+                            },
+                        ],
+                    },
+                ],
             },
             {
                 name: "b",

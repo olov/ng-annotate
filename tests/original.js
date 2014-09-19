@@ -255,6 +255,24 @@ angular.module("MyMod").directive("pleasematchthis", function() {
                 resolve: {
                     f: function($a) {},
                 },
+                children: [
+                    {
+                        name: "ab",
+                        controller: function(ab) {},
+                        resolve: {
+                            f: function($ab) {},
+                        },
+                        children: [
+                            {
+                                name: "abc",
+                                controller: function(abc) {},
+                                resolve: {
+                                    f: function($abc) {},
+                                },
+                            },
+                        ],
+                    },
+                ],
             },
             {
                 name: "b",

@@ -169,26 +169,32 @@ function matchNgUi(node) {
     }
 
     const configArg = (method.name === "state" ? last(args) : args[0]);
-    if (configArg.type !== "ObjectExpression") {
-        return false;
-    }
-
-    const childrenArrayExpression = matchProp("children", configArg.properties);
-    const children = childrenArrayExpression && childrenArrayExpression.elements;
 
     const res = [];
-    matchStateProps(configArg.properties, res);
-    if (children) {
-        children.forEach(function(child) {
-            if (child.properties) {
-                matchStateProps(child.properties, res);
-            }
-        });
-    }
+
+    recursiveMatch(configArg);
 
     const filteredRes = res.filter(Boolean);
     return (filteredRes.length === 0 ? false : filteredRes);
 
+
+    function recursiveMatch(objectExpressionNode) {
+        if (!objectExpressionNode || objectExpressionNode.type !== "ObjectExpression") {
+            return false;
+        }
+
+        const properties = objectExpressionNode.properties;
+
+        matchStateProps(properties, res);
+
+        const childrenArrayExpression = matchProp("children", properties);
+        const children = childrenArrayExpression && childrenArrayExpression.elements;
+
+        if (!children) {
+            return;
+        }
+        children.forEach(recursiveMatch);
+    }
 
     function matchStateProps(props, res) {
         const simple = [
