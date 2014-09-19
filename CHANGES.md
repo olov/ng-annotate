@@ -1,3 +1,6 @@
+## v0.10.1 2014-09-19
+ * support stateHelperProvider.setNestedState nested children
+
 ## v0.10.0 2014-09-15
  * support stateHelperProvider.setNestedState
  * optional renaming of declarations and references (experimental)
