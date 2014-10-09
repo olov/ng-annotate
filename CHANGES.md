@@ -1,3 +1,6 @@
+## v0.10.2 2014-10-09
+ * --es6 option for ES6 support via the Acorn parser (experimental)
+
 ## v0.10.1 2014-09-19
  * support stateHelperProvider.setNestedState nested children
 
