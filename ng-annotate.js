@@ -29,6 +29,10 @@ const optimist = require("optimist")
     .options("o", {
         describe: "write output to <file>. output is written to stdout by default",
     })
+    .options("es6", {
+        boolean: true,
+        describe: "support ES6 via the Acorn parser (experimental)",
+    })
     .options("sourcemap", {
         boolean: true,
         describe: "generate an inline sourcemap"
@@ -123,7 +127,7 @@ function runAnnotate(err, src) {
         config.inFile = filename;
     }
 
-    ["add", "remove", "o", "sourcemap", "sourceroot", "regexp", "rename", "single_quotes", "plugin", "stats"].forEach(function(opt) {
+    ["add", "remove", "o", "sourcemap", "sourceroot", "regexp", "rename", "single_quotes", "plugin", "stats", "es6"].forEach(function(opt) {
         if (opt in argv) {
             config[opt] = argv[opt];
         }

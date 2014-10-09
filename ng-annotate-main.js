@@ -3,12 +3,6 @@
 // Copyright (c) 2013-2014 Olov Lassus <olov.lassus@gmail.com>
 
 "use strict";
-const useEsprima = true;
-
-const parser_require_t0 = Date.now();
-const acorn = (useEsprima ? null : require("acorn").parse);
-const esprima = (useEsprima ? require("esprima").parse : null);
-const parser_require_t1 = Date.now();
 const fmt = require("simple-fmt");
 const is = require("simple-is");
 const alter = require("alter");
@@ -739,12 +733,21 @@ module.exports = function ngAnnotate(src, options) {
     // [{type: "Block"|"Line", value: str, range: [from,to]}, ..]
     let comments = [];
 
+    let esprima = null;
+    let acorn = null;
+
+    stats.parser_require_t0 = Date.now();
+    if (!options.es6) {
+        esprima = require("esprima").parse;
+    } else {
+        acorn = require("acorn").parse;
+    }
+    stats.parser_require_t1 = Date.now();
+
     try {
-        stats.parser_require_t0 = parser_require_t0;
-        stats.parser_require_t1 = parser_require_t1;
         stats.parser_parse_t0 = Date.now();
 
-        if (useEsprima) {
+        if (!options.es6) {
             ast = esprima(src, {
                 range: true,
                 comment: true,
