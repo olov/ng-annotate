@@ -61,66 +61,77 @@ function testSourcemap(original, got, sourcemap) {
     testMapping(/\/\* after \*\//);
 }
 
-const original = slurp("tests/original.js");
+function run(ngAnnotate) {
+    const original = slurp("tests/original.js");
 
-console.log("testing adding annotations");
-const annotated = ngAnnotate(original, {add: true}).src;
-test(slurp("tests/with_annotations.js"), annotated, "with_annotations.js");
+    console.log("testing adding annotations");
+    const annotated = ngAnnotate(original, {add: true}).src;
+    test(slurp("tests/with_annotations.js"), annotated, "with_annotations.js");
 
-console.log("testing adding annotations using single quotes");
-const annotatedSingleQuotes = ngAnnotate(original, {add: true, single_quotes: true}).src;
-test(slurp("tests/with_annotations_single.js"), annotatedSingleQuotes, "with_annotations_single.js");
+    console.log("testing adding annotations using single quotes");
+    const annotatedSingleQuotes = ngAnnotate(original, {add: true, single_quotes: true}).src;
+    test(slurp("tests/with_annotations_single.js"), annotatedSingleQuotes, "with_annotations_single.js");
 
-const rename = slurp("tests/rename.js");
+    const rename = slurp("tests/rename.js");
 
-console.log("testing adding annotations and renaming");
-const annotatedRenamed = ngAnnotate(rename, {
-    add: true,
-    rename: renameOptions,
-}).src;
-test(slurp("tests/rename.annotated.js"), annotatedRenamed, "rename.annotated.js");
+    console.log("testing adding annotations and renaming");
+    const annotatedRenamed = ngAnnotate(rename, {
+        add: true,
+        rename: renameOptions,
+    }).src;
+    test(slurp("tests/rename.annotated.js"), annotatedRenamed, "rename.annotated.js");
 
-console.log("testing removing annotations");
-test(original, ngAnnotate(annotated, {remove: true}).src, "original.js");
+    console.log("testing removing annotations");
+    test(original, ngAnnotate(annotated, {remove: true}).src, "original.js");
 
-console.log("testing adding existing $inject annotations (no change)");
-test(slurp("tests/has_inject.js"), ngAnnotate(slurp("tests/has_inject.js"), {add: true}).src);
+    console.log("testing adding existing $inject annotations (no change)");
+    test(slurp("tests/has_inject.js"), ngAnnotate(slurp("tests/has_inject.js"), {add: true}).src);
 
-console.log("testing removing existing $inject annotations");
-test(slurp("tests/has_inject_removed.js"), ngAnnotate(slurp("tests/has_inject.js"), {remove: true}).src);
+    console.log("testing removing existing $inject annotations");
+    test(slurp("tests/has_inject_removed.js"), ngAnnotate(slurp("tests/has_inject.js"), {remove: true}).src);
 
-console.log("testing sourcemaps");
-const originalSourcemaps = slurp("tests/sourcemaps.js");
-const annotatedSourcemaps = ngAnnotate(originalSourcemaps, {remove: true, add: true, sourcemap: true, sourceroot: "/source/root/dir"});
-test(slurp("tests/sourcemaps.annotated.js"), annotatedSourcemaps.src, "sourcemaps.annotated.js");
-testSourcemap(originalSourcemaps, annotatedSourcemaps.src, annotatedSourcemaps.map, "sourcemaps.annotated.js.map");
+    console.log("testing sourcemaps");
+    const originalSourcemaps = slurp("tests/sourcemaps.js");
+    const annotatedSourcemaps = ngAnnotate(originalSourcemaps, {remove: true, add: true, sourcemap: true, sourceroot: "/source/root/dir"});
+    test(slurp("tests/sourcemaps.annotated.js"), annotatedSourcemaps.src, "sourcemaps.annotated.js");
+    testSourcemap(originalSourcemaps, annotatedSourcemaps.src, annotatedSourcemaps.map, "sourcemaps.annotated.js.map");
 
-const ngminOriginal = slurp("tests/ngmin-tests/ngmin_original.js");
+    const ngminOriginal = slurp("tests/ngmin-tests/ngmin_original.js");
 
-console.log("testing adding annotations (imported tests)");
-const ngminAnnotated = ngAnnotate(ngminOriginal, {add: true, regexp: "^myMod"}).src;
-test(slurp("tests/ngmin-tests/ngmin_with_annotations.js"), ngminAnnotated, "ngmin_with_annotations.js");
+    console.log("testing adding annotations (imported tests)");
+    const ngminAnnotated = ngAnnotate(ngminOriginal, {add: true, regexp: "^myMod"}).src;
+    test(slurp("tests/ngmin-tests/ngmin_with_annotations.js"), ngminAnnotated, "ngmin_with_annotations.js");
 
-console.log("testing removing annotations (imported tests)");
-test(ngminOriginal, ngAnnotate(ngminAnnotated, {remove: true, regexp: "^myMod"}).src, "ngmin_original.js");
+    console.log("testing removing annotations (imported tests)");
+    test(ngminOriginal, ngAnnotate(ngminAnnotated, {remove: true, regexp: "^myMod"}).src, "ngmin_original.js");
 
-if (fs.existsSync("package.json")) {
-    console.log("testing package.json")
-    try {
-        const json = JSON.parse(slurp("package.json"));
-        const substr = JSON.stringify({
-            dependencies: json.dependencies,
-            devDependencies: json.devDependencies,
-        }, null, 4);
-        if (/\^/g.test(substr)) {
-            console.error("package.json error: shouldn't use the ^ operator");
-            console.error(substr);
+    if (fs.existsSync("package.json")) {
+        console.log("testing package.json")
+        try {
+            const json = JSON.parse(slurp("package.json"));
+            const substr = JSON.stringify({
+                dependencies: json.dependencies,
+                devDependencies: json.devDependencies,
+            }, null, 4);
+            if (/\^/g.test(substr)) {
+                console.error("package.json error: shouldn't use the ^ operator");
+                console.error(substr);
+                process.exit(-1);
+            }
+        } catch (e) {
+            console.error("package.json error: invalid json");
             process.exit(-1);
         }
-    } catch (e) {
-        console.error("package.json error: invalid json");
-        process.exit(-1);
     }
+
+    console.log("all ok");
 }
 
-console.log("all ok");
+console.log("=== testing ng-annotate with Esprima")
+run(ngAnnotate);
+
+console.log("=== testing ng-annotate with Acorn (--es6)")
+run(function(src, options) {
+    options.es6 = true;
+    return ngAnnotate(src, options);
+});
