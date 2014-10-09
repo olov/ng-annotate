@@ -175,17 +175,17 @@ function runAnnotate(err, src) {
     if (config.stats && stats) {
         const t1 = Date.now();
         const all = t1 - t0;
-        const run_esprima = stats.esprima_parse_t1 - stats.esprima_parse_t0;
-        const all_esprima = run_esprima + (stats.esprima_require_t1 - stats.esprima_require_t0);
-        const nga_run = (run_t1 - run_t0) - run_esprima;
-        const nga_init = all - all_esprima - nga_run;
+        const run_parser = stats.parser_parse_t1 - stats.parser_parse_t0;
+        const all_parser = run_parser + (stats.parser_require_t1 - stats.parser_require_t0);
+        const nga_run = (run_t1 - run_t0) - run_parser;
+        const nga_init = all - all_parser - nga_run;
 
         const pct = function(n) {
             return Math.round(100 * n / all);
         }
 
-        process.stderr.write(fmt("[{0} ms] esprima: {1}, nga init: {2}, nga run: {3}\n", all, all_esprima, nga_init, nga_run));
-        process.stderr.write(fmt("[%] esprima: {0}, nga init: {1}, nga run: {2}\n", pct(all_esprima), pct(nga_init), pct(nga_run)));
+        process.stderr.write(fmt("[{0} ms] parser: {1}, nga init: {2}, nga run: {3}\n", all, all_parser, nga_init, nga_run));
+        process.stderr.write(fmt("[%] parser: {0}, nga init: {1}, nga run: {2}\n", pct(all_parser), pct(nga_init), pct(nga_run)));
     }
 
     const output = config.sourcemap ?
