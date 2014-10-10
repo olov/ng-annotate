@@ -3,9 +3,6 @@
 // Copyright (c) 2013-2014 Olov Lassus <olov.lassus@gmail.com>
 
 "use strict";
-const esprima_require_t0 = Date.now();
-const esprima = require("esprima").parse;
-const esprima_require_t1 = Date.now();
 const fmt = require("simple-fmt");
 const is = require("simple-is");
 const alter = require("alter");
@@ -169,26 +166,32 @@ function matchNgUi(node) {
     }
 
     const configArg = (method.name === "state" ? last(args) : args[0]);
-    if (configArg.type !== "ObjectExpression") {
-        return false;
-    }
-
-    const childrenArrayExpression = matchProp("children", configArg.properties);
-    const children = childrenArrayExpression && childrenArrayExpression.elements;
 
     const res = [];
-    matchStateProps(configArg.properties, res);
-    if (children) {
-        children.forEach(function(child) {
-            if (child.properties) {
-                matchStateProps(child.properties, res);
-            }
-        });
-    }
+
+    recursiveMatch(configArg);
 
     const filteredRes = res.filter(Boolean);
     return (filteredRes.length === 0 ? false : filteredRes);
 
+
+    function recursiveMatch(objectExpressionNode) {
+        if (!objectExpressionNode || objectExpressionNode.type !== "ObjectExpression") {
+            return false;
+        }
+
+        const properties = objectExpressionNode.properties;
+
+        matchStateProps(properties, res);
+
+        const childrenArrayExpression = matchProp("children", properties);
+        const children = childrenArrayExpression && childrenArrayExpression.elements;
+
+        if (!children) {
+            return;
+        }
+        children.forEach(recursiveMatch);
+    }
 
     function matchStateProps(props, res) {
         const simple = [
@@ -726,36 +729,58 @@ module.exports = function ngAnnotate(src, options) {
     }
     let ast;
     const stats = {};
+
+    // [{type: "Block"|"Line", value: str, range: [from,to]}, ..]
+    let comments = [];
+
+    let esprima = null;
+    let acorn = null;
+
+    stats.parser_require_t0 = Date.now();
+    if (!options.es6) {
+        esprima = require("esprima").parse;
+    } else {
+        acorn = require("acorn").parse;
+    }
+    stats.parser_require_t1 = Date.now();
+
     try {
-        stats.esprima_require_t0 = esprima_require_t0;
-        stats.esprima_require_t1 = esprima_require_t1;
-        stats.esprima_parse_t0 = Date.now();
+        stats.parser_parse_t0 = Date.now();
 
-        ast = esprima(src, {
-            range: true,
-            comment: true,
-        });
+        if (!options.es6) {
+            ast = esprima(src, {
+                range: true,
+                comment: true,
+            });
 
-        stats.esprima_parse_t1 = Date.now();
+            // Fix Program node range (https://code.google.com/p/esprima/issues/detail?id=541)
+            ast.range[0] = 0;
+
+            // detach comments from ast
+            comments = ast.comments;
+            ast.comments = null;
+
+        } else {
+            ast = acorn(src, {
+                ecmaVersion: 6,
+                locations: true,
+                ranges: true,
+                onComment: comments,
+            });
+        }
+
+        stats.parser_parse_t1 = Date.now();
     } catch(e) {
         return {
             errors: ["error: couldn't process source due to parse error", e.message],
         };
     }
 
-    // Fix Program node range (https://code.google.com/p/esprima/issues/detail?id=541)
-    ast.range[0] = 0;
-
     // append a dummy-node to ast so that lut.findNodeFromPos(lastPos) returns something
     ast.body.push({
         type: "DebuggerStatement",
         range: [ast.range[1], ast.range[1]],
     });
-
-    // detach comments from ast
-    // [{type: "Block"|"Line", value: str, range: [from,to]}, ..]
-    const comments = ast.comments;
-    ast.comments = null;
 
     // all source modifications are built up as operations in the
     // fragments array, later sent to alter in one shot

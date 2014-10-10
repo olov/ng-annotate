@@ -53,6 +53,8 @@ Use the `-o` option to write output to file.
 
 Provide `-` instead of an input `<file>` to read input from stdin.
 
+*experimental* Use the `--es6` option for ES6 support via the Acorn parser.
+
 Use the `--sourcemap` option to generate an inline sourcemap.
 
 Use the `--sourceroot` option to set the sourceRoot property of the generated sourcemap.
@@ -308,6 +310,7 @@ var ngAnnotate = require("ng-annotate");
 var somePlugin = require("./some/path/some-plugin");
 var res = ngAnnotate(src, {
     add: true,
+    es6: true,
     plugin: [somePlugin],
     rename: [{from: "generalname", to: "uniquename"}, {from: "alpha", to: "beta"}],
     sourcemap: { inline: false, inFile: "source.js", sourceRoot: "/path/to/source/root" }
