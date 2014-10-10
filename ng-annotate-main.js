@@ -14,6 +14,7 @@ const generateSourcemap = require("./generate-sourcemap");
 const Lut = require("./lut");
 const scopeTools = require("./scopetools");
 const stringmap = require("stringmap");
+let parser = null; // will be lazy-loaded to esprima or acorn
 
 const chainedRouteProvider = 1;
 const chainedUrlRouterProvider = 2;
@@ -331,10 +332,56 @@ function stringify(ctx, arr, quot) {
     }).join(", ") + "]";
 }
 
+function parseExpressionOfType(str, type) {
+    const node = parser(str).body[0].expression;
+    assert(node.type === type);
+    return node;
+}
+
+// stand-in for not having a jsshaper-style ref's
+function replaceNodeWith(node, newNode) {
+    let done = false;
+    const parent = node.$parent;
+    const keys = Object.keys(parent);
+    keys.forEach(function(key) {
+        if (parent[key] === node) {
+            parent[key] = newNode;
+            done = true;
+        }
+    });
+
+    if (done) {
+        return;
+    }
+
+    // second pass, now check arrays
+    keys.forEach(function(key) {
+        if (Array.isArray(parent[key])) {
+            const arr = parent[key];
+            for (let i = 0; i < arr.length; i++) {
+                if (arr[i] === node) {
+                    arr[i] = newNode;
+                    done = true;
+                }
+            }
+        }
+    });
+
+    assert(done);
+}
+
 function insertArray(ctx, functionExpression, fragments, quot) {
     const range = functionExpression.range;
 
     const args = stringify(ctx, functionExpression.params, quot);
+
+    const arrayExpression = parseExpressionOfType(args, "ArrayExpression");
+    const parent = functionExpression.$parent;
+    replaceNodeWith(functionExpression, arrayExpression);
+    arrayExpression.$parent = parent;
+    arrayExpression.elements.push(functionExpression)
+    functionExpression.$parent = arrayExpression;
+
     fragments.push({
         start: range[0],
         end: range[0],
@@ -733,14 +780,11 @@ module.exports = function ngAnnotate(src, options) {
     // [{type: "Block"|"Line", value: str, range: [from,to]}, ..]
     let comments = [];
 
-    let esprima = null;
-    let acorn = null;
-
     stats.parser_require_t0 = Date.now();
     if (!options.es6) {
-        esprima = require("esprima").parse;
+        parser = require("esprima").parse;
     } else {
-        acorn = require("acorn").parse;
+        parser = require("acorn").parse;
     }
     stats.parser_require_t1 = Date.now();
 
@@ -748,7 +792,8 @@ module.exports = function ngAnnotate(src, options) {
         stats.parser_parse_t0 = Date.now();
 
         if (!options.es6) {
-            ast = esprima(src, {
+            // esprima
+            ast = parser(src, {
                 range: true,
                 comment: true,
             });
@@ -761,7 +806,8 @@ module.exports = function ngAnnotate(src, options) {
             ast.comments = null;
 
         } else {
-            ast = acorn(src, {
+            // acorn
+            ast = parser(src, {
                 ecmaVersion: 6,
                 locations: true,
                 ranges: true,
