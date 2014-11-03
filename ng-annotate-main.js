@@ -569,9 +569,15 @@ function followReference(node) {
 
     if (is.someof(kind, ["const", "let", "var"])) {
         assert(ptype === "VariableDeclarator");
-        return parent.init;
+        // {type: "VariableDeclarator", id: {type: "Identifier", name: "foo"}, init: ..}
+        return parent;
     } else if (kind === "fun") {
         assert(ptype === "FunctionDeclaration" || ptype === "FunctionExpression")
+        // FunctionDeclaration is the common case, i.e.
+        // function foo(a, b) {}
+
+        // FunctionExpression is only applicable for cases similar to
+        // var f = function asdf(a,b) { mymod.controller("asdf", asdf) };
         return parent;
     }
 
@@ -605,6 +611,14 @@ function judgeInjectArraySuspect(node, ctx) {
     // /*@ngInject*/ function foo($scope) {} and
     // /*@ngInject*/ foo.bar[0] = function($scope) {}
 
+    // var x = 1, y = function(a,b) {}, z;
+    //            |__ followed from reference
+    let declarator = null;
+    if (node.type === "VariableDeclarator") {
+        declarator = node;
+        node = node.$parent;
+    }
+
     // suspect must be inside of a block or at the top-level (i.e. inside of node.$parent.body[])
     if (!node.$parent || is.noneof(node.$parent.type, ["Program", "BlockStatement"])) {
         return;
@@ -613,7 +627,11 @@ function judgeInjectArraySuspect(node, ctx) {
     let d0 = null;
     const nr0 = node.range[0];
     const nr1 = node.range[1];
-    if (node.type === "VariableDeclaration" && node.declarations.length === 1 &&
+
+    if (declarator && declarator.init && ctx.isFunctionExpressionWithArgs(declarator.init)) {
+        const isSemicolonTerminated = (ctx.src[nr1 - 1] === ";");
+        addRemoveInjectArray(declarator.init.params, nr0, isSemicolonTerminated ? nr1 : declarator.init.range[1], declarator.id.name);
+    } else if (node.type === "VariableDeclaration" && node.declarations.length === 1 &&
         (d0 = node.declarations[0]).init && ctx.isFunctionExpressionWithArgs(d0.init)) {
         const isSemicolonTerminated = (ctx.src[nr1 - 1] === ";");
         addRemoveInjectArray(d0.init.params, nr0, isSemicolonTerminated ? nr1 : d0.init.range[1], d0.id.name);

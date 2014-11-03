@@ -628,8 +628,9 @@ function MyCtrl1(a, b) {
 MyCtrl1.$inject = ["a", "b"];
 if (true) {
     // proper scope analysis including shadowing
-    let MyCtrl1 = ["c", function(c) {
-    }]
+    let MyCtrl1 = function(c) {
+    };
+    MyCtrl1.$inject = ["c"];
     angular.module("MyMod").directive("foo", MyCtrl1);
 }
 angular.module("MyMod").controller("bar", MyCtrl1);
@@ -660,3 +661,11 @@ function MyDirective2($stateProvider) {
     });
 }
 MyDirective2.$inject = ["$stateProvider"];
+
+// issue 84
+(function() {
+    var MyCtrl = function($someDependency) {};
+    MyCtrl.$inject = ["$someDependency"];
+    angular.module('myApp').controller("MyCtrl", MyCtrl);
+    MyCtrl.prototype.someFunction = function() {};
+})();

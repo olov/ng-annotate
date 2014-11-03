@@ -605,7 +605,7 @@ function MyCtrl1(a, b) {
 if (true) {
     // proper scope analysis including shadowing
     let MyCtrl1 = function(c) {
-    }
+    };
     angular.module("MyMod").directive("foo", MyCtrl1);
 }
 angular.module("MyMod").controller("bar", MyCtrl1);
@@ -633,3 +633,10 @@ function MyDirective2($stateProvider) {
         }
     });
 }
+
+// issue 84
+(function() {
+    var MyCtrl = function($someDependency) {};
+    angular.module('myApp').controller("MyCtrl", MyCtrl);
+    MyCtrl.prototype.someFunction = function() {};
+})();
