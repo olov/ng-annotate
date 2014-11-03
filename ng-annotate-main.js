@@ -376,12 +376,15 @@ function insertArray(ctx, functionExpression, fragments, quot) {
 
     const args = stringify(ctx, functionExpression.params, quot);
 
+    // modify the AST
+    /*
     const arrayExpression = parseExpressionOfType(args, "ArrayExpression");
     const parent = functionExpression.$parent;
     replaceNodeWith(functionExpression, arrayExpression);
     arrayExpression.$parent = parent;
     arrayExpression.elements.push(functionExpression)
     functionExpression.$parent = arrayExpression;
+    */
 
     fragments.push({
         start: range[0],
