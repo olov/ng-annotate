@@ -1,3 +1,6 @@
+## v0.11.0 2014-11-03
+ * bugfix reference-following such as var Ctrl = function(dep1, dep2) {}
+
 ## v0.10.3 2014-11-03
  * match properties {name: ..}, {"name": ..} and {'name': ..} alike
 
