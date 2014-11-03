@@ -112,6 +112,16 @@ myMod.provider("foo", {
         bar;
     }
 });
+myMod.provider("foo", {
+    "$get": function($scope, $timeout) {
+        bar;
+    }
+});
+myMod.provider("foo", {
+    '$get': function($scope, $timeout) {
+        bar;
+    }
+});
 
 myMod.provider("foo", function(x) {
     this.$get = function(a,b) {};

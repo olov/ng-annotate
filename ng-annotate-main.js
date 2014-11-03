@@ -302,7 +302,8 @@ function last(arr) {
 function matchProp(name, props) {
     for (let i = 0; i < props.length; i++) {
         const prop = props[i];
-        if (prop.key.type === "Identifier" && prop.key.name === name) {
+        if ((prop.key.type === "Identifier" && prop.key.name === name) ||
+            (prop.key.type === "Literal" && prop.key.value === name)) {
             return prop.value; // FunctionExpression or ArrayExpression
         }
     }

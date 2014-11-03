@@ -1,3 +1,6 @@
+## net
+ * match properties {name: ..}, {"name": ..} and {'name': ..} alike
+
 ## v0.10.2 2014-10-09
  * --es6 option for ES6 support via the Acorn parser (experimental)
 
