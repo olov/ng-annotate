@@ -607,12 +607,7 @@ function posToLine(pos, src) {
 }
 
 function judgeInjectArraySuspect(node, ctx) {
-    // /*@ngInject*/ var foo = function($scope) {} and
-    // /*@ngInject*/ function foo($scope) {} and
-    // /*@ngInject*/ foo.bar[0] = function($scope) {}
 
-    // var x = 1, y = function(a,b) {}, z;
-    //            |__ followed from reference
     let declarator = null;
     if (node.type === "VariableDeclarator") {
         declarator = node;
@@ -629,16 +624,28 @@ function judgeInjectArraySuspect(node, ctx) {
     const nr1 = node.range[1];
 
     if (declarator && declarator.init && ctx.isFunctionExpressionWithArgs(declarator.init)) {
+        // var x = 1, y = function(a,b) {}, z;
+        //            |__ followed from reference
+
         const isSemicolonTerminated = (ctx.src[nr1 - 1] === ";");
         addRemoveInjectArray(declarator.init.params, nr0, isSemicolonTerminated ? nr1 : declarator.init.range[1], declarator.id.name);
+
     } else if (node.type === "VariableDeclaration" && node.declarations.length === 1 &&
         (d0 = node.declarations[0]).init && ctx.isFunctionExpressionWithArgs(d0.init)) {
+        // /*@ngInject*/ var foo = function($scope) {} and
+
         const isSemicolonTerminated = (ctx.src[nr1 - 1] === ";");
         addRemoveInjectArray(d0.init.params, nr0, isSemicolonTerminated ? nr1 : d0.init.range[1], d0.id.name);
+
     } else if (ctx.isFunctionDeclarationWithArgs(node)) {
+        // /*@ngInject*/ function foo($scope) {} and
+
         addRemoveInjectArray(node.params, nr0, nr1, node.id.name);
+
     } else if (node.type === "ExpressionStatement" && node.expression.type === "AssignmentExpression" &&
         ctx.isFunctionExpressionWithArgs(node.expression.right)) {
+        // /*@ngInject*/ foo.bar[0] = function($scope) {}
+
         const isSemicolonTerminated = (ctx.src[nr1 - 1] === ";");
         const name = ctx.srcForRange(node.expression.left.range);
         addRemoveInjectArray(node.expression.right.params, nr0, isSemicolonTerminated ? nr1 : node.expression.right.range[1], name);
