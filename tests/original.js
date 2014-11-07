@@ -607,6 +607,32 @@ var myCtrl = (function () {
 angular.module("MyMod").controller("MyCtrl", myCtrl);
 
 
+// advanced IIFE-jumping (with reference support)
+var myCtrl10 = (function() {
+    // the return statement can appear anywhere on the functions topmost level,
+    // including before the myCtrl function definition
+    return myCtrl;
+    function myCtrl($scope) {
+        foo;
+    }
+    post;
+})();
+angular.module("MyMod").controller("MyCtrl", myCtrl10);
+
+var myCtrl11 = (function() {
+    pre;
+    var myCtrl = function($scope) {
+        foo;
+    };
+    mid;
+    // the return statement can appear anywhere on the functions topmost level,
+    // including before the myCtrl function definition
+    return myCtrl;
+    post;
+})();
+angular.module("MyMod").controller("MyCtrl", myCtrl11);
+
+
 // reference support
 function MyCtrl1(a, b) {
 }
