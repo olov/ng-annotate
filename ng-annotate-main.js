@@ -623,12 +623,12 @@ function judgeInjectArraySuspect(node, ctx) {
     const nr0 = node.range[0];
     const nr1 = node.range[1];
 
-    if (declarator && declarator.init && ctx.isFunctionExpressionWithArgs(declarator.init)) {
+    if (declarator && declarator.init && ctx.isFunctionExpressionWithArgs(d0 = jumpOverIife(declarator.init))) {
         // var x = 1, y = function(a,b) {}, z;
         //            |__ followed from reference
 
         const isSemicolonTerminated = (ctx.src[nr1 - 1] === ";");
-        addRemoveInjectArray(declarator.init.params, nr0, isSemicolonTerminated ? nr1 : declarator.init.range[1], declarator.id.name);
+        addRemoveInjectArray(d0.params, nr0, isSemicolonTerminated ? nr1 : d0.range[1], declarator.id.name);
 
     } else if (node.type === "VariableDeclaration" && node.declarations.length === 1 &&
         (d0 = node.declarations[0]).init && ctx.isFunctionExpressionWithArgs(d0.init)) {

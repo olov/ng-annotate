@@ -622,6 +622,15 @@ var x = /*@ngInject*/ (function() {
 })();
 
 
+// IIFE-jumping with reference support
+var myCtrl = (function () {
+    return function($scope) {
+    };
+})();
+myCtrl.$inject = ["$scope"];
+angular.module("MyMod").controller("MyCtrl", myCtrl);
+
+
 // reference support
 function MyCtrl1(a, b) {
 }
