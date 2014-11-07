@@ -607,49 +607,64 @@ function posToLine(pos, src) {
 }
 
 function judgeInjectArraySuspect(node, ctx) {
+    if (node.type === "VariableDeclaration") {
+        // suspect can only be a VariableDeclaration (statement) in case of
+        // explicitly marked via ngInject, not via references because
+        // references follow to VariableDeclarator (child)
 
-    let declarator = null;
+        // /*@ngInject*/ var foo = function($scope) {} and
+
+        if (node.declarations.length !== 1) {
+            // more than one declarator => exit
+            return;
+        }
+
+        // one declarator => jump over declaration into declarator
+        // rest of code will treat it as any (referenced) declarator
+        node = node.declarations[0];
+    }
+
+    // onode is a top-level node (inside function block), later verified
+    // node is inner match, descent in multiple steps
+    let onode = null;
+    let declaratorName = null;
     if (node.type === "VariableDeclarator") {
-        declarator = node;
-        node = node.$parent;
+        onode = node.$parent;
+        declaratorName = node.id.name;
+        node = node.init; // var foo = ___;
+    } else {
+        onode = node;
     }
 
     // suspect must be inside of a block or at the top-level (i.e. inside of node.$parent.body[])
-    if (!node.$parent || is.noneof(node.$parent.type, ["Program", "BlockStatement"])) {
+    if (!onode.$parent || is.noneof(onode.$parent.type, ["Program", "BlockStatement"])) {
         return;
     }
 
-    let d0 = null;
-    const nr0 = node.range[0];
-    const nr1 = node.range[1];
+    const insertPos = onode.range[1];
+    const isSemicolonTerminated = (ctx.src[insertPos - 1] === ";");
 
-    if (declarator && declarator.init && ctx.isFunctionExpressionWithArgs(d0 = jumpOverIife(declarator.init))) {
+    node = jumpOverIife(node);
+
+    if (ctx.isFunctionExpressionWithArgs(node)) {
         // var x = 1, y = function(a,b) {}, z;
-        //            |__ followed from reference
 
-        const isSemicolonTerminated = (ctx.src[nr1 - 1] === ";");
-        addRemoveInjectArray(d0.params, nr0, isSemicolonTerminated ? nr1 : d0.range[1], declarator.id.name);
-
-    } else if (node.type === "VariableDeclaration" && node.declarations.length === 1 &&
-        (d0 = node.declarations[0]).init && ctx.isFunctionExpressionWithArgs(d0.init)) {
-        // /*@ngInject*/ var foo = function($scope) {} and
-
-        const isSemicolonTerminated = (ctx.src[nr1 - 1] === ";");
-        addRemoveInjectArray(d0.init.params, nr0, isSemicolonTerminated ? nr1 : d0.init.range[1], d0.id.name);
+        assert(declaratorName);
+        addRemoveInjectArray(node.params, isSemicolonTerminated ? insertPos : node.range[1], declaratorName);
 
     } else if (ctx.isFunctionDeclarationWithArgs(node)) {
-        // /*@ngInject*/ function foo($scope) {} and
+        // /*@ngInject*/ function foo($scope) {}
 
-        addRemoveInjectArray(node.params, nr0, nr1, node.id.name);
+        addRemoveInjectArray(node.params, insertPos, node.id.name);
 
     } else if (node.type === "ExpressionStatement" && node.expression.type === "AssignmentExpression" &&
         ctx.isFunctionExpressionWithArgs(node.expression.right)) {
         // /*@ngInject*/ foo.bar[0] = function($scope) {}
 
-        const isSemicolonTerminated = (ctx.src[nr1 - 1] === ";");
         const name = ctx.srcForRange(node.expression.left.range);
-        addRemoveInjectArray(node.expression.right.params, nr0, isSemicolonTerminated ? nr1 : node.expression.right.range[1], name);
+        addRemoveInjectArray(node.expression.right.params, isSemicolonTerminated ? insertPos : node.expression.right.range[1], name);
     }
+
 
     function getIndent(pos) {
         const src = ctx.src;
@@ -660,7 +675,7 @@ function judgeInjectArraySuspect(node, ctx) {
         return src.slice(lineStart, i);
     }
 
-    function addRemoveInjectArray(params, posAtFunctionDeclaration, posAfterFunctionDeclaration, name) {
+    function addRemoveInjectArray(params, posAfterFunctionDeclaration, name) {
         // if an existing something.$inject = [..] exists then is will always be recycled when rebuilding
 
         const indent = getIndent(posAfterFunctionDeclaration);
@@ -668,8 +683,8 @@ function judgeInjectArraySuspect(node, ctx) {
         let foundSuspectInBody = false;
         let existingExpressionStatementWithArray = null;
         let troublesomeReturn = false;
-        node.$parent.body.forEach(function(bnode) {
-            if (bnode === node) {
+        onode.$parent.body.forEach(function(bnode) {
+            if (bnode === onode) {
                 foundSuspectInBody = true;
             }
 
@@ -701,15 +716,6 @@ function judgeInjectArraySuspect(node, ctx) {
                 (lvalue = assignment.left).type === "MemberExpression" &&
                 ((lvalue.computed === false && ctx.srcForRange(lvalue.object.range) === name && lvalue.property.name === "$inject") ||
                     (lvalue.computed === true && ctx.srcForRange(lvalue.object.range) === name && lvalue.property.type === "Literal" && lvalue.property.value === "$inject")));
-        }
-
-        function skipNewline(pos) {
-            if (ctx.src[pos] === "\n") {
-                return pos + 1;
-            } else if (ctx.src.slice(pos, pos + 2) === "\r\n") {
-                return pos + 2;
-            }
-            return pos;
         }
 
         function skipPrevNewline(pos) {
