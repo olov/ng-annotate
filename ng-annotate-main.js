@@ -663,6 +663,13 @@ function judgeInjectArraySuspect(node, ctx) {
 
         const name = ctx.srcForRange(node.expression.left.range);
         addRemoveInjectArray(node.expression.right.params, isSemicolonTerminated ? insertPos : node.expression.right.range[1], name);
+
+    } else if (node = followReference(node)) {
+        // node was a reference and followed node now is either a
+        // FunctionDeclaration or a VariableDeclarator
+        // => recurse
+
+        judgeInjectArraySuspect(node, ctx);
     }
 
 
@@ -760,13 +767,18 @@ function judgeInjectArraySuspect(node, ctx) {
 
 function jumpOverIife(node) {
     let outerfn;
-    let outerbody;
-    if (node.type === "CallExpression" &&
-        (outerfn = node.callee).type === "FunctionExpression" &&
-        (outerbody = outerfn.body.body).length === 1 &&
-        outerbody[0].type === "ReturnStatement" && outerbody[0].argument) {
-        return outerbody[0].argument;
+    if (!(node.type === "CallExpression" && (outerfn = node.callee).type === "FunctionExpression")) {
+        return node;
     }
+
+    const outerbody = outerfn.body.body;
+    for (let i = 0; i < outerbody.length; i++) {
+        const statement = outerbody[i];
+        if (statement.type === "ReturnStatement") {
+            return statement.argument;
+        }
+    }
+
     return node;
 }
 
