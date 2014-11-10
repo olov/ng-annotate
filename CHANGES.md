@@ -1,3 +1,9 @@
+## v0.12.0 2014-11-10
+ * improved TypeScript compatibility due to improved matching through IIFE's
+ * match $injector.invoke
+ * $modal.open is no longer experimental
+ * reference-following is no longer experimental
+
 ## v0.11.0 2014-11-03
  * bugfix reference-following such as var Ctrl = function(dep1, dep2) {}
 
