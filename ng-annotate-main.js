@@ -28,8 +28,10 @@ function match(node, ctx, matchPlugins) {
             node.callee.computed === false
         );
 
+    // matchInjectorInvoke must happen before matchRegular
+    // to prevent false positive ($injector.invoke() outside module)
     const matchMethodCalls = (isMethodCall &&
-        (matchRegular(node, ctx) || matchNgRoute(node) || matchNgUi(node) || matchHttpProvider(node)));
+        (matchInjectorInvoke(node) || matchRegular(node, ctx) || matchNgRoute(node) || matchNgUi(node) || matchHttpProvider(node)));
 
     return matchMethodCalls ||
         (matchPlugins && matchPlugins(node)) ||
@@ -220,6 +222,19 @@ function matchNgUi(node) {
             });
         }
     }
+}
+
+function matchInjectorInvoke(node) {
+    // $injector.invoke(function($compile) { ... });
+
+    // we already know that node is a (non-computed) method call
+    const callee = node.callee;
+    const obj = callee.object; // identifier or expression
+    const method = callee.property; // identifier
+
+    return method.name === "invoke" &&
+        obj.type === "Identifier" && obj.name === "$injector" &&
+        node.arguments.length >= 1 && node.arguments;
 }
 
 function matchHttpProvider(node) {

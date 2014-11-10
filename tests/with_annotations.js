@@ -200,6 +200,11 @@ angular.module("MyMod").directive("foo", ["$a", "$b", function($a, $b) {
 // all the patterns below matches only when we're inside a detected angular module
 angular.module("MyMod").directive("pleasematchthis", function() {
 
+    // $injector.invoke
+    $injector.invoke(["$compile", function($compile) {
+        $compile(myElement)(scope);
+    }]);
+
     // $httpProvider
     $httpProvider.interceptors.push(["$scope", function($scope) { a }]);
     $httpProvider.responseInterceptors.push(["$scope", function($scope) { a }], ["a", "b", function(a, b) { b }], function() { c });
@@ -334,6 +339,11 @@ angular.module("MyMod").directive("pleasematchthis", function() {
 // this should be a straight copy of the code above, with identical copies in
 // with_annotations(_single).js
 foobar.irrespective("dontmatchthis", function() {
+
+    // $injector.invoke
+    $injector.invoke(function($compile) {
+        $compile(myElement)(scope);
+    });
 
     // $httpProvider
     $httpProvider.interceptors.push(function($scope) { a });
