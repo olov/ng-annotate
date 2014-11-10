@@ -763,22 +763,15 @@ function judgeInjectArraySuspect(node, ctx) {
 
 function jumpOverIife(node) {
     let outerfn;
-    let outerbody;
-    if (node.type === "CallExpression" && (outerfn = node.callee).type === "FunctionExpression") {
+    if (!(node.type === "CallExpression" && (outerfn = node.callee).type === "FunctionExpression")) {
+        return node;
+    }
 
-        // IIFE has one return statement
-        if ((outerbody = outerfn.body.body).length === 1 && outerbody[0].type === "ReturnStatement" && outerbody[0].argument) {
-            return outerbody[0].argument;
-        } 
-
-        // IIFE has multiple statements, find the returned function
-        else if (outerbody.length > 1) {
-            for (var i = 0, len = outerbody.length; i < len; i++) {
-                var body = outerbody[i];
-                if (body.type === "ReturnStatement" && body.argument.type === "Identifier") {
-                    return body.argument;
-                }
-            }
+    let outerbody = outerfn.body.body;
+    for (let i = 0; i < outerbody.length; i++) {
+        let body = outerbody[i];
+        if (body.type === "ReturnStatement") {
+            return body.argument;
         }
     }
     return node;
