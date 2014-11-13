@@ -1,3 +1,6 @@
+## v0.12.1 2014-11-13
+ * bugfix crash when reference-following to an empty variable declarator
+
 ## v0.12.0 2014-11-10
  * improved TypeScript compatibility due to improved matching through IIFE's
  * match $injector.invoke
