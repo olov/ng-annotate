@@ -652,7 +652,7 @@ function judgeInjectArraySuspect(node, ctx) {
     }
 
     // suspect must be inside of a block or at the top-level (i.e. inside of node.$parent.body[])
-    if (!onode.$parent || is.noneof(onode.$parent.type, ["Program", "BlockStatement"])) {
+    if (!node || !onode.$parent || is.noneof(onode.$parent.type, ["Program", "BlockStatement"])) {
         return;
     }
 
