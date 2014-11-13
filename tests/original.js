@@ -684,3 +684,7 @@ function MyDirective2($stateProvider) {
     angular.module('myApp').controller("MyCtrl", MyCtrl);
     MyCtrl.prototype.someFunction = function() {};
 })();
+
+// empty var declarator
+var MyCtrl12;
+angular.module("MyMod").controller('MyCtrl', MyCtrl12);
