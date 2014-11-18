@@ -166,6 +166,9 @@ ng-annotate understands [ui-router](https://github.com/angular-ui/ui-router) (`$
 
 ng-annotate understands `$modal.open` ([angular-ui/bootstrap](http://angular-ui.github.io/bootstrap/)).
 
+ng-annotate understands `$mdDialog.show`, `$mdToast.show` and `$mdBottomSheet.show`
+([angular material design](https://material.angularjs.org/#/api/material.components.dialog/service/$mdDialog)).
+
 ng-annotate understands chaining.
 
 ng-annotate understands IIFE's and attempts to match through them, so

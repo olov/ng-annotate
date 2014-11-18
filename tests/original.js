@@ -344,6 +344,38 @@ angular.module("MyMod").directive("pleasematchthis", function() {
         },
         donttouch: function(me) {},
     });
+
+    // angular material design $mdBottomSheet, $mdDialog, $mdToast
+    $mdDialog.show({
+        templateUrl: "str",
+        controller: function($scope) {},
+        resolve: {
+            items: function(MyService) {},
+            data: function(a, b) {},
+            its: 42,
+        },
+        donttouch: function(me) {},
+    });
+    $mdBottomSheet.show({
+        templateUrl: "str",
+        controller: function($scope) {},
+        resolve: {
+            items: function(MyService) {},
+            data: function(a, b) {},
+            its: 42,
+        },
+        donttouch: function(me) {},
+    });
+    $mdToast.show({
+        templateUrl: "str",
+        controller: function($scope) {},
+        resolve: {
+            items: function(MyService) {},
+            data: function(a, b) {},
+            its: 42,
+        },
+        donttouch: function(me) {},
+    });
 });
 
 // none of the patterns below matches because they are not in an angular module context
@@ -364,14 +396,14 @@ foobar.irrespective("dontmatchthis", function() {
     $routeProvider.when("path", {
         controller: function($scope) { a }
     }).when("path2", {
-            controller: function($scope) { b },
-            resolve: {
-                zero: function() { a },
-                more: function($scope, $timeout) { b },
-                something: "else",
-            },
-            dontAlterMe: function(arg) {},
-        });
+        controller: function($scope) { b },
+        resolve: {
+            zero: function() { a },
+            more: function($scope, $timeout) { b },
+            something: "else",
+        },
+        dontAlterMe: function(arg) {},
+    });
 
     // ui-router
     $stateProvider.state("myState", {
@@ -406,17 +438,107 @@ foobar.irrespective("dontmatchthis", function() {
         onExit: function($scope) { e },
         dontAlterMe: function(arg) { f },
     }).state("myState2", {
-            controller: function($scope) {},
-        }).state({
-            name: "myState3",
-            controller: function($scope, simpleObj, promiseObj, translations) { c },
-        });
+        controller: function($scope) {},
+    }).state({
+        name: "myState3",
+        controller: function($scope, simpleObj, promiseObj, translations) { c },
+    });
     $urlRouterProvider.when("/", function($match) { a; });
     $urlRouterProvider.otherwise("", function(a) { a; });
     $urlRouterProvider.rule(function(a) { a; }).anything().when("/", function($location) { a; });
 
+    stateHelperProvider.setNestedState({
+        controller: function($scope, simpleObj, promiseObj, translations) { c },
+
+        children: [
+            {
+                name: "a",
+                controller: function(a) {},
+                resolve: {
+                    f: function($a) {},
+                },
+                children: [
+                    {
+                        name: "ab",
+                        controller: function(ab) {},
+                        resolve: {
+                            f: function($ab) {},
+                        },
+                        children: [
+                            {
+                                name: "abc",
+                                controller: function(abc) {},
+                                resolve: {
+                                    f: function($abc) {},
+                                },
+                            },
+                        ],
+                    },
+                ],
+            },
+            {
+                name: "b",
+                controller: function(b) {},
+                views: {
+                    viewa: {
+                        controller: function($scope, myParam) {},
+                        controllerProvider: function($stateParams) {},
+                        templateProvider: function($scope) {},
+                        dontAlterMe: function(arg) {},
+                        resolve: {
+                            myParam: function($stateParams) {
+                                return $stateParams.paramFromDI;
+                            }
+                        },
+                    },
+                    viewb: {
+                        dontAlterMe: function(arg) {},
+                        templateProvider: function($scope) {},
+                        controller: function($scope) {},
+                    },
+                    dontAlterMe: null,
+                },
+            },
+        ],
+    });
+    stateHelperProvider.setNestedState({
+        controller: function($scope, simpleObj, promiseObj, translations) { c },
+    }, true);
+
     // angular ui / ui-bootstrap $modal
     $modal.open({
+        templateUrl: "str",
+        controller: function($scope) {},
+        resolve: {
+            items: function(MyService) {},
+            data: function(a, b) {},
+            its: 42,
+        },
+        donttouch: function(me) {},
+    });
+
+    // angular material design $mdBottomSheet, $mdDialog, $mdToast
+    $mdDialog.show({
+        templateUrl: "str",
+        controller: function($scope) {},
+        resolve: {
+            items: function(MyService) {},
+            data: function(a, b) {},
+            its: 42,
+        },
+        donttouch: function(me) {},
+    });
+    $mdBottomSheet.show({
+        templateUrl: "str",
+        controller: function($scope) {},
+        resolve: {
+            items: function(MyService) {},
+            data: function(a, b) {},
+            its: 42,
+        },
+        donttouch: function(me) {},
+    });
+    $mdToast.show({
         templateUrl: "str",
         controller: function($scope) {},
         resolve: {

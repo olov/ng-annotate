@@ -33,12 +33,35 @@ function match(node, ctx, matchPlugins) {
     // matchProvide must happen before matchRegular
     // to prevent regular from matching it as a short-form
     const matchMethodCalls = (isMethodCall &&
-        (matchInjectorInvoke(node) || matchProvide(node, ctx) || matchRegular(node, ctx) || matchNgRoute(node) || matchNgUi(node) || matchHttpProvider(node)));
+        (matchInjectorInvoke(node) || matchProvide(node, ctx) || matchRegular(node, ctx) || matchNgRoute(node) || matchMaterialShowModalOpen(node) || matchNgUi(node) || matchHttpProvider(node)));
 
     return matchMethodCalls ||
         (matchPlugins && matchPlugins(node)) ||
         matchDirectiveReturnObject(node) ||
         matchProviderGet(node);
+}
+
+function matchMaterialShowModalOpen(node) {
+    // $mdDialog.show({.. controller: fn, resolve: {f: function($scope) {}, ..}});
+    // $mdToast.show({.. controller: fn, resolve: {f: function($scope) {}, ..}});
+    // $mdBottomSheet.show({.. controller: fn, resolve: {f: function($scope) {}, ..}});
+    // $modal.open({.. controller: fn, resolve: {f: function($scope) {}, ..}});
+
+    // we already know that node is a (non-computed) method call
+    const callee = node.callee;
+    const obj = callee.object; // identifier or expression
+    const method = callee.property; // identifier
+    const args = node.arguments;
+
+    if (obj.type === "Identifier" &&
+        ((obj.name === "$modal" && method.name === "open") || (is.someof(obj.name, ["$mdDialog", "$mdToast", "$mdBottomSheet"]) && method.name === "show")) &&
+        args.length === 1 && args[0].type === "ObjectExpression") {
+        const props = args[0].properties;
+        const res = [matchProp("controller", props)];
+        res.push.apply(res, matchResolve(props));
+        return res.filter(Boolean);
+    }
+    return false;
 }
 
 function matchDirectiveReturnObject(node) {
@@ -127,22 +150,13 @@ function matchNgUi(node) {
     //
     // $urlRouterProvider.when(.., function($scope) {})
     //
-    // $modal.open({.. controller: fn, resolve: {f: function($scope) {}, ..}});
+    // $modal.open see matchMaterialShowModalOpen
 
     // we already know that node is a (non-computed) method call
     const callee = node.callee;
     const obj = callee.object; // identifier or expression
     const method = callee.property; // identifier
     const args = node.arguments;
-
-    // shortcut for $modal.open({.. controller: fn, resolve: {f: function($scope) {}, ..}});
-    if (obj.type === "Identifier" && obj.name === "$modal" && method.name === "open" &&
-        args.length === 1 && args[0].type === "ObjectExpression") {
-        const props = args[0].properties;
-        const res = [matchProp("controller", props)];
-        res.push.apply(res, matchResolve(props));
-        return res.filter(Boolean);
-    }
 
     // shortcut for $urlRouterProvider.when(.., function($scope) {})
     if (obj.$chained === chainedUrlRouterProvider || (obj.type === "Identifier" && obj.name === "$urlRouterProvider")) {
