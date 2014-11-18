@@ -112,6 +112,16 @@ myMod.provider("foo", {
         bar;
     }
 });
+myMod.provider("foo", {
+    "$get": function($scope, $timeout) {
+        bar;
+    }
+});
+myMod.provider("foo", {
+    '$get': function($scope, $timeout) {
+        bar;
+    }
+});
 
 myMod.provider("foo", function(x) {
     this.$get = function(a,b) {};
@@ -170,21 +180,41 @@ angular.module("MyMod").directive("foo", function($a, $b) {
     });
 
 // $provide
-angular.module("MyMod").directive("foo", function($a, $b) {
-    $provide.decorator("foo", function($scope, $timeout) {
-        a;
+angular.module("myMod").controller("foo", function() {
+    $provide.decorator("foo", function($scope) {});
+    $provide.service("foo", function($scope) {});
+    $provide.factory("foo", function($scope) {});
+    //$provide.provider
+    $provide.provider("foo", function($scope) {
+        this.$get = function($scope) {};
+        return { $get: function($scope, $timeout) {}};
     });
-    $provide.factory("bar", function($timeout, $scope) {
-        b;
-    });
-    $provide.animation("baz", function($scope, $timeout) {
-        c;
+    $provide.provider("foo", {
+        $get: function($scope, $timeout) {}
     });
 });
+// negative $provide
+function notInContext() {
+    $provide.decorator("foo", function($scope) {});
+    $provide.service("foo", function($scope) {});
+    $provide.factory("foo", function($scope) {});
+    $provide.provider("foo", function($scope) {
+        this.$get = function($scope) {};
+        return { $get: function($scope, $timeout) {}};
+    });
+    $provide.provider("foo", {
+        $get: function($scope, $timeout) {}
+    });
+}
 
 
 // all the patterns below matches only when we're inside a detected angular module
 angular.module("MyMod").directive("pleasematchthis", function() {
+
+    // $injector.invoke
+    $injector.invoke(function($compile) {
+        $compile(myElement)(scope);
+    });
 
     // $httpProvider
     $httpProvider.interceptors.push(function($scope) { a });
@@ -314,12 +344,49 @@ angular.module("MyMod").directive("pleasematchthis", function() {
         },
         donttouch: function(me) {},
     });
+
+    // angular material design $mdBottomSheet, $mdDialog, $mdToast
+    $mdDialog.show({
+        templateUrl: "str",
+        controller: function($scope) {},
+        resolve: {
+            items: function(MyService) {},
+            data: function(a, b) {},
+            its: 42,
+        },
+        donttouch: function(me) {},
+    });
+    $mdBottomSheet.show({
+        templateUrl: "str",
+        controller: function($scope) {},
+        resolve: {
+            items: function(MyService) {},
+            data: function(a, b) {},
+            its: 42,
+        },
+        donttouch: function(me) {},
+    });
+    $mdToast.show({
+        templateUrl: "str",
+        controller: function($scope) {},
+        resolve: {
+            items: function(MyService) {},
+            data: function(a, b) {},
+            its: 42,
+        },
+        donttouch: function(me) {},
+    });
 });
 
 // none of the patterns below matches because they are not in an angular module context
 // this should be a straight copy of the code above, with identical copies in
 // with_annotations(_single).js
 foobar.irrespective("dontmatchthis", function() {
+
+    // $injector.invoke
+    $injector.invoke(function($compile) {
+        $compile(myElement)(scope);
+    });
 
     // $httpProvider
     $httpProvider.interceptors.push(function($scope) { a });
@@ -329,14 +396,14 @@ foobar.irrespective("dontmatchthis", function() {
     $routeProvider.when("path", {
         controller: function($scope) { a }
     }).when("path2", {
-            controller: function($scope) { b },
-            resolve: {
-                zero: function() { a },
-                more: function($scope, $timeout) { b },
-                something: "else",
-            },
-            dontAlterMe: function(arg) {},
-        });
+        controller: function($scope) { b },
+        resolve: {
+            zero: function() { a },
+            more: function($scope, $timeout) { b },
+            something: "else",
+        },
+        dontAlterMe: function(arg) {},
+    });
 
     // ui-router
     $stateProvider.state("myState", {
@@ -371,17 +438,107 @@ foobar.irrespective("dontmatchthis", function() {
         onExit: function($scope) { e },
         dontAlterMe: function(arg) { f },
     }).state("myState2", {
-            controller: function($scope) {},
-        }).state({
-            name: "myState3",
-            controller: function($scope, simpleObj, promiseObj, translations) { c },
-        });
+        controller: function($scope) {},
+    }).state({
+        name: "myState3",
+        controller: function($scope, simpleObj, promiseObj, translations) { c },
+    });
     $urlRouterProvider.when("/", function($match) { a; });
     $urlRouterProvider.otherwise("", function(a) { a; });
     $urlRouterProvider.rule(function(a) { a; }).anything().when("/", function($location) { a; });
 
+    stateHelperProvider.setNestedState({
+        controller: function($scope, simpleObj, promiseObj, translations) { c },
+
+        children: [
+            {
+                name: "a",
+                controller: function(a) {},
+                resolve: {
+                    f: function($a) {},
+                },
+                children: [
+                    {
+                        name: "ab",
+                        controller: function(ab) {},
+                        resolve: {
+                            f: function($ab) {},
+                        },
+                        children: [
+                            {
+                                name: "abc",
+                                controller: function(abc) {},
+                                resolve: {
+                                    f: function($abc) {},
+                                },
+                            },
+                        ],
+                    },
+                ],
+            },
+            {
+                name: "b",
+                controller: function(b) {},
+                views: {
+                    viewa: {
+                        controller: function($scope, myParam) {},
+                        controllerProvider: function($stateParams) {},
+                        templateProvider: function($scope) {},
+                        dontAlterMe: function(arg) {},
+                        resolve: {
+                            myParam: function($stateParams) {
+                                return $stateParams.paramFromDI;
+                            }
+                        },
+                    },
+                    viewb: {
+                        dontAlterMe: function(arg) {},
+                        templateProvider: function($scope) {},
+                        controller: function($scope) {},
+                    },
+                    dontAlterMe: null,
+                },
+            },
+        ],
+    });
+    stateHelperProvider.setNestedState({
+        controller: function($scope, simpleObj, promiseObj, translations) { c },
+    }, true);
+
     // angular ui / ui-bootstrap $modal
     $modal.open({
+        templateUrl: "str",
+        controller: function($scope) {},
+        resolve: {
+            items: function(MyService) {},
+            data: function(a, b) {},
+            its: 42,
+        },
+        donttouch: function(me) {},
+    });
+
+    // angular material design $mdBottomSheet, $mdDialog, $mdToast
+    $mdDialog.show({
+        templateUrl: "str",
+        controller: function($scope) {},
+        resolve: {
+            items: function(MyService) {},
+            data: function(a, b) {},
+            its: 42,
+        },
+        donttouch: function(me) {},
+    });
+    $mdBottomSheet.show({
+        templateUrl: "str",
+        controller: function($scope) {},
+        resolve: {
+            items: function(MyService) {},
+            data: function(a, b) {},
+            its: 42,
+        },
+        donttouch: function(me) {},
+    });
+    $mdToast.show({
         templateUrl: "str",
         controller: function($scope) {},
         resolve: {
@@ -571,6 +728,11 @@ myMod.service("donttouch", function() {
     }
 });
 
+myMod.directive("donttouch", function() {
+    foo.decorator("me", function($scope) {
+    });
+});
+
 // IIFE-jumping (primarily for compile-to-JS langs)
 angular.module("MyMod").directive("foo", function($a, $b) {
     $modal.open({
@@ -589,13 +751,47 @@ var x = /*@ngInject*/ (function() {
 })();
 
 
+// IIFE-jumping with reference support
+var myCtrl = (function () {
+    return function($scope) {
+    };
+})();
+angular.module("MyMod").controller("MyCtrl", myCtrl);
+
+
+// advanced IIFE-jumping (with reference support)
+var myCtrl10 = (function() {
+    // the return statement can appear anywhere on the functions topmost level,
+    // including before the myCtrl function definition
+    return myCtrl;
+    function myCtrl($scope) {
+        foo;
+    }
+    post;
+})();
+angular.module("MyMod").controller("MyCtrl", myCtrl10);
+
+var myCtrl11 = (function() {
+    pre;
+    var myCtrl = function($scope) {
+        foo;
+    };
+    mid;
+    // the return statement can appear anywhere on the functions topmost level,
+    // including before the myCtrl function definition
+    return myCtrl;
+    post;
+})();
+angular.module("MyMod").controller("MyCtrl", myCtrl11);
+
+
 // reference support
 function MyCtrl1(a, b) {
 }
 if (true) {
     // proper scope analysis including shadowing
     let MyCtrl1 = function(c) {
-    }
+    };
     angular.module("MyMod").directive("foo", MyCtrl1);
 }
 angular.module("MyMod").controller("bar", MyCtrl1);
@@ -623,3 +819,14 @@ function MyDirective2($stateProvider) {
         }
     });
 }
+
+// issue 84
+(function() {
+    var MyCtrl = function($someDependency) {};
+    angular.module('myApp').controller("MyCtrl", MyCtrl);
+    MyCtrl.prototype.someFunction = function() {};
+})();
+
+// empty var declarator
+var MyCtrl12;
+angular.module("MyMod").controller('MyCtrl', MyCtrl12);

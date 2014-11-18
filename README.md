@@ -151,19 +151,23 @@ aliases for `this`.
 ng-annotate understands `return {.., controller: function($scope) ..}` inside a
 `directive`.
 
-ng-annotate understands `$provide.decorator("bar", function($scope) ..)` and other methods
-on `provide` such as `factory`.
+ng-annotate understands `$provide.decorator("bar", function($scope) ..)`, `$provide.service`,
+`$provide.factory` and `$provide.provider`.
 
 ng-annotate understands `$routeProvider.when("path", { .. })`.
 
 ng-annotate understands `$httpProvider.interceptors.push(function($scope) ..)` and
 `$httpProvider.responseInterceptors.push(function($scope) ..)`.
 
+ng-annotate understands `$injector.invoke(function ..)`.
+
 ng-annotate understands [ui-router](https://github.com/angular-ui/ui-router) (`$stateProvider` and
 `$urlRouterProvider`).
 
 ng-annotate understands `$modal.open` ([angular-ui/bootstrap](http://angular-ui.github.io/bootstrap/)).
-*experimental*
+
+ng-annotate understands `$mdDialog.show`, `$mdToast.show` and `$mdBottomSheet.show`
+([angular material design](https://material.angularjs.org/#/api/material.components.dialog/service/$mdDialog)).
 
 ng-annotate understands chaining.
 
@@ -173,7 +177,6 @@ ng-annotate understands IIFE's and attempts to match through them, so
 
 
 ## Reference-following
-*experimental*
 
 ng-annotate follows references. This works iff the referenced declaration is
 a) a function declaration or
