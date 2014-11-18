@@ -151,8 +151,8 @@ aliases for `this`.
 ng-annotate understands `return {.., controller: function($scope) ..}` inside a
 `directive`.
 
-ng-annotate understands `$provide.decorator("bar", function($scope) ..)` and other methods
-on `provide` such as `factory`.
+ng-annotate understands `$provide.decorator("bar", function($scope) ..)`, `$provide.service`,
+`$provide.factory` and `$provide.provider`.
 
 ng-annotate understands `$routeProvider.when("path", { .. })`.
 

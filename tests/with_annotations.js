@@ -184,17 +184,32 @@ angular.module("MyMod").directive("foo", ["$a", "$b", function($a, $b) {
     }]);
 
 // $provide
-angular.module("MyMod").directive("foo", ["$a", "$b", function($a, $b) {
-    $provide.decorator("foo", ["$scope", "$timeout", function($scope, $timeout) {
-        a;
+angular.module("myMod").controller("foo", function() {
+    $provide.decorator("foo", ["$scope", function($scope) {}]);
+    $provide.service("foo", ["$scope", function($scope) {}]);
+    $provide.factory("foo", ["$scope", function($scope) {}]);
+    //$provide.provider
+    $provide.provider("foo", ["$scope", function($scope) {
+        this.$get = ["$scope", function($scope) {}];
+        return { $get: ["$scope", "$timeout", function($scope, $timeout) {}]};
     }]);
-    $provide.factory("bar", ["$timeout", "$scope", function($timeout, $scope) {
-        b;
-    }]);
-    $provide.animation("baz", ["$scope", "$timeout", function($scope, $timeout) {
-        c;
-    }]);
-}]);
+    $provide.provider("foo", {
+        $get: ["$scope", "$timeout", function($scope, $timeout) {}]
+    });
+});
+// negative $provide
+function notInContext() {
+    $provide.decorator("foo", function($scope) {});
+    $provide.service("foo", function($scope) {});
+    $provide.factory("foo", function($scope) {});
+    $provide.provider("foo", function($scope) {
+        this.$get = function($scope) {};
+        return { $get: function($scope, $timeout) {}};
+    });
+    $provide.provider("foo", {
+        $get: function($scope, $timeout) {}
+    });
+}
 
 
 // all the patterns below matches only when we're inside a detected angular module
@@ -612,6 +627,11 @@ myMod.service("donttouch", function() {
             bar;
         }
     }
+});
+
+myMod.directive("donttouch", function() {
+    foo.decorator("me", function($scope) {
+    });
 });
 
 // IIFE-jumping (primarily for compile-to-JS langs)

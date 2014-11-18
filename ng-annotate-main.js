@@ -30,8 +30,10 @@ function match(node, ctx, matchPlugins) {
 
     // matchInjectorInvoke must happen before matchRegular
     // to prevent false positive ($injector.invoke() outside module)
+    // matchProvide must happen before matchRegular
+    // to prevent regular from matching it as a short-form
     const matchMethodCalls = (isMethodCall &&
-        (matchInjectorInvoke(node) || matchRegular(node, ctx) || matchNgRoute(node) || matchNgUi(node) || matchHttpProvider(node)));
+        (matchInjectorInvoke(node) || matchProvide(node, ctx) || matchRegular(node, ctx) || matchNgRoute(node) || matchNgUi(node) || matchHttpProvider(node)));
 
     return matchMethodCalls ||
         (matchPlugins && matchPlugins(node)) ||
@@ -252,6 +254,33 @@ function matchHttpProvider(node) {
         node.arguments.length >= 1 && node.arguments);
 }
 
+function matchProvide(node, ctx) {
+    // $provide.decorator("foo", function($scope) {});
+    // $provide.service("foo", function($scope) {});
+    // $provide.factory("foo", function($scope) {});
+    // $provide.provider("foo", function($scope) {});
+
+    // we already know that node is a (non-computed) method call
+    const callee = node.callee;
+    const obj = callee.object; // identifier or expression
+    const method = callee.property; // identifier
+    const args = node.arguments;
+
+    const target = obj.type === "Identifier" && obj.name === "$provide" &&
+        is.someof(method.name, ["decorator", "service", "factory", "provider"]) &&
+        args.length === 2 && args[1];
+
+    if (target) {
+        target.$methodName = method.name;
+
+        if (ctx.rename) {
+            // for eventual rename purposes
+            return args;
+        }
+    }
+    return target;
+}
+
 function matchRegular(node, ctx) {
     // we already know that node is a (non-computed) method call
     const callee = node.callee;
@@ -269,7 +298,7 @@ function matchRegular(node, ctx) {
     }
 
     const matchAngularModule = (obj.$chained === chainedRegular || isReDef(obj, ctx) || isLongDef(obj)) &&
-        is.someof(method.name, ["provider", "value", "constant", "bootstrap", "config", "factory", "directive", "filter", "run", "controller", "service", "decorator", "animation", "invoke"]);
+        is.someof(method.name, ["provider", "value", "constant", "bootstrap", "config", "factory", "directive", "filter", "run", "controller", "service", "animation", "invoke"]);
     if (!matchAngularModule) {
         return false;
     }
