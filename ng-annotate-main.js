@@ -3,9 +3,6 @@
 // Copyright (c) 2013-2014 Olov Lassus <olov.lassus@gmail.com>
 
 "use strict";
-const esprima_require_t0 = Date.now();
-const esprima = require("esprima").parse;
-const esprima_require_t1 = Date.now();
 const fmt = require("simple-fmt");
 const is = require("simple-is");
 const alter = require("alter");
@@ -17,6 +14,7 @@ const generateSourcemap = require("./generate-sourcemap");
 const Lut = require("./lut");
 const scopeTools = require("./scopetools");
 const stringmap = require("stringmap");
+let parser = null; // will be lazy-loaded to esprima or acorn
 
 const chainedRouteProvider = 1;
 const chainedUrlRouterProvider = 2;
@@ -30,13 +28,40 @@ function match(node, ctx, matchPlugins) {
             node.callee.computed === false
         );
 
+    // matchInjectorInvoke must happen before matchRegular
+    // to prevent false positive ($injector.invoke() outside module)
+    // matchProvide must happen before matchRegular
+    // to prevent regular from matching it as a short-form
     const matchMethodCalls = (isMethodCall &&
-        (matchRegular(node, ctx) || matchNgRoute(node) || matchNgUi(node) || matchHttpProvider(node)));
+        (matchInjectorInvoke(node) || matchProvide(node, ctx) || matchRegular(node, ctx) || matchNgRoute(node) || matchMaterialShowModalOpen(node) || matchNgUi(node) || matchHttpProvider(node)));
 
     return matchMethodCalls ||
         (matchPlugins && matchPlugins(node)) ||
         matchDirectiveReturnObject(node) ||
         matchProviderGet(node);
+}
+
+function matchMaterialShowModalOpen(node) {
+    // $mdDialog.show({.. controller: fn, resolve: {f: function($scope) {}, ..}});
+    // $mdToast.show({.. controller: fn, resolve: {f: function($scope) {}, ..}});
+    // $mdBottomSheet.show({.. controller: fn, resolve: {f: function($scope) {}, ..}});
+    // $modal.open({.. controller: fn, resolve: {f: function($scope) {}, ..}});
+
+    // we already know that node is a (non-computed) method call
+    const callee = node.callee;
+    const obj = callee.object; // identifier or expression
+    const method = callee.property; // identifier
+    const args = node.arguments;
+
+    if (obj.type === "Identifier" &&
+        ((obj.name === "$modal" && method.name === "open") || (is.someof(obj.name, ["$mdDialog", "$mdToast", "$mdBottomSheet"]) && method.name === "show")) &&
+        args.length === 1 && args[0].type === "ObjectExpression") {
+        const props = args[0].properties;
+        const res = [matchProp("controller", props)];
+        res.push.apply(res, matchResolve(props));
+        return res.filter(Boolean);
+    }
+    return false;
 }
 
 function matchDirectiveReturnObject(node) {
@@ -125,22 +150,13 @@ function matchNgUi(node) {
     //
     // $urlRouterProvider.when(.., function($scope) {})
     //
-    // $modal.open({.. controller: fn, resolve: {f: function($scope) {}, ..}});
+    // $modal.open see matchMaterialShowModalOpen
 
     // we already know that node is a (non-computed) method call
     const callee = node.callee;
     const obj = callee.object; // identifier or expression
     const method = callee.property; // identifier
     const args = node.arguments;
-
-    // shortcut for $modal.open({.. controller: fn, resolve: {f: function($scope) {}, ..}});
-    if (obj.type === "Identifier" && obj.name === "$modal" && method.name === "open" &&
-        args.length === 1 && args[0].type === "ObjectExpression") {
-        const props = args[0].properties;
-        const res = [matchProp("controller", props)];
-        res.push.apply(res, matchResolve(props));
-        return res.filter(Boolean);
-    }
 
     // shortcut for $urlRouterProvider.when(.., function($scope) {})
     if (obj.$chained === chainedUrlRouterProvider || (obj.type === "Identifier" && obj.name === "$urlRouterProvider")) {
@@ -169,26 +185,32 @@ function matchNgUi(node) {
     }
 
     const configArg = (method.name === "state" ? last(args) : args[0]);
-    if (configArg.type !== "ObjectExpression") {
-        return false;
-    }
-
-    const childrenArrayExpression = matchProp("children", configArg.properties);
-    const children = childrenArrayExpression && childrenArrayExpression.elements;
 
     const res = [];
-    matchStateProps(configArg.properties, res);
-    if (children) {
-        children.forEach(function(child) {
-            if (child.properties) {
-                matchStateProps(child.properties, res);
-            }
-        });
-    }
+
+    recursiveMatch(configArg);
 
     const filteredRes = res.filter(Boolean);
     return (filteredRes.length === 0 ? false : filteredRes);
 
+
+    function recursiveMatch(objectExpressionNode) {
+        if (!objectExpressionNode || objectExpressionNode.type !== "ObjectExpression") {
+            return false;
+        }
+
+        const properties = objectExpressionNode.properties;
+
+        matchStateProps(properties, res);
+
+        const childrenArrayExpression = matchProp("children", properties);
+        const children = childrenArrayExpression && childrenArrayExpression.elements;
+
+        if (!children) {
+            return;
+        }
+        children.forEach(recursiveMatch);
+    }
 
     function matchStateProps(props, res) {
         const simple = [
@@ -218,6 +240,19 @@ function matchNgUi(node) {
     }
 }
 
+function matchInjectorInvoke(node) {
+    // $injector.invoke(function($compile) { ... });
+
+    // we already know that node is a (non-computed) method call
+    const callee = node.callee;
+    const obj = callee.object; // identifier or expression
+    const method = callee.property; // identifier
+
+    return method.name === "invoke" &&
+        obj.type === "Identifier" && obj.name === "$injector" &&
+        node.arguments.length >= 1 && node.arguments;
+}
+
 function matchHttpProvider(node) {
     // $httpProvider.interceptors.push(function($scope) {});
     // $httpProvider.responseInterceptors.push(function($scope) {});
@@ -231,6 +266,33 @@ function matchHttpProvider(node) {
         obj.type === "MemberExpression" && !obj.computed &&
         obj.object.name === "$httpProvider" && is.someof(obj.property.name,  ["interceptors", "responseInterceptors"]) &&
         node.arguments.length >= 1 && node.arguments);
+}
+
+function matchProvide(node, ctx) {
+    // $provide.decorator("foo", function($scope) {});
+    // $provide.service("foo", function($scope) {});
+    // $provide.factory("foo", function($scope) {});
+    // $provide.provider("foo", function($scope) {});
+
+    // we already know that node is a (non-computed) method call
+    const callee = node.callee;
+    const obj = callee.object; // identifier or expression
+    const method = callee.property; // identifier
+    const args = node.arguments;
+
+    const target = obj.type === "Identifier" && obj.name === "$provide" &&
+        is.someof(method.name, ["decorator", "service", "factory", "provider"]) &&
+        args.length === 2 && args[1];
+
+    if (target) {
+        target.$methodName = method.name;
+
+        if (ctx.rename) {
+            // for eventual rename purposes
+            return args;
+        }
+    }
+    return target;
 }
 
 function matchRegular(node, ctx) {
@@ -250,7 +312,7 @@ function matchRegular(node, ctx) {
     }
 
     const matchAngularModule = (obj.$chained === chainedRegular || isReDef(obj, ctx) || isLongDef(obj)) &&
-        is.someof(method.name, ["provider", "value", "constant", "bootstrap", "config", "factory", "directive", "filter", "run", "controller", "service", "decorator", "animation", "invoke"]);
+        is.someof(method.name, ["provider", "value", "constant", "bootstrap", "config", "factory", "directive", "filter", "run", "controller", "service", "animation", "invoke"]);
     if (!matchAngularModule) {
         return false;
     }
@@ -298,7 +360,8 @@ function last(arr) {
 function matchProp(name, props) {
     for (let i = 0; i < props.length; i++) {
         const prop = props[i];
-        if (prop.key.type === "Identifier" && prop.key.name === name) {
+        if ((prop.key.type === "Identifier" && prop.key.name === name) ||
+            (prop.key.type === "Literal" && prop.key.value === name)) {
             return prop.value; // FunctionExpression or ArrayExpression
         }
     }
@@ -328,10 +391,59 @@ function stringify(ctx, arr, quot) {
     }).join(", ") + "]";
 }
 
+function parseExpressionOfType(str, type) {
+    const node = parser(str).body[0].expression;
+    assert(node.type === type);
+    return node;
+}
+
+// stand-in for not having a jsshaper-style ref's
+function replaceNodeWith(node, newNode) {
+    let done = false;
+    const parent = node.$parent;
+    const keys = Object.keys(parent);
+    keys.forEach(function(key) {
+        if (parent[key] === node) {
+            parent[key] = newNode;
+            done = true;
+        }
+    });
+
+    if (done) {
+        return;
+    }
+
+    // second pass, now check arrays
+    keys.forEach(function(key) {
+        if (Array.isArray(parent[key])) {
+            const arr = parent[key];
+            for (let i = 0; i < arr.length; i++) {
+                if (arr[i] === node) {
+                    arr[i] = newNode;
+                    done = true;
+                }
+            }
+        }
+    });
+
+    assert(done);
+}
+
 function insertArray(ctx, functionExpression, fragments, quot) {
     const range = functionExpression.range;
 
     const args = stringify(ctx, functionExpression.params, quot);
+
+    // modify the AST
+    /*
+    const arrayExpression = parseExpressionOfType(args, "ArrayExpression");
+    const parent = functionExpression.$parent;
+    replaceNodeWith(functionExpression, arrayExpression);
+    arrayExpression.$parent = parent;
+    arrayExpression.elements.push(functionExpression)
+    functionExpression.$parent = arrayExpression;
+    */
+
     fragments.push({
         start: range[0],
         end: range[0],
@@ -515,9 +627,15 @@ function followReference(node) {
 
     if (is.someof(kind, ["const", "let", "var"])) {
         assert(ptype === "VariableDeclarator");
-        return parent.init;
+        // {type: "VariableDeclarator", id: {type: "Identifier", name: "foo"}, init: ..}
+        return parent;
     } else if (kind === "fun") {
         assert(ptype === "FunctionDeclaration" || ptype === "FunctionExpression")
+        // FunctionDeclaration is the common case, i.e.
+        // function foo(a, b) {}
+
+        // FunctionExpression is only applicable for cases similar to
+        // var f = function asdf(a,b) { mymod.controller("asdf", asdf) };
         return parent;
     }
 
@@ -547,30 +665,71 @@ function posToLine(pos, src) {
 }
 
 function judgeInjectArraySuspect(node, ctx) {
-    // /*@ngInject*/ var foo = function($scope) {} and
-    // /*@ngInject*/ function foo($scope) {} and
-    // /*@ngInject*/ foo.bar[0] = function($scope) {}
+    if (node.type === "VariableDeclaration") {
+        // suspect can only be a VariableDeclaration (statement) in case of
+        // explicitly marked via ngInject, not via references because
+        // references follow to VariableDeclarator (child)
+
+        // /*@ngInject*/ var foo = function($scope) {} and
+
+        if (node.declarations.length !== 1) {
+            // more than one declarator => exit
+            return;
+        }
+
+        // one declarator => jump over declaration into declarator
+        // rest of code will treat it as any (referenced) declarator
+        node = node.declarations[0];
+    }
+
+    // onode is a top-level node (inside function block), later verified
+    // node is inner match, descent in multiple steps
+    let onode = null;
+    let declaratorName = null;
+    if (node.type === "VariableDeclarator") {
+        onode = node.$parent;
+        declaratorName = node.id.name;
+        node = node.init; // var foo = ___;
+    } else {
+        onode = node;
+    }
 
     // suspect must be inside of a block or at the top-level (i.e. inside of node.$parent.body[])
-    if (!node.$parent || is.noneof(node.$parent.type, ["Program", "BlockStatement"])) {
+    if (!node || !onode.$parent || is.noneof(onode.$parent.type, ["Program", "BlockStatement"])) {
         return;
     }
 
-    let d0 = null;
-    const nr0 = node.range[0];
-    const nr1 = node.range[1];
-    if (node.type === "VariableDeclaration" && node.declarations.length === 1 &&
-        (d0 = node.declarations[0]).init && ctx.isFunctionExpressionWithArgs(d0.init)) {
-        const isSemicolonTerminated = (ctx.src[nr1 - 1] === ";");
-        addRemoveInjectArray(d0.init.params, nr0, isSemicolonTerminated ? nr1 : d0.init.range[1], d0.id.name);
+    const insertPos = onode.range[1];
+    const isSemicolonTerminated = (ctx.src[insertPos - 1] === ";");
+
+    node = jumpOverIife(node);
+
+    if (ctx.isFunctionExpressionWithArgs(node)) {
+        // var x = 1, y = function(a,b) {}, z;
+
+        assert(declaratorName);
+        addRemoveInjectArray(node.params, isSemicolonTerminated ? insertPos : node.range[1], declaratorName);
+
     } else if (ctx.isFunctionDeclarationWithArgs(node)) {
-        addRemoveInjectArray(node.params, nr0, nr1, node.id.name);
+        // /*@ngInject*/ function foo($scope) {}
+
+        addRemoveInjectArray(node.params, insertPos, node.id.name);
+
     } else if (node.type === "ExpressionStatement" && node.expression.type === "AssignmentExpression" &&
         ctx.isFunctionExpressionWithArgs(node.expression.right)) {
-        const isSemicolonTerminated = (ctx.src[nr1 - 1] === ";");
+        // /*@ngInject*/ foo.bar[0] = function($scope) {}
+
         const name = ctx.srcForRange(node.expression.left.range);
-        addRemoveInjectArray(node.expression.right.params, nr0, isSemicolonTerminated ? nr1 : node.expression.right.range[1], name);
+        addRemoveInjectArray(node.expression.right.params, isSemicolonTerminated ? insertPos : node.expression.right.range[1], name);
+
+    } else if (node = followReference(node)) {
+        // node was a reference and followed node now is either a
+        // FunctionDeclaration or a VariableDeclarator
+        // => recurse
+
+        judgeInjectArraySuspect(node, ctx);
     }
+
 
     function getIndent(pos) {
         const src = ctx.src;
@@ -581,7 +740,7 @@ function judgeInjectArraySuspect(node, ctx) {
         return src.slice(lineStart, i);
     }
 
-    function addRemoveInjectArray(params, posAtFunctionDeclaration, posAfterFunctionDeclaration, name) {
+    function addRemoveInjectArray(params, posAfterFunctionDeclaration, name) {
         // if an existing something.$inject = [..] exists then is will always be recycled when rebuilding
 
         const indent = getIndent(posAfterFunctionDeclaration);
@@ -589,8 +748,8 @@ function judgeInjectArraySuspect(node, ctx) {
         let foundSuspectInBody = false;
         let existingExpressionStatementWithArray = null;
         let troublesomeReturn = false;
-        node.$parent.body.forEach(function(bnode) {
-            if (bnode === node) {
+        onode.$parent.body.forEach(function(bnode) {
+            if (bnode === onode) {
                 foundSuspectInBody = true;
             }
 
@@ -622,15 +781,6 @@ function judgeInjectArraySuspect(node, ctx) {
                 (lvalue = assignment.left).type === "MemberExpression" &&
                 ((lvalue.computed === false && ctx.srcForRange(lvalue.object.range) === name && lvalue.property.name === "$inject") ||
                     (lvalue.computed === true && ctx.srcForRange(lvalue.object.range) === name && lvalue.property.type === "Literal" && lvalue.property.value === "$inject")));
-        }
-
-        function skipNewline(pos) {
-            if (ctx.src[pos] === "\n") {
-                return pos + 1;
-            } else if (ctx.src.slice(pos, pos + 2) === "\r\n") {
-                return pos + 2;
-            }
-            return pos;
         }
 
         function skipPrevNewline(pos) {
@@ -675,13 +825,18 @@ function judgeInjectArraySuspect(node, ctx) {
 
 function jumpOverIife(node) {
     let outerfn;
-    let outerbody;
-    if (node.type === "CallExpression" &&
-        (outerfn = node.callee).type === "FunctionExpression" &&
-        (outerbody = outerfn.body.body).length === 1 &&
-        outerbody[0].type === "ReturnStatement" && outerbody[0].argument) {
-        return outerbody[0].argument;
+    if (!(node.type === "CallExpression" && (outerfn = node.callee).type === "FunctionExpression")) {
+        return node;
     }
+
+    const outerbody = outerfn.body.body;
+    for (let i = 0; i < outerbody.length; i++) {
+        const statement = outerbody[i];
+        if (statement.type === "ReturnStatement") {
+            return statement.argument;
+        }
+    }
+
     return node;
 }
 
@@ -726,36 +881,57 @@ module.exports = function ngAnnotate(src, options) {
     }
     let ast;
     const stats = {};
+
+    // [{type: "Block"|"Line", value: str, range: [from,to]}, ..]
+    let comments = [];
+
+    stats.parser_require_t0 = Date.now();
+    if (!options.es6) {
+        parser = require("esprima").parse;
+    } else {
+        parser = require("acorn").parse;
+    }
+    stats.parser_require_t1 = Date.now();
+
     try {
-        stats.esprima_require_t0 = esprima_require_t0;
-        stats.esprima_require_t1 = esprima_require_t1;
-        stats.esprima_parse_t0 = Date.now();
+        stats.parser_parse_t0 = Date.now();
 
-        ast = esprima(src, {
-            range: true,
-            comment: true,
-        });
+        if (!options.es6) {
+            // esprima
+            ast = parser(src, {
+                range: true,
+                comment: true,
+            });
 
-        stats.esprima_parse_t1 = Date.now();
+            // Fix Program node range (https://code.google.com/p/esprima/issues/detail?id=541)
+            ast.range[0] = 0;
+
+            // detach comments from ast
+            comments = ast.comments;
+            ast.comments = null;
+
+        } else {
+            // acorn
+            ast = parser(src, {
+                ecmaVersion: 6,
+                locations: true,
+                ranges: true,
+                onComment: comments,
+            });
+        }
+
+        stats.parser_parse_t1 = Date.now();
     } catch(e) {
         return {
             errors: ["error: couldn't process source due to parse error", e.message],
         };
     }
 
-    // Fix Program node range (https://code.google.com/p/esprima/issues/detail?id=541)
-    ast.range[0] = 0;
-
     // append a dummy-node to ast so that lut.findNodeFromPos(lastPos) returns something
     ast.body.push({
         type: "DebuggerStatement",
         range: [ast.range[1], ast.range[1]],
     });
-
-    // detach comments from ast
-    // [{type: "Block"|"Line", value: str, range: [from,to]}, ..]
-    const comments = ast.comments;
-    ast.comments = null;
 
     // all source modifications are built up as operations in the
     // fragments array, later sent to alter in one shot

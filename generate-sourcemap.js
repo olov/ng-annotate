@@ -7,6 +7,13 @@ const SourceMapGenerator = require("source-map").SourceMapGenerator;
 const stableSort = require("stable");
 const compact = require("compact-source-mappings");
 
+// This isn't, strictly speaking, an exhaustive match for valid identifier characters
+// in JavaScript: https://mathiasbynens.be/notes/javascript-identifiers
+// But it's close enough for our purposes in generating source maps.
+const identifierRegex = /[A-Za-z0-9$_]/;
+
+const whitespaceRegex = /\s/;
+
 function SourceMapper(src, fragments, inFile, sourceRoot) {
     this.generator = new SourceMapGenerator({ sourceRoot: sourceRoot });
     this.src = src;
@@ -22,6 +29,7 @@ SourceMapper.prototype.generate = function() {
     let inColumn = 0;
     let outLine = 1;
     let outColumn = 0;
+    let insideWord = false;
 
     while (inIndex < this.src.length) {
         if (this.fragments[0] && this.fragments[0].start === inIndex) {
@@ -57,8 +65,17 @@ SourceMapper.prototype.generate = function() {
                 inColumn = 0;
                 outColumn = 0;
             } else {
-                if (!/\s/.test(this.src[inIndex]))
-                    this.addMapping(inLine, inColumn, outLine, outColumn);
+                if (identifierRegex.test(this.src[inIndex])) {
+                    if (!insideWord) {
+                        insideWord = true;
+                        this.addMapping(inLine, inColumn, outLine, outColumn);
+                    }
+                } else {
+                    insideWord = false;
+                    if (!whitespaceRegex.test(this.src[inIndex])) {
+                        this.addMapping(inLine, inColumn, outLine, outColumn);
+                    }
+                }
                 inColumn++;
                 outColumn++;
             }

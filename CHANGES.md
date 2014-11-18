@@ -1,3 +1,28 @@
+## v0.13.0 2014-11-18
+ * match $mdDialog.show, $mdToast.show and $mdBottomSheet.show
+ * improved $provide matching (.decorator, .service, .factory and .provider)
+
+## v0.12.1 2014-11-13
+ * bugfix crash when reference-following to an empty variable declarator
+
+## v0.12.0 2014-11-10
+ * improved TypeScript compatibility due to improved matching through IIFE's
+ * match $injector.invoke
+ * $modal.open is no longer experimental
+ * reference-following is no longer experimental
+
+## v0.11.0 2014-11-03
+ * bugfix reference-following such as var Ctrl = function(dep1, dep2) {}
+
+## v0.10.3 2014-11-03
+ * match properties {name: ..}, {"name": ..} and {'name': ..} alike
+
+## v0.10.2 2014-10-09
+ * --es6 option for ES6 support via the Acorn parser (experimental)
+
+## v0.10.1 2014-09-19
+ * support stateHelperProvider.setNestedState nested children
+
 ## v0.10.0 2014-09-15
  * support stateHelperProvider.setNestedState
  * optional renaming of declarations and references (experimental)
