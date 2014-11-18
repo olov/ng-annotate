@@ -1,3 +1,7 @@
+## v0.13.0 2014-11-18
+ * match $mdDialog.show, $mdToast.show and $mdBottomSheet.show
+ * improved $provide matching (.decorator, .service, .factory and .provider)
+
 ## v0.12.1 2014-11-13
  * bugfix crash when reference-following to an empty variable declarator
 
