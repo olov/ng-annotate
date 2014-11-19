@@ -42,8 +42,8 @@ const renameOptions = [
 function testSourcemap(original, got, sourcemap) {
     const smc = new SourceMapConsumer(sourcemap);
 
-    function commentRegExp(commentText) {
-        return new RegExp("(###|[/][*]) " + commentText + " (###|[*][/])");
+    function stringRegExp(commentText) {
+        return new RegExp("\"" + commentText + "\"");
     }
 
     function functionRegExp(functionName) {
@@ -77,12 +77,12 @@ function testSourcemap(original, got, sourcemap) {
         }
     }
 
-    testMapping(commentRegExp("before"));
+    testMapping(stringRegExp("before"));
     for (let i = 1; i <= 4; i++) {
         testMapping(functionRegExp("ctrl" + i));
-        testMapping(commentRegExp("ctrl" + i + " body"));
+        testMapping(stringRegExp("ctrl" + i + " body"));
     }
-    testMapping(commentRegExp("after"));
+    testMapping(stringRegExp("after"));
 }
 
 function run(ngAnnotate) {
