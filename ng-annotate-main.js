@@ -539,8 +539,6 @@ function judgeSuspects(ctx) {
         return jumpedAndFollowed;
     }).filter(Boolean), 2);
 
-
-
     finalSuspects.forEach(function(target) {
         if (target.$chained !== chainedRegular) {
             return;
