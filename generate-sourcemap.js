@@ -9,8 +9,9 @@ const stableSort = require("stable");
 function SourceMapper(src, nodePositions, fragments, inFile, sourceRoot) {
     this.generator = new SourceMapGenerator({ sourceRoot: sourceRoot });
     this.src = src;
-    this.nodePositions = stableSort(nodePositions.slice(0), compareLoc);
-    this.fragments = stableSort(fragments.slice(0), function(a, b) { return a.start - b.start });
+    // stableSort does not mutate input array so no need to copy it
+    this.nodePositions = stableSort(nodePositions, compareLoc);
+    this.fragments = stableSort(fragments, function(a, b) { return a.start - b.start });
     this.inFile = inFile || "source.js";
 
     this.generator.setSourceContent(this.inFile, src);
