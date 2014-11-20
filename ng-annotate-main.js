@@ -431,29 +431,25 @@ function replaceNodeWith(node, newNode) {
 }
 
 function insertArray(ctx, functionExpression, fragments, quot) {
-    const range = functionExpression.range;
-
     const args = stringify(ctx, functionExpression.params, quot);
 
-    // modify the AST
-    /*
-    const arrayExpression = parseExpressionOfType(args, "ArrayExpression");
-    const parent = functionExpression.$parent;
-    replaceNodeWith(functionExpression, arrayExpression);
-    arrayExpression.$parent = parent;
-    arrayExpression.elements.push(functionExpression)
-    functionExpression.$parent = arrayExpression;
-    */
-
     fragments.push({
-        start: range[0],
-        end: range[0],
+        start: functionExpression.range[0],
+        end: functionExpression.range[0],
         str: args.slice(0, -1) + ", ",
+        loc: {
+            start: functionExpression.loc.start,
+            end: functionExpression.loc.start
+        }
     });
     fragments.push({
-        start: range[1],
-        end: range[1],
+        start: functionExpression.range[1],
+        end: functionExpression.range[1],
         str: "]",
+        loc: {
+            start: functionExpression.loc.end,
+            end: functionExpression.loc.end
+        }
     });
 }
 
@@ -469,6 +465,10 @@ function replaceArray(ctx, array, fragments, quot) {
         start: array.range[0],
         end: functionExpression.range[0],
         str: args.slice(0, -1) + ", ",
+        loc: {
+            start: array.loc.start,
+            end: functionExpression.loc.start
+        }
     });
 }
 
@@ -479,11 +479,19 @@ function removeArray(array, fragments) {
         start: array.range[0],
         end: functionExpression.range[0],
         str: "",
+        loc: {
+            start: array.loc.start,
+            end: functionExpression.loc.start
+        }
     });
     fragments.push({
         start: functionExpression.range[1],
         end: array.range[1],
         str: "",
+        loc: {
+            start: functionExpression.loc.end,
+            end: array.loc.end
+        }
     });
 }
 
@@ -492,6 +500,15 @@ function renameProviderDeclarationSite(ctx, literalNode, fragments) {
         start: literalNode.range[0] + 1,
         end: literalNode.range[1] - 1,
         str: renamedString(ctx, literalNode.value),
+        loc: {
+            start: {
+                line: literalNode.loc.start.line,
+                column: literalNode.loc.start.column + 1
+            }, end: {
+                line: literalNode.loc.end.line,
+                column: literalNode.loc.end.column - 1
+            }
+        }
     });
 }
 
@@ -700,8 +717,11 @@ function judgeInjectArraySuspect(node, ctx) {
         return;
     }
 
-    const insertPos = onode.range[1];
-    const isSemicolonTerminated = (ctx.src[insertPos - 1] === ";");
+    const insertPos = {
+        pos: onode.range[1],
+        loc: onode.loc.end
+    };
+    const isSemicolonTerminated = (ctx.src[insertPos.pos - 1] === ";");
 
     node = jumpOverIife(node);
 
@@ -709,19 +729,34 @@ function judgeInjectArraySuspect(node, ctx) {
         // var x = 1, y = function(a,b) {}, z;
 
         assert(declaratorName);
-        addRemoveInjectArray(node.params, isSemicolonTerminated ? insertPos : node.range[1], declaratorName);
+        addRemoveInjectArray(
+            node.params,
+            isSemicolonTerminated ? insertPos : {
+                pos: node.range[1],
+                loc: node.loc.end
+            },
+            declaratorName);
 
     } else if (ctx.isFunctionDeclarationWithArgs(node)) {
         // /*@ngInject*/ function foo($scope) {}
 
-        addRemoveInjectArray(node.params, insertPos, node.id.name);
+        addRemoveInjectArray(
+            node.params,
+            insertPos,
+            node.id.name);
 
     } else if (node.type === "ExpressionStatement" && node.expression.type === "AssignmentExpression" &&
         ctx.isFunctionExpressionWithArgs(node.expression.right)) {
         // /*@ngInject*/ foo.bar[0] = function($scope) {}
 
         const name = ctx.srcForRange(node.expression.left.range);
-        addRemoveInjectArray(node.expression.right.params, isSemicolonTerminated ? insertPos : node.expression.right.range[1], name);
+        addRemoveInjectArray(
+            node.expression.right.params,
+            isSemicolonTerminated ? insertPos : {
+                pos: node.expression.right.range[1],
+                loc: node.expression.right.loc.end
+            },
+            name);
 
     } else if (node = followReference(node)) {
         // node was a reference and followed node now is either a
@@ -744,7 +779,7 @@ function judgeInjectArraySuspect(node, ctx) {
     function addRemoveInjectArray(params, posAfterFunctionDeclaration, name) {
         // if an existing something.$inject = [..] exists then is will always be recycled when rebuilding
 
-        const indent = getIndent(posAfterFunctionDeclaration);
+        const indent = getIndent(posAfterFunctionDeclaration.pos);
 
         let foundSuspectInBody = false;
         let existingExpressionStatementWithArray = null;
@@ -771,7 +806,7 @@ function judgeInjectArraySuspect(node, ctx) {
         assert(foundSuspectInBody);
 
         if (troublesomeReturn && !existingExpressionStatementWithArray) {
-            posAfterFunctionDeclaration = skipPrevNewline(troublesomeReturn.range[0]);
+            posAfterFunctionDeclaration = skipPrevNewline(troublesomeReturn.range[0], troublesomeReturn.loc.start);
         }
 
         function hasInjectArray(node) {
@@ -784,20 +819,26 @@ function judgeInjectArraySuspect(node, ctx) {
                     (lvalue.computed === true && ctx.srcForRange(lvalue.object.range) === name && lvalue.property.type === "Literal" && lvalue.property.value === "$inject")));
         }
 
-        function skipPrevNewline(pos) {
+        function skipPrevNewline(pos, loc) {
             let prevLF = ctx.src.lastIndexOf("\n", pos);
             if (prevLF === -1) {
-                return pos;
+                return { pos: pos, loc: loc };
             }
             if (prevLF >= 1 && ctx.src[prevLF] === "\r") {
                 --prevLF;
             }
 
             if (/\S/g.test(ctx.src.slice(prevLF, pos - 1))) {
-                return pos;
+                return { pos: pos, loc: loc };
             }
 
-            return prevLF;
+            return {
+                pos: prevLF,
+                loc: {
+                    line: loc.line - 1,
+                    column: prevLF - ctx.src.lastIndexOf("\n", prevLF)
+                }
+            };
         }
 
         const str = fmt("{0}{1}{2}.$inject = {3};", EOL, indent, name, ctx.stringify(ctx, params, ctx.quot));
@@ -807,18 +848,31 @@ function judgeInjectArraySuspect(node, ctx) {
                 start: existingExpressionStatementWithArray.range[0],
                 end: existingExpressionStatementWithArray.range[1],
                 str: str,
+                loc: {
+                    start: existingExpressionStatementWithArray.loc.start,
+                    end: existingExpressionStatementWithArray.loc.end
+                }
             });
         } else if (ctx.mode === "remove" && existingExpressionStatementWithArray) {
+            const start = skipPrevNewline(existingExpressionStatementWithArray.range[0], existingExpressionStatementWithArray.loc.start);
             ctx.fragments.push({
-                start: skipPrevNewline(existingExpressionStatementWithArray.range[0]),
+                start: start.pos,
                 end: existingExpressionStatementWithArray.range[1],
                 str: "",
+                loc: {
+                    start: start.loc,
+                    end: existingExpressionStatementWithArray.loc.end
+                }
             });
         } else if (is.someof(ctx.mode, ["add", "rebuild"]) && !existingExpressionStatementWithArray) {
             ctx.fragments.push({
-                start: posAfterFunctionDeclaration,
-                end: posAfterFunctionDeclaration,
+                start: posAfterFunctionDeclaration.pos,
+                end: posAfterFunctionDeclaration.pos,
                 str: str,
+                loc: {
+                    start: posAfterFunctionDeclaration.loc,
+                    end: posAfterFunctionDeclaration.loc
+                }
             });
         }
     }
@@ -902,6 +956,7 @@ module.exports = function ngAnnotate(src, options) {
             ast = parser(src, {
                 range: true,
                 comment: true,
+                loc: true,
             });
 
             // Fix Program node range (https://code.google.com/p/esprima/issues/detail?id=541)
@@ -932,6 +987,10 @@ module.exports = function ngAnnotate(src, options) {
     ast.body.push({
         type: "DebuggerStatement",
         range: [ast.range[1], ast.range[1]],
+        loc: {
+            start: ast.loc.end,
+            end: ast.loc.end
+        }
     });
 
     // all source modifications are built up as operations in the
@@ -944,6 +1003,10 @@ module.exports = function ngAnnotate(src, options) {
     // and if it is in the correct context (inside an angular
     // module definition)
     const suspects = [];
+
+    // Position information for all nodes in the AST,
+    // used for sourcemap generation
+    const nodePositions = [];
 
     const lut = new Lut(ast, src);
     const posToLineColumn = new PosToLineColumn(src);
@@ -970,6 +1033,7 @@ module.exports = function ngAnnotate(src, options) {
         addModuleContextDependentSuspect: addModuleContextDependentSuspect,
         addModuleContextIndependentSuspect: addModuleContextIndependentSuspect,
         stringify: stringify,
+        nodePositions: nodePositions,
     };
 
     const plugins = options.plugin || [];
@@ -995,6 +1059,7 @@ module.exports = function ngAnnotate(src, options) {
         }
 
     }, post: function(node) {
+        ctx.nodePositions.push(node.loc.start);
         let targets = match(node, ctx, matchPluginsOrNull);
         if (!targets) {
             return;
@@ -1023,8 +1088,10 @@ module.exports = function ngAnnotate(src, options) {
     };
 
     if (options.sourcemap) {
+        if (typeof(options.sourcemap) !== 'object')
+            options.sourcemap = {};
         stats.sourcemap_t0 = Date.now();
-        result.map = generateSourcemap(src, fragments, options.inFile, options.sourceroot);
+        generateSourcemap(result, src, nodePositions, fragments, options.sourcemap);
         stats.sourcemap_t1 = Date.now();
     }
 

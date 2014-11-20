@@ -6,12 +6,10 @@
 
 const t0 = Date.now();
 const fs = require("fs");
-const os = require("os");
 const fmt = require("simple-fmt");
 const tryor = require("tryor");
 const ngAnnotate = require("./ng-annotate-main");
 const version = require("./package.json").version;
-const convertSourceMap = require("convert-source-map");
 const optimist = require("optimist")
     .usage("ng-annotate v" + version + "\n\nUsage: ng-annotate OPTIONS <file>\n\n" +
         "provide - instead of <file> to read from stdin\n" +
@@ -107,11 +105,6 @@ function slurpFile(cb) {
     fs.readFile(filename, cb);
 }
 
-function insertSourcemap(src, map) {
-    return convertSourceMap.removeMapFileComments(src) + os.EOL +
-        convertSourceMap.fromJSON(map).toComment();
-}
-
 function runAnnotate(err, src) {
     if (err) {
         exit(err.message);
@@ -127,11 +120,18 @@ function runAnnotate(err, src) {
         config.inFile = filename;
     }
 
-    ["add", "remove", "o", "sourcemap", "sourceroot", "regexp", "rename", "single_quotes", "plugin", "stats", "es6"].forEach(function(opt) {
+    ["add", "remove", "o", "regexp", "rename", "single_quotes", "plugin", "stats", "es6"].forEach(function(opt) {
         if (opt in argv) {
             config[opt] = argv[opt];
         }
     });
+
+    if (argv.sourcemap) {
+        config.map = { inline: true, sourceRoot: argv.sourceroot };
+        if (filename !== "-") {
+            config.map.inFile = filename;
+        }
+    };
 
     if (config.plugin) {
         if (!Array.isArray(config.plugin)) {
@@ -192,17 +192,13 @@ function runAnnotate(err, src) {
         process.stderr.write(fmt("[%] parser: {0}, nga init: {1}, nga run: {2}\n", pct(all_parser), pct(nga_init), pct(nga_run)));
     }
 
-    const output = config.sourcemap ?
-       insertSourcemap(ret.src, ret.map) :
-       ret.src;
-
     if (ret.src && config.o) {
         try {
-            fs.writeFileSync(config.o, output);
+            fs.writeFileSync(config.o, ret.src);
         } catch (e) {
             exit(e.message);
         }
     } else if (ret.src) {
-        process.stdout.write(output);
+        process.stdout.write(ret.src);
     }
 }

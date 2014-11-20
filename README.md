@@ -316,8 +316,7 @@ var res = ngAnnotate(src, {
     es6: true,
     plugin: [somePlugin],
     rename: [{from: "generalname", to: "uniquename"}, {from: "alpha", to: "beta"}],
-    sourcemap: true,
-    sourceroot: "/path/to/source/root",
+    sourcemap: { inline: false, inFile: "source.js", sourceRoot: "/path/to/source/root" }
 });
 var errorstringArray = res.errors;
 var transformedSource = res.src;
