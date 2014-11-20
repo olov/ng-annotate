@@ -97,15 +97,7 @@ SourceMapper.prototype.generate = function () {
 }
 
 function compareLoc(a, b) {
-    if (a.line < b.line)
-        return -1;
-    if (a.line > b.line)
-        return 1;
-    if (a.column < b.column)
-        return -1;
-    if (a.column > b.column)
-        return 1;
-    return 0;
+    return (a.line - b.line) || (a.column - b.column);
 }
 
 module.exports = function generateSourcemap(result, src, nodePositions, fragments, mapOpts) {
