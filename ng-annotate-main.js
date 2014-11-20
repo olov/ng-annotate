@@ -12,7 +12,6 @@ const assert = require("assert");
 const ngInject = require("./nginject");
 const generateSourcemap = require("./generate-sourcemap");
 const Lut = require("./lut");
-const PosToLineColumn = require("./pos-to-linecolumn");
 const scopeTools = require("./scopetools");
 const stringmap = require("stringmap");
 let parser = null; // will be lazy-loaded to esprima or acorn
@@ -1009,7 +1008,6 @@ module.exports = function ngAnnotate(src, options) {
     const nodePositions = [];
 
     const lut = new Lut(ast, src);
-    const posToLineColumn = new PosToLineColumn(src);
 
     scopeTools.setupScopeAndReferences(ast);
 
@@ -1026,7 +1024,6 @@ module.exports = function ngAnnotate(src, options) {
         fragments: fragments,
         suspects: suspects,
         lut: lut,
-        posToLineColumn: posToLineColumn,
         isFunctionExpressionWithArgs: isFunctionExpressionWithArgs,
         isFunctionDeclarationWithArgs: isFunctionDeclarationWithArgs,
         isAnnotatedArray: isAnnotatedArray,
