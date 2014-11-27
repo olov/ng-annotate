@@ -171,8 +171,7 @@ run(function(src, options) {
 });
 
 console.log("testing performance");
-const ngPath = path.resolve(require.resolve("angular"), "../lib/angular.js");
-const ng1 = fs.readFileSync(ngPath);
+const ng1 = fs.readFileSync("tests/angular.js");
 const ng5 = ng1 + ng1 + ng1 + ng1 + ng1;
 (function () {
     const startTime = Date.now();
