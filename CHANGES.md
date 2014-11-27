@@ -1,3 +1,6 @@
+## v0.14.0 2014-11-27
+ * support sourcemap combination and better map granularity
+
 ## v0.13.0 2014-11-18
  * match $mdDialog.show, $mdToast.show and $mdBottomSheet.show
  * improved $provide matching (.decorator, .service, .factory and .provider)
