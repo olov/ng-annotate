@@ -19,6 +19,13 @@ function slurp(filename) {
     return String(fs.readFileSync(filename));
 }
 
+function time(str, fn) {
+    const t0 = Date.now();
+    fn();
+    const t1 = Date.now();
+    console.log(fmt(str, t1 - t0));
+}
+
 function test(correct, got, name) {
     if (got !== correct) {
         const patch = diff.createPatch(name, correct, got);
@@ -158,6 +165,17 @@ function run(ngAnnotate) {
         }
     }
 
+    if (fs.existsSync("tests/angular.js")) {
+        console.log("testing performance");
+        const ng1 = String(fs.readFileSync("tests/angular.js"));
+        const ng5 = ng1 + ng1 + ng1 + ng1 + ng1;
+
+        time("  ng1 processed in {0} ms", function() { ngAnnotate(ng1, {add: true}) });
+        time("  ng1 processed with sourcemaps in {0} ms", function() { ngAnnotate(ng1, {add: true, sourcemap: true}) });
+        //time("  ng5 processed in {0} ms", function() { ngAnnotate(ng5, {add: true}) });
+        //time("  ng5 processed with sourcemaps in {0} ms", function() { ngAnnotate(ng5, {add: true, sourcemap: true}) });
+    }
+
     console.log("all ok");
 }
 
@@ -169,22 +187,3 @@ run(function(src, options) {
     options.es6 = true;
     return ngAnnotate(src, options);
 });
-
-console.log("testing performance");
-const ng1 = fs.readFileSync("tests/angular.js");
-const ng5 = ng1 + ng1 + ng1 + ng1 + ng1;
-(function () {
-    const startTime = Date.now();
-    ngAnnotate(ng5, {add: true});
-    const endTime = Date.now();
-    console.log(fmt("  ng5 processed in {0} ms", endTime - startTime));
-})();
-(function () {
-    const startTime = Date.now();
-    ngAnnotate(ng5, {add: true, sourcemap: true});
-    const endTime = Date.now();
-    console.log(fmt("  ng5 processed with sourcemaps in {0} ms", endTime - startTime));
-})();
-
-console.log("all ok");
-
