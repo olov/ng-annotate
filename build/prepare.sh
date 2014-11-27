@@ -10,6 +10,6 @@ cd ng-annotate/build
 # delete build scripts
 rm *.sh *.js defs-config.json ng-annotate
 # delete large test artifacts
-rm ./tests/angular.js
+rm ../tests/angular.js ../build/es5/tests/angular.js
 cd ../..
 tar czf ng-annotate.tgz ng-annotate && rm -rf ng-annotate
