@@ -862,3 +862,16 @@ MyDirective2.$inject = ['$stateProvider'];
 // empty var declarator
 var MyCtrl12;
 angular.module("MyMod").controller('MyCtrl', MyCtrl12);
+
+// issue 115
+module.exports = function() {
+    "use strict";
+    return {
+        restrict: 'E',
+        replace: true,
+        scope: { },
+        controller: /*@ngInject*/['$scope', 'myService', function($scope, myService) {
+        }],
+        templateUrl: "mytemplate"
+    };
+};

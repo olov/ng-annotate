@@ -74,7 +74,7 @@ function matchDirectiveReturnObject(node) {
 }
 
 function limit(name, node) {
-    if (node) {
+    if (node && !node.$limitToMethodName) {
         node.$limitToMethodName = name;
     }
     return node;
@@ -532,7 +532,7 @@ function judgeSuspects(ctx) {
         const jumped = jumpOverIife(target);
         const jumpedAndFollowed = followReference(jumped) || jumped;
 
-        if (target.$limitToMethodName && findOuterMethodName(target) !== target.$limitToMethodName) {
+        if (target.$limitToMethodName && target.$limitToMethodName !== "*never*" && findOuterMethodName(target) !== target.$limitToMethodName) {
             return null;
         }
 

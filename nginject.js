@@ -5,7 +5,6 @@
 "use strict";
 
 const is = require("simple-is");
-const fmt = require("simple-fmt");
 
 module.exports = {
     inspectComments: inspectComments,
@@ -51,15 +50,18 @@ function addSuspect(target, ctx) {
         addObjectExpression(target.declarations[0].init, ctx);
     } else if (target.type === "Property") {
         // {/*@ngInject*/ justthisone: function(a), ..}
+        target.value.$limitToMethodName = "*never*";
         ctx.addModuleContextIndependentSuspect(target.value, ctx);
     } else {
         // /*@ngInject*/ function(a) {}
+        target.$limitToMethodName = "*never*";
         ctx.addModuleContextIndependentSuspect(target, ctx);
     }
 }
 
 function addObjectExpression(node, ctx) {
     nestedObjectValues(node).forEach(function(n) {
+        n.$limitToMethodName = "*never*";
         ctx.addModuleContextIndependentSuspect(n, ctx);
     });
 }
