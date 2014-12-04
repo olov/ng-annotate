@@ -1,3 +1,6 @@
+## v0.14.1 2014-12-04
+ * bugfix /* @ngInject */ not working as expected in case of other matches
+
 ## v0.14.0 2014-11-27
  * support sourcemap combination and better map granularity
 
