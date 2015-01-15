@@ -717,6 +717,31 @@ var foo4 = function($scope) {
 
 
 
+// suppress false positives with /*@ngNoInject*/, ngNoInject() and "ngNoInject"
+myMod.controller("suppressed", /*@ngNoInject*/function($scope) {
+});
+myMod.controller("suppressed", ngNoInject(function($scope) {
+}));
+myMod.controller("suppressed", function($scope) {
+    "ngNoInject";
+});
+
+// works the same as ngInject i.e. reference-following, IIFE-jumping and so on
+/*@ngNoInject*/
+myMod.controller("suppressed", SupFoo1);
+myMod.controller("suppressed", SupFoo2);
+myMod.controller("suppressed", SupFoo3);
+function SupFoo1($scope) {
+    "ngNoInject";
+}
+/*@ngNoInject*/
+function SupFoo2($scope) {
+}
+var SupFoo3 = ngNoInject(function($scope) {
+    "ngNoInject";
+});
+
+
 // snippets that shouldn't fool ng-annotate into generating false positives,
 //   whether we're inside an angular module or not
 myMod.controller("donttouchme", function() {

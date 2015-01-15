@@ -20,15 +20,21 @@ function inspectNode(node, ctx) {
 }
 
 function inspectCallExpression(node, ctx) {
-    if (node.callee.type === "Identifier" && node.callee.name === "ngInject" && node.arguments.length === 1) {
-        addSuspect(node.arguments[0], ctx);
+    const name = node.callee.name;
+    if (node.callee.type === "Identifier" && (name === "ngInject" || name === "ngNoInject") && node.arguments.length === 1) {
+        const block = (name === "ngNoInject");
+        addSuspect(node.arguments[0], ctx, block);
     }
 }
 
+const ngAnnotatePrologueDirectives = ["ngInject", "ngNoInject"];
+
 function inspectFunction(node, ctx) {
-    if (!hasPrologueDirective("ngInject", node)) {
+    const str = matchPrologueDirectives(ngAnnotatePrologueDirectives, node);
+    if (!str) {
         return;
     }
+    const block = (str === "ngNoInject");
 
     // which node that is the correct suspect in the case of a "ngInject" prologue directive varies
     // between adding and removing annotations. when adding, the function (declaration or expression)
@@ -37,22 +43,22 @@ function inspectFunction(node, ctx) {
     // both may be suspects.
 
     // add function node as a suspect, unconditionally (false suspect won't cause a problem here)
-    addSuspect(node, ctx);
+    addSuspect(node, ctx, block);
 
     if (ctx.mode !== "add") {
         // remove or rebuild
         // isAnnotatedArray check is there as an extra false-positives safety net
         const maybeArrayExpression = node.$parent;
         if (ctx.isAnnotatedArray(maybeArrayExpression)) {
-            addSuspect(maybeArrayExpression, ctx);
+            addSuspect(maybeArrayExpression, ctx, block);
         }
     }
 }
 
-function hasPrologueDirective(prologue, node) {
+function matchPrologueDirectives(prologueDirectives, node) {
     const body = node.body.body;
 
-    let found = false;
+    let found = null;
     for (let i = 0; i < body.length; i++) {
         if (body[i].type !== "ExpressionStatement") {
             break;
@@ -64,8 +70,8 @@ function hasPrologueDirective(prologue, node) {
             break;
         }
 
-        if (expr.value === prologue) {
-            found = true;
+        if (prologueDirectives.indexOf(expr.value) >= 0) {
+            found = expr.value;
             break;
         }
     }
@@ -77,8 +83,9 @@ function inspectComments(ctx) {
     const comments = ctx.comments;
     for (let i = 0; i < comments.length; i++) {
         const comment = comments[i];
-        const pos = comment.value.indexOf("@ngInject");
-        if (pos === -1) {
+        const yesPos = comment.value.indexOf("@ngInject");
+        const noPos = (yesPos === -1 ? comment.value.indexOf("@ngNoInject") : -1);
+        if (yesPos === -1 && noPos === -1) {
             continue;
         }
 
@@ -87,11 +94,11 @@ function inspectComments(ctx) {
             continue;
         }
 
-        addSuspect(target, ctx);
+        addSuspect(target, ctx, noPos >= 0);
     }
 }
 
-function addSuspect(target, ctx) {
+function addSuspect(target, ctx, block) {
     if (target.type === "ObjectExpression") {
         // /*@ngInject*/ {f1: function(a), .., {f2: function(b)}}
         addObjectExpression(target, ctx);
@@ -107,19 +114,28 @@ function addSuspect(target, ctx) {
     } else if (target.type === "Property") {
         // {/*@ngInject*/ justthisone: function(a), ..}
         target.value.$limitToMethodName = "*never*";
-        ctx.addModuleContextIndependentSuspect(target.value, ctx);
+        addOrBlock(target.value, ctx);
     } else {
         // /*@ngInject*/ function(a) {}
         target.$limitToMethodName = "*never*";
-        ctx.addModuleContextIndependentSuspect(target, ctx);
+        addOrBlock(target, ctx);
     }
-}
 
-function addObjectExpression(node, ctx) {
-    nestedObjectValues(node).forEach(function(n) {
-        n.$limitToMethodName = "*never*";
-        ctx.addModuleContextIndependentSuspect(n, ctx);
-    });
+
+    function addObjectExpression(node, ctx) {
+        nestedObjectValues(node).forEach(function(n) {
+            n.$limitToMethodName = "*never*";
+            addOrBlock(n, ctx);
+        });
+    }
+
+    function addOrBlock(node, ctx) {
+        if (block) {
+            ctx.blocked.push(node);
+        } else {
+            ctx.addModuleContextIndependentSuspect(node, ctx)
+        }
+    }
 }
 
 function nestedObjectValues(node, res) {

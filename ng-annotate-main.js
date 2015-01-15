@@ -515,6 +515,7 @@ function judgeSuspects(ctx) {
     const mode = ctx.mode;
     const fragments = ctx.fragments;
     const quot = ctx.quot;
+    const blocked = ctx.blocked;
 
     const suspects = makeUnique(ctx.suspects, 1);
 
@@ -527,12 +528,16 @@ function judgeSuspects(ctx) {
         }
     }
 
-    // create final suspects by jumping, following, uniq'ing
+    // create final suspects by jumping, following, uniq'ing, blocking
     const finalSuspects = makeUnique(suspects.map(function(target) {
         const jumped = jumpOverIife(target);
         const jumpedAndFollowed = followReference(jumped) || jumped;
 
         if (target.$limitToMethodName && target.$limitToMethodName !== "*never*" && findOuterMethodName(target) !== target.$limitToMethodName) {
+            return null;
+        }
+
+        if (blocked.indexOf(jumpedAndFollowed) >= 0) {
             return null;
         }
 
@@ -1021,6 +1026,11 @@ module.exports = function ngAnnotate(src, options) {
     // module definition)
     const suspects = [];
 
+    // blocked is an array of blocked suspects. Any target node
+    // (final, i.e. IIFE-jumped, reference-followed and such) included
+    // in blocked will be ignored by judgeSuspects
+    const blocked = [];
+
     // Position information for all nodes in the AST,
     // used for sourcemap generation
     const nodePositions = [];
@@ -1041,6 +1051,7 @@ module.exports = function ngAnnotate(src, options) {
         comments: comments,
         fragments: fragments,
         suspects: suspects,
+        blocked: blocked,
         lut: lut,
         isFunctionExpressionWithArgs: isFunctionExpressionWithArgs,
         isFunctionDeclarationWithArgs: isFunctionDeclarationWithArgs,
