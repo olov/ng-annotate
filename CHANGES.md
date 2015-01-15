@@ -1,6 +1,6 @@
 ## v0.15.0 2015-01-15
  * "ngInject" directive prologue (usage like "use strict")
- * /*@ngNoInject*/, ngNoInject(..) and "ngNoInject" for suppressing false positives
+ * /* @ngNoInject */, ngNoInject(..) and "ngNoInject" for suppressing false positives
  * Acorn is now the default and only parser
  * removed the experimental --es6 option and made it the default
 
