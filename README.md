@@ -1,39 +1,33 @@
 # ng-annotate
 ng-annotate adds and removes AngularJS dependency injection annotations.
 It is non-intrusive so your source code stays exactly the same otherwise.
-No lost comments or moved lines.
+No lost comments or moved lines. Annotations are useful because with them
+you're able to minify your source code using your favorite JS minifier.
 
-Without annotations:
+You write your code without annotations, like this:
 
 ```js
 angular.module("MyMod").controller("MyCtrl", function($scope, $timeout) {
 });
 ```
 
-With annotations:
+You then run ng-annotate as a build-step to produce this intermediary,
+annotated, result (later sent to the minifier):
 
 ```js
 angular.module("MyMod").controller("MyCtrl", ["$scope", "$timeout", function($scope, $timeout) {
 }]);
 ```
 
-Annotations are useful because with them you're able to minify your source code using your
-favorite JS minifier.
+You can also use ng-annotate to rebuild or remove existing annotations.
+Rebuilding is useful if you like to check-in the annotated version of your
+source code. When refactoring, just change parameter names once and let
+ng-annotate rebuild the annotations. Removing is useful if you want to
+de-annotate an existing codebase that came with checked-in annotations
 
-
-## How does ng-annotate compare to ngmin?
-If you are currently using ngmin then this is probably your first question. In short:
-ng-annotate is much faster, finds more declarations to annotate (including ui-router),
-treats your source code better, is actively maintained and has a bunch of extra features
-on top of that. A much more elaborated answer can be found in
-["The future of ngmin and ng-annotate"](https://github.com/btford/ngmin/issues/93).
-
-*Migrating from ngmin*:
-`ng-annotate -a -` is similar to `ngmin` (use stdin and
-stdout). `ng-annotate -a in.js -o out.js` is similar to `ngmin in.js out.js`. Grunt users
-can migrate easily by installing
-[grunt-ng-annotate](https://www.npmjs.org/package/grunt-ng-annotate) and replacing `ngmin`
-with `ngAnnotate` in their Gruntfile. Scroll down for information about other tools.
+*ng-annotate works by using static analysis to identify common code patterns.
+There are patterns it does not and never will understand and for those you
+can use an explicit `ngInject` annotation instead, see section further down.
 
 
 ## Installation and usage
@@ -52,8 +46,6 @@ use `--add --remove` (`-ar`) to rebuild all annotations.
 Use the `-o` option to write output to file.
 
 Provide `-` instead of an input `<file>` to read input from stdin.
-
-*experimental* Use the `--es6` option for ES6 support via the Acorn parser.
 
 Use the `--sourcemap` option to generate an inline sourcemap.
 
@@ -78,11 +70,8 @@ Use it like this: `--rename oldname1 newname1 oldname2 newname2`
 `<div ng-app="myApp" ng-strict-di>`
 
 Do that in your ng-annotate processed builds and AngularJS will let you know if there are
-any missing dependency injection annotations. This is an upcoming feature in AngularJS 1.3
-([docs](https://docs.angularjs.org/api/ng/directive/ngApp)).
-
-A future version of ng-annotate may get support for adding the `ng-strict-di` attribute
-automatically so you don't have to think about it.
+any missing dependency injection annotations. [ng-strict-di](https://docs.angularjs.org/api/ng/directive/ngApp)
+is available in AngularJS 1.3 or later.
 
 
 ## Tools support
@@ -99,15 +88,6 @@ automatically so you don't have to think about it.
 
 ## Changes
 See [CHANGES.md](CHANGES.md).
-
-
-## Why?
- * Keep your code base clutter free from annotations but add them in your build step
- prior to minimizing
- * De-clutter an existing code base by removing annotations, non-intrusively
- * If you must store annotations in the repo (for any reason) then checkout,
- remove them, code and refactor without annotations, add them back and commit.
- Alternatively checkout, code and refactor (ignoring annotations), rebuild them and commit.
 
 
 ## Declaration forms
@@ -177,7 +157,6 @@ ng-annotate understands IIFE's and attempts to match through them, so
 
 
 ## Reference-following
-
 ng-annotate follows references. This works iff the referenced declaration is
 a) a function declaration or
 b) a variable declaration with an initializer.
@@ -194,34 +173,49 @@ angular.module("MyMod").controller("MyCtrl", MyCtrl);
 angular.module("MyMod").controller("MyCtrl", MyCtrl2);
 ```
 
-## Explicit annotations
-You can prepend a function expression with `/* @ngInject */` to explicitly state that this
-function should get annotated. ng-annotate will leave the comment intact and will thus still
-be able to also remove or rewrite such annotations. Alternatively, you can wrap an expression
-inside an `ngInject(..)` function call. Use `/* @ngInject */` or `ngInject(..)` as an occasional
-workaround when ng-annotate doesn't support your code style but feel free to open an issue
-also.
+
+## Explicit annotations with ngInject
+You can prepend a function with `/* @ngInject */` to explicitly state that the function
+should get annotated. ng-annotate will leave the comment intact and will thus still
+be able to also remove or rewrite such annotations.
+
+You can also wrap an expression inside an `ngInject(..)` function call. If you use this
+syntax then add `function ngInject(v) { return v }` somewhere in your codebase, or process
+away the `ngInject` function call in your build step.
+
+You can also add the `"ngInject"` prologue directive at the beginning of a function,
+similar to how `"use strict"` is used, to state that the surrounding function should get
+annotated.
+
+Use `ngInject` to support your code style when it's not in a form ng-annotate understands
+natively. Remember that the intention of ng-annotate is to reduce stuttering for you,
+and `ngInject` does this just as well. You don't need to keep two lists in sync. Use it!
+
+`ngInject` may be particularly useful if you use a compile-to-JS language that doesn't
+preserve comments.
+
+
+### Suppressing false positives with ngNoInject
+The `/* @ngInject */`, `ngInject(..)` and `"ngInject"` siblings have three cousins that
+are used for the opposite purpose, suppressing an annotation that ng-annotate added
+incorrectly (a "false positive"). They are called `/* @ngNoInject */`, `ngNoInject(..)`
+and `"ngNoInject"` and does exactly what you think they do.
+
+
+### ngInject examples
+Here follows some ngInject examples using the `/*@ngInject*/` syntax. Most examples
+works fine using the `ngInject(..)` or `"ngInject"` syntax as well.
 
 ```js
 x = /* @ngInject */ function($scope) {};
 obj = {controller: /*@ngInject*/ function($scope) {}};
 obj.bar = /*@ngInject*/ function($scope) {};
 
-function ngInject(f) { return f } // define this once in your program
-x = ngInject(function($scope) {});
-obj = {controller: ngInject(function($scope) {})};
-obj.bar = ngInject(function($scope) {});
-
 =>
 
 x = /* @ngInject */ ["$scope", function($scope) {}];
 obj = {controller: /*@ngInject*/ ["$scope", function($scope) {}]};
 obj.bar = /*@ngInject*/ ["$scope", function($scope) {}];
-
-function ngInject(f) { return f } // define this once in your program
-x = ngInject(["$scope", function($scope) {}]);
-obj = {controller: ngInject(["$scope", function($scope) {}])};
-obj.bar = ngInject(["$scope", function($scope) {}]);
 ```
 
 Prepended to an object literal, `/* @ngInject */` will annotate all of its contained
@@ -233,22 +227,12 @@ obj = /*@ngInject*/ {
     resolve: { data: function(Service) {} },
 };
 
-obj = ngInject({
-    controller: function($scope) {},
-    resolve: { data: function(Service) {} },
-});
-
 =>
 
 obj = /*@ngInject*/ {
     controller: ["$scope", function($scope) {}],
     resolve: { data: ["Service", function(Service) {}] },
 };
-
-obj = ngInject({
-    controller: ["$scope", function($scope) {}],
-    resolve: { data: ["Service", function(Service) {}] },
-});
 ```
 
 Prepended to a function statement, to a single variable declaration initialized with a
@@ -280,10 +264,6 @@ module.exports = function($scope) {}
 module.exports.$inject = ["$scope"];
 ```
 
-## Issues and compatibility
-If ng-annotate does not handle a construct you're using, if there's a bug or if you have a feature
-request then please [file an issue](https://github.com/olov/ng-annotate/issues?state=open).
-
 
 ## Build and test
 ng-annotate is written in ES6 constlet style and uses [defs.js](https://github.com/olov/defs)
@@ -298,10 +278,19 @@ ng-annotate is written by [Olov Lassus](https://github.com/olov) with the kind h
 [Follow @olov](https://twitter.com/olov) on Twitter for updates about ng-annotate.
 
 
-## Performance
-ng-annotate is designed to be very fast (in general limited by parse speed).
-It traverses the AST exactly once and transforms it without the need for an AST -> source
-decompilation step.
+## How does ng-annotate compare to ngmin?
+ngmin has been deprecated in favor of ng-annotate. In short:
+ng-annotate is much faster, finds more declarations to annotate (including ui-router),
+treats your source code better, is actively maintained and has a bunch of extra features
+on top of that. A much more elaborated answer can be found in
+["The future of ngmin and ng-annotate"](https://github.com/btford/ngmin/issues/93).
+
+*Migrating from ngmin*:
+`ng-annotate -a -` is similar to `ngmin` (use stdin and
+stdout). `ng-annotate -a in.js -o out.js` is similar to `ngmin in.js out.js`. Grunt users
+can migrate easily by installing
+[grunt-ng-annotate](https://www.npmjs.org/package/grunt-ng-annotate) and replacing `ngmin`
+with `ngAnnotate` in their Gruntfile. Scroll down for information about other tools.
 
 
 ## Library (API)
