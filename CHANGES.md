@@ -1,3 +1,6 @@
+## v0.15.1 2015-01-15
+ * bugfix release for compatibility with io.js
+
 ## v0.15.0 2015-01-15
  * "ngInject" directive prologue (usage like "use strict")
  * /* @ngNoInject */, ngNoInject(..) and "ngNoInject" for suppressing false positives
