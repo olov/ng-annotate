@@ -99,10 +99,6 @@ function run(ngAnnotate) {
     const annotated = ngAnnotate(original, {add: true}).src;
     test(slurp("tests/with_annotations.js"), annotated, "with_annotations.js");
 
-    console.log("testing adding annotations using single quotes");
-    const annotatedSingleQuotes = ngAnnotate(original, {add: true, single_quotes: true}).src;
-    test(slurp("tests/with_annotations_single.js"), annotatedSingleQuotes, "with_annotations_single.js");
-
     const rename = slurp("tests/rename.js");
 
     console.log("testing adding annotations and renaming");
