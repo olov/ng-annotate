@@ -200,7 +200,7 @@ preserve comments.
 The `/* @ngInject */`, `ngInject(..)` and `"ngInject"` siblings have three cousins that
 are used for the opposite purpose, suppressing an annotation that ng-annotate added
 incorrectly (a "false positive"). They are called `/* @ngNoInject */`, `ngNoInject(..)`
-and `"ngNoInject"` and does exactly what you think they do.
+and `"ngNoInject"` and do exactly what you think they do.
 
 
 ### ngInject examples
