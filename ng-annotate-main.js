@@ -14,7 +14,9 @@ const generateSourcemap = require("./generate-sourcemap");
 const Lut = require("./lut");
 const scopeTools = require("./scopetools");
 const stringmap = require("stringmap");
-let parser = null; // will be lazy-loaded to esprima or acorn
+const require_acorn_t0 = Date.now();
+const parser = require("acorn").parse;
+const require_acorn_t1 = Date.now();
 
 const chainedRouteProvider = 1;
 const chainedUrlRouterProvider = 2;
@@ -962,42 +964,17 @@ module.exports = function ngAnnotate(src, options) {
     // [{type: "Block"|"Line", value: str, range: [from,to]}, ..]
     let comments = [];
 
-    stats.parser_require_t0 = Date.now();
-    if (!options.es6) {
-        parser = require("esprima").parse;
-    } else {
-        parser = require("acorn").parse;
-    }
-    stats.parser_require_t1 = Date.now();
-
     try {
+        stats.parser_require_t0 = require_acorn_t0;
+        stats.parser_require_t1 = require_acorn_t1;
         stats.parser_parse_t0 = Date.now();
-
-        if (!options.es6) {
-            // esprima
-            ast = parser(src, {
-                range: true,
-                comment: true,
-                loc: true,
-            });
-
-            // Fix Program node range (https://code.google.com/p/esprima/issues/detail?id=541)
-            ast.range[0] = 0;
-
-            // detach comments from ast
-            comments = ast.comments;
-            ast.comments = null;
-
-        } else {
-            // acorn
-            ast = parser(src, {
-                ecmaVersion: 6,
-                locations: true,
-                ranges: true,
-                onComment: comments,
-            });
-        }
-
+        // acorn
+        ast = parser(src, {
+            ecmaVersion: 6,
+            locations: true,
+            ranges: true,
+            onComment: comments,
+        });
         stats.parser_parse_t1 = Date.now();
     } catch(e) {
         return {
