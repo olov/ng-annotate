@@ -720,6 +720,26 @@ obj = ngInject({
 });
 
 
+// explicit annotations using "ngInject" Directive Prologue
+function Foo2($scope) {
+    "ngInject";
+}
+Foo2.$inject = ["$scope"];
+
+var foo3 = ["$scope", function($scope) {
+    // comments are ok before the Directive Prologues
+    // and there may be multiple Prologues
+    "use strict"; "ngInject";
+}];
+
+var foo4 = function($scope) {
+    // not first in function => not Directive Prologues
+    // so this function won't get annotated
+    1;
+    "ngInject";
+};
+
+
 
 // snippets that shouldn't fool ng-annotate into generating false positives,
 //   whether we're inside an angular module or not

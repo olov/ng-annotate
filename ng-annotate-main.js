@@ -1051,9 +1051,7 @@ module.exports = function ngAnnotate(src, options) {
     });
 
     traverse(ast, {pre: function(node) {
-        if (node.type === "CallExpression") {
-            ngInject.inspectCallExpression(node, ctx);
-        }
+        ngInject.inspectNode(node, ctx);
 
     }, post: function(node) {
         ctx.nodePositions.push(node.loc.start);
