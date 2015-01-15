@@ -329,7 +329,9 @@ function matchRegular(node, ctx) {
         args.length === 1 && args[0] :
         args.length === 2 && args[0].type === "Literal" && is.string(args[0].value) && args[1]);
 
-    target.$methodName = method.name;
+    if (target) {
+        target.$methodName = method.name;
+    }
 
     if (ctx.rename && args.length === 2 && target) {
         // for eventual rename purposes
