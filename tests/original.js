@@ -780,6 +780,7 @@ angular.module("MyMod").controller("MyCtrl", myCtrl);
 
 // advanced IIFE-jumping (with reference support)
 var myCtrl10 = (function() {
+    "use strict";
     // the return statement can appear anywhere on the functions topmost level,
     // including before the myCtrl function definition
     return myCtrl;
