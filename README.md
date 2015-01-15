@@ -176,7 +176,7 @@ angular.module("MyMod").controller("MyCtrl", MyCtrl2);
 
 
 ## Explicit annotations with ngInject
-You can prepend a function with `/* @ngInject */` to explicitly state that the function
+You can prepend a function with `/*@ngInject*/` to explicitly state that the function
 should get annotated. ng-annotate will leave the comment intact and will thus still
 be able to also remove or rewrite such annotations.
 
@@ -184,7 +184,7 @@ You can also wrap an expression inside an `ngInject(..)` function call. If you u
 syntax then add `function ngInject(v) { return v }` somewhere in your codebase, or process
 away the `ngInject` function call in your build step.
 
-You can also add the `"ngInject"` prologue directive at the beginning of a function,
+You can also add the `"ngInject"` directive prologue at the beginning of a function,
 similar to how `"use strict"` is used, to state that the surrounding function should get
 annotated.
 
@@ -197,9 +197,9 @@ preserve comments.
 
 
 ### Suppressing false positives with ngNoInject
-The `/* @ngInject */`, `ngInject(..)` and `"ngInject"` siblings have three cousins that
+The `/*@ngInject*/`, `ngInject(..)` and `"ngInject"` siblings have three cousins that
 are used for the opposite purpose, suppressing an annotation that ng-annotate added
-incorrectly (a "false positive"). They are called `/* @ngNoInject */`, `ngNoInject(..)`
+incorrectly (a "false positive"). They are called `/*@ngNoInject*/`, `ngNoInject(..)`
 and `"ngNoInject"` and do exactly what you think they do.
 
 
@@ -208,18 +208,18 @@ Here follows some ngInject examples using the `/*@ngInject*/` syntax. Most examp
 works fine using the `ngInject(..)` or `"ngInject"` syntax as well.
 
 ```js
-x = /* @ngInject */ function($scope) {};
+x = /*@ngInject*/ function($scope) {};
 obj = {controller: /*@ngInject*/ function($scope) {}};
 obj.bar = /*@ngInject*/ function($scope) {};
 
 =>
 
-x = /* @ngInject */ ["$scope", function($scope) {}];
+x = /*@ngInject*/ ["$scope", function($scope) {}];
 obj = {controller: /*@ngInject*/ ["$scope", function($scope) {}]};
 obj.bar = /*@ngInject*/ ["$scope", function($scope) {}];
 ```
 
-Prepended to an object literal, `/* @ngInject */` will annotate all of its contained
+Prepended to an object literal, `/*@ngInject*/` will annotate all of its contained
 function expressions, recursively:
 
 ```js
@@ -238,7 +238,7 @@ obj = /*@ngInject*/ {
 
 Prepended to a function statement, to a single variable declaration initialized with a
 function expression or to an assignment where the rvalue is a function expression,
- `/* @ngInject */` will attach an `$inject` array to the function:
+ `/*@ngInject*/` will attach an `$inject` array to the function:
 
 ```js
 // @ngInject
