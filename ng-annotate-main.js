@@ -904,7 +904,25 @@ function addModuleContextIndependentSuspect(target, ctx) {
 }
 
 function isAnnotatedArray(node) {
-    return node.type === "ArrayExpression" && node.elements.length >= 1 && last(node.elements).type === "FunctionExpression";
+    if (node.type !== "ArrayExpression") {
+        return false;
+    }
+    const elements = node.elements;
+
+    // last should be a function expression
+    if (elements.length === 0 || last(elements).type !== "FunctionExpression") {
+        return false;
+    }
+
+    // all but last should be string literals
+    for (let i = 0; i < elements.length - 1; i++) {
+        const n = elements[i];
+        if (n.type !== "Literal" || !is.string(n.value)) {
+            return false;
+        }
+    }
+
+    return true;
 }
 function isFunctionExpressionWithArgs(node) {
     return node.type === "FunctionExpression" && node.params.length >= 1;
