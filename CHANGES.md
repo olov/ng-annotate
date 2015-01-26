@@ -1,3 +1,6 @@
+## v0.15.2 2015-01-26
+ * bugfix crash on ES6 input (but ng-annotate does not yet understand ES6)
+
 ## v0.15.1 2015-01-15
  * bugfix release for compatibility with io.js
 
