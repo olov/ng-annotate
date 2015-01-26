@@ -303,7 +303,6 @@ var ngAnnotate = require("ng-annotate");
 var somePlugin = require("./some/path/some-plugin");
 var res = ngAnnotate(src, {
     add: true,
-    es6: true,
     plugin: [somePlugin],
     rename: [{from: "generalname", to: "uniquename"}, {from: "alpha", to: "beta"}],
     sourcemap: { inline: false, inFile: "source.js", sourceRoot: "/path/to/source/root" }

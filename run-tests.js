@@ -175,11 +175,4 @@ function run(ngAnnotate) {
     console.log("all ok");
 }
 
-console.log("=== testing ng-annotate with Esprima")
 run(ngAnnotate);
-
-console.log("=== testing ng-annotate with Acorn (--es6)")
-run(function(src, options) {
-    options.es6 = true;
-    return ngAnnotate(src, options);
-});
