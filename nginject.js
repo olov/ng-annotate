@@ -36,22 +36,22 @@ function inspectFunction(node, ctx) {
     }
     const block = (str === "ngNoInject");
 
-    // which node that is the correct suspect in the case of a "ngInject" prologue directive varies
-    // between adding and removing annotations. when adding, the function (declaration or expression)
-    // is always the suspect. when removing, the function declaration is the suspect but in the case
-    // of a function expression, its parent is (because it may be an annotated array). when rebuilding,
-    // both may be suspects.
+    // now add the correct suspect
 
-    // add function node as a suspect, unconditionally (false suspect won't cause a problem here)
-    addSuspect(node, ctx, block);
+    // for function declarations, it is always the function declaration node itself
+    if (node.type === "FunctionDeclaration") {
+        addSuspect(node, ctx, block);
+        return;
+    }
 
-    if (ctx.mode !== "add") {
-        // remove or rebuild
-        // isAnnotatedArray check is there as an extra false-positives safety net
-        const maybeArrayExpression = node.$parent;
-        if (ctx.isAnnotatedArray(maybeArrayExpression)) {
-            addSuspect(maybeArrayExpression, ctx, block);
-        }
+    // for function expressions, the suspect is its parent annotated array (if any), otherwise itself
+    // there is a risk of false suspects here, in case the parent annotated array has nothing to do
+    // with annotations. the risk should be very low and hopefully easy to workaround
+    const maybeArrayExpression = node.$parent;
+    if (ctx.isAnnotatedArray(maybeArrayExpression)) {
+        addSuspect(maybeArrayExpression, ctx, block);
+    } else {
+        addSuspect(node, ctx, block);
     }
 }
 
