@@ -1,3 +1,7 @@
+## v0.15.3 2015-01-28
+ * bugfix "ngInject" directive prologue (removing and rebuilding)
+ * bugfix extra newlines when rebuilding existing fn.$inject = [..] arrays
+
 ## v0.15.2 2015-01-26
  * bugfix crash on ES6 input (but ng-annotate does not yet understand ES6)
 
