@@ -852,10 +852,11 @@ function judgeInjectArraySuspect(node, ctx) {
         const str = fmt("{0}{1}{2}.$inject = {3};", EOL, indent, name, ctx.stringify(ctx, params, ctx.quot));
 
         if (ctx.mode === "rebuild" && existingExpressionStatementWithArray) {
+            const strNoWhitespace = fmt("{2}.$inject = {3};", null, null, name, ctx.stringify(ctx, params, ctx.quot));
             ctx.fragments.push({
                 start: existingExpressionStatementWithArray.range[0],
                 end: existingExpressionStatementWithArray.range[1],
-                str: str,
+                str: strNoWhitespace,
                 loc: {
                     start: existingExpressionStatementWithArray.loc.start,
                     end: existingExpressionStatementWithArray.loc.end

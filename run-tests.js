@@ -114,8 +114,8 @@ function run(ngAnnotate) {
     console.log("testing adding annotations twice");
     test(annotated, ngAnnotate(annotated, {add: true}).src, "with_annotations.js");
 
-    //console.log("testing rebuilding annotations");
-    //test(annotated, ngAnnotate(annotated, {add: true, remove: true}).src, "with_annotations.js");
+    console.log("testing rebuilding annotations");
+    test(annotated, ngAnnotate(annotated, {add: true, remove: true}).src, "with_annotations.js");
 
     console.log("testing adding existing $inject annotations (no change)");
     test(slurp("tests/has_inject.js"), ngAnnotate(slurp("tests/has_inject.js"), {add: true}).src);
