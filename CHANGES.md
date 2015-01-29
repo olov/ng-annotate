@@ -1,3 +1,6 @@
+## v0.15.4 2015-01-29
+ * improved Traceur compatibility ("ngInject" prologue => fn.$inject = [..] arrays)
+
 ## v0.15.3 2015-01-28
  * bugfix "ngInject" directive prologue (removing and rebuilding)
  * bugfix extra newlines when rebuilding existing fn.$inject = [..] arrays
