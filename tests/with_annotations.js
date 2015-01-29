@@ -733,13 +733,29 @@ var foos3 = function($scope) {
 };
 foos3.$inject = ["$scope"];
 
-var foos4 = function($scope) {
-    // not first in function => not Directive Prologues
-    // so this function won't get annotated
-    1;
-    "ngInject";
-};
+var dual1 = function(a) { "ngInject" }, dual2 = function(b) { "ngInject" };
+dual1.$inject = ["a"];
+dual2.$inject = ["b"];
 
+g(["c", function(c) {
+    "ngInject"
+}]);
+
+// Traceur class output example
+// class C {
+//     constructor($scope) {
+//         "ngInject"
+//     }
+// }
+$traceurRuntime.ModuleStore.getAnonymousModule(function() {
+    "use strict";
+    var C = function C($scope) {
+        "ngInject";
+    };
+    C.$inject = ["$scope"];
+    ($traceurRuntime.createClass)(C, {}, {});
+    return {};
+});
 
 
 // suppress false positives with /*@ngNoInject*/, ngNoInject() and "ngNoInject"
