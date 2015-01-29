@@ -726,13 +726,14 @@ function Foo2($scope) {
 }
 Foo2.$inject = ["$scope"];
 
-var foo3 = ["$scope", function($scope) {
+var foos3 = function($scope) {
     // comments are ok before the Directive Prologues
     // and there may be multiple Prologues
     "use strict"; "ngInject";
-}];
+};
+foos3.$inject = ["$scope"];
 
-var foo4 = function($scope) {
+var foos4 = function($scope) {
     // not first in function => not Directive Prologues
     // so this function won't get annotated
     1;
