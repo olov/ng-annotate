@@ -693,7 +693,7 @@ function posToLine(pos, src) {
 function judgeInjectArraySuspect(node, ctx) {
     if (node.type === "VariableDeclaration") {
         // suspect can only be a VariableDeclaration (statement) in case of
-        // explicitly marked via ngInject, not via references because
+        // explicitly marked via /*@ngInject*/, not via references because
         // references follow to VariableDeclarator (child)
 
         // /*@ngInject*/ var foo = function($scope) {} and

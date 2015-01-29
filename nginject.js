@@ -44,9 +44,32 @@ function inspectFunction(node, ctx) {
         return;
     }
 
-    // for function expressions, the suspect is its parent annotated array (if any), otherwise itself
+    // node is a function expression below
+
+    // case 1: a function expression which is the rhs of a variable declarator, such as
+    // var f1 = function(a) {
+    //     "ngInject"
+    // };
+    // in this case we can mark the declarator, same as saying var /*@ngInject*/ f1 = function(a) ..
+    // or /*@ngInject*/ var f1 = function(a) ..
+    // f1.$inject = ["a"]; will be added (or rebuilt/removed)
+    if (node.$parent.type === "VariableDeclarator") {
+        addSuspect(node.$parent, ctx, block);
+        return;
+    }
+
+    // case 2: an anonymous function expression, such as
+    // g(function(a) {
+    //     "ngInject"
+    // });
+    //
+    // the suspect is now its parent annotated array (if any), otherwise itself
     // there is a risk of false suspects here, in case the parent annotated array has nothing to do
     // with annotations. the risk should be very low and hopefully easy to workaround
+    //
+    // added/rebuilt/removed => g(["a", function(a) {
+    //     "ngInject"
+    // }]);
     const maybeArrayExpression = node.$parent;
     if (ctx.isAnnotatedArray(maybeArrayExpression)) {
         addSuspect(maybeArrayExpression, ctx, block);
