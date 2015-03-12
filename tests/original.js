@@ -907,3 +907,14 @@ module.exports = function() {
         templateUrl: "mytemplate"
     };
 };
+
+// issue #135
+var MyCtrl = (function() {
+    /*@ngInject*/
+    function MyCtrl(a) {
+    }
+
+    return MyCtrl;
+})();
+
+myMod.service("a", MyCtrl);

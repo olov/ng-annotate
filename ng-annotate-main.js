@@ -944,6 +944,22 @@ function isGenericProviderName(node) {
     return node.type === "Literal" && is.string(node.value);
 }
 
+function uniqifyFragments(fragments) {
+    // must do in-place modification of ctx.fragments because shared reference
+
+    const map = Object.create(null);
+    for (let i = 0; i < fragments.length; i++) {
+        const frag = fragments[i];
+        const str = JSON.stringify({start: frag.start, end: frag.end, str: frag.str});
+        if (map[str]) {
+            fragments.splice(i, 1); // remove
+            i--;
+        } else {
+            map[str] = true;
+        }
+    }
+}
+
 module.exports = function ngAnnotate(src, options) {
     const mode = (options.add && options.remove ? "rebuild" :
         options.remove ? "remove" :
@@ -1084,6 +1100,8 @@ module.exports = function ngAnnotate(src, options) {
             errors: ["error: " + e],
         };
     }
+
+    uniqifyFragments(ctx.fragments);
 
     const out = alter(src, fragments);
     const result = {
