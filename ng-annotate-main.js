@@ -7,7 +7,7 @@ const fmt = require("simple-fmt");
 const is = require("simple-is");
 const alter = require("alter");
 const traverse = require("ordered-ast-traverse");
-const EOL = require("os").EOL;
+let EOL = require("os").EOL;
 const assert = require("assert");
 const ngInject = require("./nginject");
 const generateSourcemap = require("./generate-sourcemap");
@@ -978,6 +978,12 @@ module.exports = function ngAnnotate(src, options) {
     }
     let ast;
     const stats = {};
+
+    // detect newline and override os.EOL
+    const lf = src.lastIndexOf("\n");
+    if (lf >= 1) {
+        EOL = (src[lf - 1] === "\r" ? "\r\n" : "\n");
+    }
 
     // [{type: "Block"|"Line", value: str, range: [from,to]}, ..]
     let comments = [];
