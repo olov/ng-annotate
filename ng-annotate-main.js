@@ -832,11 +832,11 @@ function judgeInjectArraySuspect(node, ctx) {
             if (prevLF === -1) {
                 return { pos: pos, loc: loc };
             }
-            if (prevLF >= 1 && ctx.src[prevLF] === "\r") {
+            if (prevLF >= 1 && ctx.src[prevLF - 1] === "\r") {
                 --prevLF;
             }
 
-            if (/\S/g.test(ctx.src.slice(prevLF, pos - 1))) {
+            if (/\S/g.test(ctx.src.slice(prevLF, pos - 1))) { // any non-whitespace chars between prev newline and pos?
                 return { pos: pos, loc: loc };
             }
 
@@ -848,8 +848,6 @@ function judgeInjectArraySuspect(node, ctx) {
                 }
             };
         }
-
-        const str = fmt("{0}{1}{2}.$inject = {3};", EOL, indent, name, ctx.stringify(ctx, params, ctx.quot));
 
         if (ctx.mode === "rebuild" && existingExpressionStatementWithArray) {
             const strNoWhitespace = fmt("{2}.$inject = {3};", null, null, name, ctx.stringify(ctx, params, ctx.quot));
@@ -874,6 +872,7 @@ function judgeInjectArraySuspect(node, ctx) {
                 }
             });
         } else if (is.someof(ctx.mode, ["add", "rebuild"]) && !existingExpressionStatementWithArray) {
+            const str = fmt("{0}{1}{2}.$inject = {3};", EOL, indent, name, ctx.stringify(ctx, params, ctx.quot));
             ctx.fragments.push({
                 start: posAfterFunctionDeclaration.pos,
                 end: posAfterFunctionDeclaration.pos,
