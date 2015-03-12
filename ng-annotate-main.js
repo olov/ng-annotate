@@ -844,7 +844,7 @@ function judgeInjectArraySuspect(node, ctx) {
                 pos: prevLF,
                 loc: {
                     line: loc.line - 1,
-                    column: prevLF - ctx.src.lastIndexOf("\n", prevLF)
+                    column: prevLF - ctx.src.lastIndexOf("\n", prevLF) - 1,
                 }
             };
         }
