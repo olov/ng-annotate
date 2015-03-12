@@ -23,6 +23,8 @@ myMod.animation("foo", function($scope, $timeout) {
 });
 myMod.invoke("foo", function($scope, $timeout) {
 });
+myMod.store("foo", function($scope, $timeout) {
+});
 
 // implicit config function
 angular.module("MyMod", function($interpolateProvider) {});
@@ -48,6 +50,8 @@ myMod.filter("foo", function() {
 myMod.animation("foo", function() {
 });
 myMod.invoke("foo", function() {
+});
+myMod.store("foo", function() {
 });
 
 // run, config don't take names
@@ -175,6 +179,8 @@ angular.module("MyMod").directive("foo", function($a, $b) {
         d;
     }).animation("foo", function($f, $g) {
         e;
+    }).store("foo", function($f, $g) {
+        g;
     }).invoke("foo", function($h, $i) {
         f;
     });
@@ -380,7 +386,7 @@ angular.module("MyMod").directive("pleasematchthis", function() {
 
 // none of the patterns below matches because they are not in an angular module context
 // this should be a straight copy of the code above, with identical copies in
-// with_annotations(_single).js
+// with_annotations.js
 foobar.irrespective("dontmatchthis", function() {
 
     // $injector.invoke

@@ -150,6 +150,9 @@ ng-annotate understands `$modal.open` ([angular-ui/bootstrap](http://angular-ui.
 ng-annotate understands `$mdDialog.show`, `$mdToast.show` and `$mdBottomSheet.show`
 ([angular material design](https://material.angularjs.org/#/api/material.components.dialog/service/$mdDialog)).
 
+ng-annotate understands `myMod.store("MyCtrl", function ..)`
+([flux-angular](https://github.com/christianalfoni/flux-angular)).
+
 ng-annotate understands chaining.
 
 ng-annotate understands IIFE's and attempts to match through them, so
