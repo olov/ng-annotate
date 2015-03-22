@@ -1,8 +1,9 @@
 "use strict";
 
+let ctx = null;
 module.exports = {
-
     init: function(_ctx) {
+        ctx = _ctx;
     },
 
     match: function(node) {
@@ -11,31 +12,6 @@ module.exports = {
         //   controller: function($scope) {},
         //   resolve: {f: function($scope) {}, ..}
         // })
-
-        function matchResolve(props) {
-            const resolveObject = matchProp("resolve", props);
-            if (resolveObject && resolveObject.type === "ObjectExpression") {
-                return resolveObject.properties.map(function(prop) {
-                    return prop.value;
-                });
-            }
-            return [];
-        };
-
-        function matchProp(name, props) {
-            for (let i = 0; i < props.length; i++) {
-                const prop = props[i];
-                if ((prop.key.type === "Identifier" && prop.key.name === name) ||
-                    (prop.key.type === "Literal" && prop.key.value === name)) {
-                    return prop.value;
-                }
-            }
-            return null;
-        }
-
-        function last(arr) {
-            return arr[arr.length - 1];
-        }
 
         const callee = node.callee;
         if (!callee) {
@@ -64,24 +40,24 @@ module.exports = {
             return false;
         }
 
-        const configArg = last(args);
+        const configArg = ctx.last(args);
         if (configArg.type !== "ObjectExpression") {
             return false;
         }
 
         const props = configArg.properties;
         const res = [
-            matchProp("controller", props)
+            ctx.matchProp("controller", props)
         ];
         // {resolve: ..}
-        res.push.apply(res, matchResolve(props));
+        res.push.apply(res, ctx.matchResolve(props));
 
         // edit: {controller: function(), resolve: {}}
-        const edit = matchProp('edit', props);
+        const edit = ctx.matchProp('edit', props);
         if (edit && edit.type === "ObjectExpression") {
             const editProps = edit.properties;
-            res.push(matchProp('controller', editProps));
-            res.push.apply(res, matchResolve(editProps));
+            res.push(ctx.matchProp('controller', editProps));
+            res.push.apply(res, ctx.matchResolve(editProps));
         }
 
         const filteredRes = res.filter(Boolean);

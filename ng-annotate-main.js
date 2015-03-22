@@ -1061,6 +1061,9 @@ module.exports = function ngAnnotate(src, options) {
         addModuleContextIndependentSuspect: addModuleContextIndependentSuspect,
         stringify: stringify,
         nodePositions: nodePositions,
+        matchResolve: matchResolve,
+        matchProp: matchProp,
+        last: last,
     };
 
     const plugins = options.plugin || [];
