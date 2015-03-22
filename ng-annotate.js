@@ -49,6 +49,13 @@ const optimist = require("optimist")
     .options("plugin", {
         describe: "use plugin with path (experimental)",
     })
+    .options("enable", {
+        describe: "enable optional with name",
+    })
+    .options("list", {
+        describe: "list all optional names",
+        boolean: true,
+    })
     .options("stats", {
         boolean: true,
         describe: "print statistics on stderr (experimental)",
@@ -62,6 +69,15 @@ function exit(msg) {
         process.stderr.write("\n");
     }
     process.exit(-1);
+}
+
+// special-case for --list
+if (argv.list) {
+    const list = ngAnnotate("", {list: true}).list;
+    if (list.length >= 1) {
+        process.stdout.write(list.join("\n") + "\n");
+    }
+    process.exit(0);
 }
 
 // validate options
@@ -116,7 +132,7 @@ function runAnnotate(err, src) {
         config.inFile = filename;
     }
 
-    ["add", "remove", "o", "regexp", "rename", "single_quotes", "plugin", "stats"].forEach(function(opt) {
+    ["add", "remove", "o", "regexp", "rename", "single_quotes", "plugin", "enable", "stats"].forEach(function(opt) {
         if (opt in argv) {
             config[opt] = argv[opt];
         }
@@ -128,6 +144,10 @@ function runAnnotate(err, src) {
             config.map.inFile = filename;
         }
     };
+
+    if (config.enable && !Array.isArray(config.enable)) {
+        config.enable = [config.enable];
+    }
 
     if (config.plugin) {
         if (!Array.isArray(config.plugin)) {

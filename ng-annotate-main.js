@@ -14,6 +14,7 @@ const generateSourcemap = require("./generate-sourcemap");
 const Lut = require("./lut");
 const scopeTools = require("./scopetools");
 const stringmap = require("stringmap");
+const optionalAngularDashboardFramework = require("./optionals/angular-dashboard-framework");
 const require_acorn_t0 = Date.now();
 const parser = require("acorn").parse;
 const require_acorn_t1 = Date.now();
@@ -959,7 +960,17 @@ function uniqifyFragments(fragments) {
     }
 }
 
+const allOptionals = {
+    "angular-dashboard-framework": optionalAngularDashboardFramework,
+};
+
 module.exports = function ngAnnotate(src, options) {
+    if (options.list) {
+        return {
+            list: Object.keys(allOptionals).sort(),
+        };
+    }
+
     const mode = (options.add && options.remove ? "rebuild" :
         options.remove ? "remove" :
             options.add ? "add" : null);
@@ -1066,7 +1077,22 @@ module.exports = function ngAnnotate(src, options) {
         last: last,
     };
 
-    const plugins = options.plugin || [];
+    // setup optionals
+    const optionals = options.enable || [];
+    for (let i = 0; i < optionals.length; i++) {
+        const optional = String(optionals[i]);
+        if (!allOptionals.hasOwnProperty(optional)) {
+            return {
+                errors: ["error: found no optional named " + optional],
+            };
+        }
+    }
+    const optionalsPlugins = optionals.map(function(optional) {
+        return allOptionals[optional];
+    });
+
+    const plugins = [].concat(optionalsPlugins, options.plugin || []);
+
     function matchPlugins(node, isMethodCall) {
         for (let i = 0; i < plugins.length; i++) {
             const res = plugins[i].match(node, isMethodCall);
