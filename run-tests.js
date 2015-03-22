@@ -15,6 +15,9 @@ const SourceMapConsumer = require("source-map").SourceMapConsumer;
 const coffee = require("coffee-script");
 const convertSourceMap = require("convert-source-map");
 
+// optionals
+const ngAnnotateAdfPlugin = require("./optionals/angular-dashboard-framework.js");
+
 function slurp(filename) {
     return String(fs.readFileSync(filename));
 }
@@ -147,6 +150,18 @@ function run(ngAnnotate) {
 
     console.log("testing removing annotations (imported tests)");
     test(ngminOriginal, ngAnnotate(ngminAnnotated, {remove: true, regexp: "^myMod"}).src, "ngmin_original.js");
+
+    // TODO generic test-runner code for finding and testing all optionals automatically
+    // optionals angular-dashboard-framework adding annotations
+    console.log("testing optionals/angular-dashboard-framework.js (adding annotations)");
+    const adf = slurp("tests/optionals/angular-dashboard-framework.js");
+    const adfAnnotated = ngAnnotate(adf, {add: true, plugin: [ngAnnotateAdfPlugin]}).src;
+    test(slurp("tests/optionals/angular-dashboard-framework.annotated.js"), adfAnnotated, "optionals/angular-dashboard-framework.annotated.js");
+
+    // optionals angular-dashboard-framework removing annotations
+    console.log("testing optionals/angular-dashboard-framework.js (removing annotations)");
+    test(adf, ngAnnotate(adfAnnotated, {remove: true, plugin: [ngAnnotateAdfPlugin]}).src, "optionals/angular-dashboard-framework.js");
+
 
     if (fs.existsSync("package.json")) {
         console.log("testing package.json")
