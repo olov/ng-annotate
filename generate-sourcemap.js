@@ -104,9 +104,10 @@ module.exports = function generateSourcemap(result, src, nodePositions, fragment
     const existingMap = convertSourceMap.fromSource(src);
     const existingMapObject = existingMap && existingMap.toObject();
     const inFile = (existingMapObject && existingMapObject.file) || mapOpts.inFile || "source.js";
+    const sourceRoot = (existingMapObject && existingMapObject.sourceRoot) || mapOpts.sourceRoot;
     src = convertSourceMap.removeMapFileComments(src);
 
-    const mapper = new SourceMapper(src, nodePositions, fragments, inFile, mapOpts.sourceRoot);
+    const mapper = new SourceMapper(src, nodePositions, fragments, inFile, sourceRoot);
     mapper.calculateMappings();
 
     if (mapOpts.inline) {
