@@ -1,3 +1,13 @@
+## v1.0.0 2015-05-27
+ * optional matchers: --list and --enable
+ * angular-dashboard-framework optional
+ * bugfix documentation of sourcemap API
+ * improved incoming sourcemap support
+ * match flux-angular myMod.store("MyCtrl", function ..)
+ * bugfix duplicated fn.$inject arrays in some IIFE situations
+ * emit LF/CRLF newlines depending on input newlines
+ * minor newline fixes
+
 ## v0.15.4 2015-01-29
  * improved Traceur compatibility ("ngInject" prologue => fn.$inject = [..] arrays)
 

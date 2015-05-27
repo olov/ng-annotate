@@ -56,14 +56,24 @@ Use the `--single_quotes` option to output `'$scope'` instead of `"$scope"`.
 Use the `--regexp` option to restrict matching further or to expand matching.
 See description further down.
 
+Use the `--list` option to list optional matchers.
+
+Use the `--enable` option to enable optional matcher.
+
 *experimental* Use the `--rename` option to rename providers (services, factories,
 controllers, etc.) with a new name when declared and referenced through annotation.
 Use it like this: `--rename oldname1 newname1 oldname2 newname2`
 
 *experimental* Use the `--plugin` option to load a user plugin with the provided path,
-0.9.x may change API). See [plugin-example.js](plugin-example.js) for more info.
+1.x may change API). See [plugin-example.js](plugin-example.js) for more info.
 
 *experimental* Use the `--stats` option to print statistics on stderr.
+
+
+## ES6 and TypeScript support
+ng-annotate supports ES5 as input so run it with the output from Babel, Traceur,
+TypeScript (tsc) and the likes. Use `"ngInject";` on functions you want annotated.
+Your transpiler should preserve directive prologues, if not please file a bug on it.
 
 
 ## Highly recommended: enable ng-strict-di in your minified builds
@@ -84,7 +94,7 @@ is available in AngularJS 1.3 or later.
 * [Grails asset pipeline](https://github.com/bertramdev/asset-pipeline): [angular-annotate-asset-pipeline](https://github.com/craigburke/angular-annotate-asset-pipeline) by [Craig Burke](https://github.com/craigburke)
 * [Webpack](http://webpack.github.io/): [ng-annotate-webpack-plugin](https://www.npmjs.org/package/ng-annotate-webpack-plugin) by [Chris Liechty](https://github.com/cliechty)
 * [Middleman](http://middlemanapp.com/): [middleman-ngannotate](http://rubygems.org/gems/middleman-ngannotate) by [Michael Siebert](https://github.com/siebertm)
-* [ENB](http://enb-make.info/)(Russian): [enb-ng-techs](https://www.npmjs.org/package/enb-ng-techs#ng-annotate) by [Alexey Gurianov](https://github.com/guria)
+* [ENB](http://enb-make.info/) (Russian): [enb-ng-techs](https://www.npmjs.org/package/enb-ng-techs#ng-annotate) by [Alexey Gurianov](https://github.com/guria)
 * Something missing? Contributions welcome - create plugin and submit a README pull request!
 
 
@@ -159,6 +169,9 @@ ng-annotate understands chaining.
 ng-annotate understands IIFE's and attempts to match through them, so
 `(function() { return function($scope) .. })()` works anywhere
 `function($scope) ..` does (for any IIFE args and params).
+
+ng-annotate understands [angular-dashboard-framework](https://github.com/sdorra/angular-dashboard-framework)
+via optional `--enable angular-dashboard-framework`.
 
 
 ## Reference-following
@@ -309,7 +322,8 @@ var res = ngAnnotate(src, {
     add: true,
     plugin: [somePlugin],
     rename: [{from: "generalname", to: "uniquename"}, {from: "alpha", to: "beta"}],
-    map: { inline: false, inFile: "source.js", sourceRoot: "/path/to/source/root" }
+    map: { inline: false, inFile: "source.js", sourceRoot: "/path/to/source/root" },
+    enable: ["angular-dashboard-framework"],
 });
 var errorstringArray = res.errors;
 var transformedSource = res.src;
