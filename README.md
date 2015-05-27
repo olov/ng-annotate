@@ -25,9 +25,9 @@ source code. When refactoring, just change parameter names once and let
 ng-annotate rebuild the annotations. Removing is useful if you want to
 de-annotate an existing codebase that came with checked-in annotations
 
-*ng-annotate works by using static analysis to identify common code patterns.
+**ng-annotate works by using static analysis to identify common code patterns.
 There are patterns it does not and never will understand and for those you
-can use an explicit `ngInject` annotation instead, see section further down.
+can use an explicit `ngInject` annotation instead, see section further down.**
 
 
 ## Installation and usage
