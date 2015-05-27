@@ -8,7 +8,7 @@
     "url": "https://github.com/olov/ng-annotate.git"
   },
   "dependencies": {
-    "acorn": "~0.12.0",
+    "acorn": "~2.0.1",
     "alter": "~0.2.0",
     "convert-source-map": "~1.0.0",
     "optimist": "~0.6.1",
