@@ -12,7 +12,7 @@ function SourceMapper(src, nodePositions, fragments, inFile, sourceRoot) {
     // stableSort does not mutate input array so no need to copy it
     this.nodePositions = stableSort(nodePositions, compareLoc);
     this.fragments = stableSort(fragments, function(a, b) { return a.start - b.start });
-    this.inFile = inFile || "source.js";
+    this.inFile = inFile;
 
     this.generator.setSourceContent(this.inFile, src);
 }
@@ -102,14 +102,17 @@ function compareLoc(a, b) {
 
 module.exports = function generateSourcemap(result, src, nodePositions, fragments, mapOpts) {
     const existingMap = convertSourceMap.fromSource(src);
+    const existingMapObject = existingMap && existingMap.toObject();
+    const inFile = (existingMapObject && existingMapObject.file) || mapOpts.inFile || "source.js";
+    const sourceRoot = (existingMapObject && existingMapObject.sourceRoot) || mapOpts.sourceRoot;
     src = convertSourceMap.removeMapFileComments(src);
 
-    const mapper = new SourceMapper(src, nodePositions, fragments, mapOpts.inFile, mapOpts.sourceRoot);
+    const mapper = new SourceMapper(src, nodePositions, fragments, inFile, sourceRoot);
     mapper.calculateMappings();
 
     if (mapOpts.inline) {
-        if (existingMap)
-            mapper.applySourceMap(new SourceMapConsumer(existingMap.toObject()));
+        if (existingMapObject)
+            mapper.applySourceMap(new SourceMapConsumer(existingMapObject));
 
         result.src = convertSourceMap.removeMapFileComments(result.src) +
             os.EOL +

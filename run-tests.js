@@ -129,7 +129,7 @@ function run(ngAnnotate) {
     console.log("testing sourcemaps");
     const originalSourcemaps = slurp("tests/sourcemaps.coffee");
     const compiledSourcemaps = coffee.compile(originalSourcemaps, { sourceFiles: ["sourcemaps.coffee"], generatedFile: "sourcemaps.js", sourceMap: true });
-    const annotatedSourcemaps = ngAnnotate(compiledSourcemaps.js, {remove: true, add: true, sourcemap: { sourceRoot: "/source/root/dir" }});
+    const annotatedSourcemaps = ngAnnotate(compiledSourcemaps.js, {remove: true, add: true, map: { sourceRoot: "/source/root/dir" }});
     test(slurp("tests/sourcemaps.annotated.js"), annotatedSourcemaps.src, "sourcemaps.annotated.js");
     testSourcemap(compiledSourcemaps.js, annotatedSourcemaps.src, annotatedSourcemaps.map, "sourcemaps.annotated.js.map");
 
@@ -137,7 +137,7 @@ function run(ngAnnotate) {
     const inlinedCompiledSourcemaps = compiledSourcemaps.js +
         os.EOL +
         convertSourceMap.fromJSON(compiledSourcemaps.v3SourceMap).toComment();
-    const combinedSourcemaps = ngAnnotate(inlinedCompiledSourcemaps, {remove: true, add: true, sourcemap: { inline: true, inFile: "sourcemaps.js", sourceRoot: "/source/root/dir" }});
+    const combinedSourcemaps = ngAnnotate(inlinedCompiledSourcemaps, {remove: true, add: true, map: { inline: true, inFile: "sourcemaps.js", sourceRoot: "/source/root/dir" }});
     const combinedSourcemapsSrc = convertSourceMap.removeMapFileComments(combinedSourcemaps.src);
     const combinedSourcemapsMap = convertSourceMap.fromSource(combinedSourcemaps.src).toJSON();
     testSourcemap(originalSourcemaps, combinedSourcemapsSrc, combinedSourcemapsMap, "sourcemaps.annotated.js.map");
@@ -188,9 +188,9 @@ function run(ngAnnotate) {
         const ng5 = ng1 + ng1 + ng1 + ng1 + ng1;
 
         time("  ng1 processed in {0} ms", function() { ngAnnotate(ng1, {add: true}) });
-        time("  ng1 processed with sourcemaps in {0} ms", function() { ngAnnotate(ng1, {add: true, sourcemap: true}) });
+        time("  ng1 processed with sourcemaps in {0} ms", function() { ngAnnotate(ng1, {add: true, map: true}) });
         //time("  ng5 processed in {0} ms", function() { ngAnnotate(ng5, {add: true}) });
-        //time("  ng5 processed with sourcemaps in {0} ms", function() { ngAnnotate(ng5, {add: true, sourcemap: true}) });
+        //time("  ng5 processed with sourcemaps in {0} ms", function() { ngAnnotate(ng5, {add: true, map: true}) });
     }
 
     console.log("all ok");
