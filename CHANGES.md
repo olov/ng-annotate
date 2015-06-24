@@ -1,3 +1,6 @@
+## v1.0.1 2015-06-25
+ * don't include .gitignore in npm package
+
 ## v1.0.0 2015-05-27
  * optional matchers: --list and --enable
  * angular-dashboard-framework optional
