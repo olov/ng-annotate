@@ -1,3 +1,6 @@
+## v1.0.2 2015-07-17
+ * bugfix reference-following crash
+
 ## v1.0.1 2015-06-25
  * don't include .gitignore in npm package
 
