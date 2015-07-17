@@ -650,6 +650,9 @@ function followReference(node) {
 
     const parent = scope.getNode(node.name).$parent;
     const kind = scope.getKind(node.name);
+    if (!parent) {
+        return null;
+    }
     const ptype = parent.type;
 
     if (is.someof(kind, ["const", "let", "var"])) {
