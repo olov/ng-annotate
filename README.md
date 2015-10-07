@@ -1,4 +1,4 @@
-# ng-annotate
+# ng-annotate [![Build Status](https://travis-ci.org/olov/ng-annotate.svg?branch=master)](https://travis-ci.org/olov/ng-annotate)
 ng-annotate adds and removes AngularJS dependency injection annotations.
 It is non-intrusive so your source code stays exactly the same otherwise.
 No lost comments or moved lines. Annotations are useful because with them
