@@ -694,6 +694,21 @@ function posToLine(pos, src) {
     return line;
 }
 
+function firstNonPrologueStatement(body) {
+    for (let i = 0; i < body.length; i++) {
+        if (body[i].type !== "ExpressionStatement") {
+            return body[i];
+        }
+
+        const expr = body[i].expression;
+        const isStringLiteral = (expr.type === "Literal" && typeof expr.value === "string");
+        if (!isStringLiteral) {
+            return body[i];
+        }
+    }
+    return null;
+}
+
 function judgeInjectArraySuspect(node, ctx) {
     if (node.type === "VariableDeclaration") {
         // suspect can only be a VariableDeclaration (statement) in case of
@@ -816,6 +831,9 @@ function judgeInjectArraySuspect(node, ctx) {
             }
         });
         assert(foundSuspectInBody);
+        if (onode.type === "FunctionDeclaration") {
+            troublesomeReturn = firstNonPrologueStatement(onode.$parent.body);
+        }
 
         if (troublesomeReturn && !existingExpressionStatementWithArray) {
             posAfterFunctionDeclaration = skipPrevNewline(troublesomeReturn.range[0], troublesomeReturn.loc.start);

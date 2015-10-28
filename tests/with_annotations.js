@@ -1,6 +1,20 @@
 "use strict";
 
 // long form
+foo.$inject = ["$scope"];
+Foo.$inject = ["$scope"];
+    foo3.$inject = ["$scope"];
+        foo4.$inject = ["$scope"];
+foo5.$inject = ["$scope"];
+            foo6.$inject = ["$scope"];
+MyCtrl2.$inject = ["z"];
+MyDirective2.$inject = ["$stateProvider"];
+extprov.$inject = ["x"];
+fooget.$inject = ["b"];
+fooget2.$inject = ["c"];
+Foo2.$inject = ["$scope"];
+MyCtrl1.$inject = ["a", "b"];
+MyDirective.$inject = ["$stateProvider"];
 angular.module("MyMod").controller("MyCtrl", ["$scope", "$timeout", function($scope, $timeout) {
 }]);
 
@@ -133,24 +147,21 @@ myMod.provider("foo", ["x", function(x) {
 
 myMod.provider("foo", extprov);
 function extprov(x) {
+    inner.$inject = ["c", "d"];
     this.$get = ["a", "b", function(a,b) {}];
     this.$get = fooget;
     this.$get = inner;
 
     function inner(c, d) {
     }
-    inner.$inject = ["c", "d"];
 }
-extprov.$inject = ["x"];
 
 function fooget(b) {
     this.$get = fooget2;
 }
-fooget.$inject = ["b"];
 
 function fooget2(c) {
 }
-fooget2.$inject = ["c"];
 
 // chaining
 myMod.directive("foo", ["$a", "$b", function($a, $b) {
@@ -618,13 +629,11 @@ var obj = {
 // @ngInject
 function foo($scope) {
 }
-foo.$inject = ["$scope"];
 
 // @ngInject
 // otherstuff
 function Foo($scope) {
 }
-Foo.$inject = ["$scope"];
 
 // @ngInject
 // has trailing semicolon
@@ -653,16 +662,12 @@ bar.foo2.$inject = ["$scope"];
 // let's zip-zag indentation to make sure that the $inject array lines up properly
     // @ngInject
     function foo3($scope) {}
-    foo3.$inject = ["$scope"];
         // @ngInject
         function foo4($scope) {
         }
-        foo4.$inject = ["$scope"];
 /* @ngInject */ function foo5($scope) {}
-foo5.$inject = ["$scope"];
             /* @ngInject */ function foo6($scope) {
             }
-            foo6.$inject = ["$scope"];
 
     // @ngInject
     var foo7 = function($scope) {
@@ -698,8 +703,8 @@ myMod.controller("foo", /*@ngInject*/ ["$scope", "$timeout", function($scope, $t
 
 // troublesome return forces different placement of $inject array
 function outer() {
-    foo;
     MyCtrl.$inject = ["a"];
+    foo;
     return {
         controller: MyCtrl,
     };
@@ -730,7 +735,6 @@ obj = ngInject({
 function Foo2($scope) {
     "ngInject";
 }
-Foo2.$inject = ["$scope"];
 
 var foos3 = function($scope) {
     // comments are ok before the Directive Prologues
@@ -883,7 +887,6 @@ angular.module("MyMod").controller("MyCtrl", myCtrl11);
 // reference support
 function MyCtrl1(a, b) {
 }
-MyCtrl1.$inject = ["a", "b"];
 if (true) {
     // proper scope analysis including shadowing
     let MyCtrl1 = function(c) {
@@ -894,7 +897,6 @@ if (true) {
 angular.module("MyMod").controller("bar", MyCtrl1);
 function MyCtrl2(z) {
 }
-MyCtrl2.$inject = ["z"];
 funcall(/*@ngInject*/ MyCtrl2); // explicit annotation on reference flows back to definition
 
 angular.module("MyMod").directive("foo", MyDirective);
@@ -907,7 +909,6 @@ function MyDirective($stateProvider) {
         }
     });
 }
-MyDirective.$inject = ["$stateProvider"];
 
 /* @ngInject */
 function MyDirective2($stateProvider) {
@@ -918,7 +919,6 @@ function MyDirective2($stateProvider) {
         }
     });
 }
-MyDirective2.$inject = ["$stateProvider"];
 
 // issue 84
 (function() {
@@ -948,9 +948,9 @@ module.exports = function() {
 // issue #135
 var MyCtrl = (function() {
     /*@ngInject*/
+    MyCtrl.$inject = ["a"];
     function MyCtrl(a) {
     }
-    MyCtrl.$inject = ["a"];
 
     return MyCtrl;
 })();
