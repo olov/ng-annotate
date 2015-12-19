@@ -314,6 +314,12 @@ function matchRegular(node, ctx) {
         }
     }
 
+    // hardcoded exception: foo.decorator is generally considered a short-form
+    // declaration but $stateProvider.decorator is not. see https://github.com/olov/ng-annotate/issues/82
+    if (obj.name === "$stateProvider" && method.name === "decorator") {
+        return false;
+    }
+
     const matchAngularModule = (obj.$chained === chainedRegular || isReDef(obj, ctx) || isLongDef(obj)) &&
         is.someof(method.name, ["provider", "value", "constant", "bootstrap", "config", "factory", "directive", "filter", "run", "controller", "service", "animation", "invoke", "store", "decorator", "component"]);
     if (!matchAngularModule) {

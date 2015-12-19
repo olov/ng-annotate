@@ -25,6 +25,8 @@ myMod.invoke("foo", function($scope, $timeout) {
 });
 myMod.store("foo", function($scope, $timeout) {
 });
+myMod.decorator("foo", function($scope, $timeout) {
+});
 
 // implicit config function
 angular.module("MyMod", function($interpolateProvider) {});
@@ -52,6 +54,8 @@ myMod.animation("foo", function() {
 myMod.invoke("foo", function() {
 });
 myMod.store("foo", function() {
+});
+myMod.decorator("foo", function() {
 });
 
 // run, config don't take names
@@ -159,6 +163,12 @@ myMod.directive("foo", function($a, $b) {
         d;
     }).animation("foo", function($f, $g) {
         e;
+    }).invoke("foo", function($f, $g) {
+        f;
+    }).decorator("foo", function($f, $g) {
+        g;
+    }).store("foo", function($f, $g) {
+        h;
     });
 
 angular.module("MyMod").directive("foo", function($a, $b) {
@@ -179,10 +189,12 @@ angular.module("MyMod").directive("foo", function($a, $b) {
         d;
     }).animation("foo", function($f, $g) {
         e;
-    }).store("foo", function($f, $g) {
-        g;
     }).invoke("foo", function($h, $i) {
         f;
+    }).decorator("foo", function($h, $i) {
+        g;
+    }).store("foo", function($f, $g) {
+        h;
     });
 
 // $provide
@@ -769,6 +781,11 @@ myMod.controller("donttouchme", function() {
     var notesForCurrentPage = _.filter(notes, function (note) {
         return note.page.uid === page.uid;
     });
+});
+
+// not a module declaration short-form, see https://github.com/olov/ng-annotate/issues/82
+$stateProvider.decorator('parent', function (state, parentFn) {
+  doStuff();
 });
 
 // $get is only valid inside provider

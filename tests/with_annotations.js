@@ -39,6 +39,8 @@ myMod.invoke("foo", ["$scope", "$timeout", function($scope, $timeout) {
 }]);
 myMod.store("foo", ["$scope", "$timeout", function($scope, $timeout) {
 }]);
+myMod.decorator("foo", ["$scope", "$timeout", function($scope, $timeout) {
+}]);
 
 // implicit config function
 angular.module("MyMod", ["$interpolateProvider", function($interpolateProvider) {}]);
@@ -66,6 +68,8 @@ myMod.animation("foo", function() {
 myMod.invoke("foo", function() {
 });
 myMod.store("foo", function() {
+});
+myMod.decorator("foo", function() {
 });
 
 // run, config don't take names
@@ -174,6 +178,12 @@ myMod.directive("foo", ["$a", "$b", function($a, $b) {
         d;
     }]).animation("foo", ["$f", "$g", function($f, $g) {
         e;
+    }]).invoke("foo", ["$f", "$g", function($f, $g) {
+        f;
+    }]).decorator("foo", ["$f", "$g", function($f, $g) {
+        g;
+    }]).store("foo", ["$f", "$g", function($f, $g) {
+        h;
     }]);
 
 angular.module("MyMod").directive("foo", ["$a", "$b", function($a, $b) {
@@ -194,10 +204,12 @@ angular.module("MyMod").directive("foo", ["$a", "$b", function($a, $b) {
         d;
     }]).animation("foo", ["$f", "$g", function($f, $g) {
         e;
-    }]).store("foo", ["$f", "$g", function($f, $g) {
-        g;
     }]).invoke("foo", ["$h", "$i", function($h, $i) {
         f;
+    }]).decorator("foo", ["$h", "$i", function($h, $i) {
+        g;
+    }]).store("foo", ["$f", "$g", function($f, $g) {
+        h;
     }]);
 
 // $provide
@@ -803,6 +815,11 @@ myMod.controller("donttouchme", function() {
     });
 });
 
+// not a module declaration short-form, see https://github.com/olov/ng-annotate/issues/82
+$stateProvider.decorator('parent', function (state, parentFn) {
+  doStuff();
+});
+
 // $get is only valid inside provider
 myMod.service("donttouch", function() {
     this.$get = function(me) {
@@ -824,8 +841,8 @@ myMod.service("donttouch", function() {
 });
 
 myMod.directive("donttouch", function() {
-    foo.decorator("me", function($scope) {
-    });
+    foo.decorator("me", ["$scope", function($scope) {
+    }]);
 });
 
 // IIFE-jumping (primarily for compile-to-JS langs)

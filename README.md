@@ -120,8 +120,8 @@ myMod.controller("MyCtrl", function($scope, $timeout) {
 ```
 
 It's not limited to `.controller` of course. It understands `.config`, `.factory`,
-`.directive`, `.filter`, `.run`, `.controller`, `.provider`, `.service`, `.animation` and
-`.invoke`.
+`.directive`, `.filter`, `.run`, `.controller`, `.provider`, `.service`, `.decorator`,
+`.animation` and `.invoke`.
 
 For short forms it does not need to see the declaration of `myMod` so you can run it
 on your individual source files without concatenating. If ng-annotate detects a short form

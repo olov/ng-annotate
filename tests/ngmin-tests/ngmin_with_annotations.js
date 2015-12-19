@@ -198,10 +198,9 @@ angular.module('myMod', []).
     }]);
 
 //'should annotate decorators'
-//(no it should actually not)
 angular.module('myMod', []).
-    decorator('myService', function(dep) {
-    });
+    decorator('myService', ["dep", function(dep) {
+    }]);
 
 //'should annotate config'
 angular.module('myMod', []).
