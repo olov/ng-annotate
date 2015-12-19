@@ -24,7 +24,7 @@ angular.module("MyMod").controller("MyCtrl", ["$scope", "$timeout", function($sc
 }]);
 ```
 
-Your minifier will most likely retain the `"ngInject;"` prologues so use `sed`
+Your minifier will most likely retain the `"ngInject"` prologues so use `sed`
 or a regexp in your build toolchain to get rid of those.
 
 You can also use ng-annotate to rebuild or remove existing annotations.
@@ -75,7 +75,7 @@ and `"ngNoInject"` and do exactly what you think they do.
 
 ## ES6 and TypeScript support
 ng-annotate supports ES5 as input so run it with the output from Babel, Traceur,
-TypeScript (tsc) and the likes. Use `"ngInject";` on functions you want annotated.
+TypeScript (tsc) and the likes. Use `"ngInject"` on functions you want annotated.
 Your transpiler should preserve directive prologues, if not please file a bug on it.
 
 
