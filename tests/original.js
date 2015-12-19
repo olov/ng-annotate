@@ -193,7 +193,9 @@ angular.module("MyMod").directive("foo", function($a, $b) {
         d;
     }).animation("foo", function($f, $g) {
         e;
-    }).invoke("foo", function($h, $i) {
+    }).component("foo", {controller: function($scope, $timeout) {
+        i;
+    }}).invoke("foo", function($h, $i) {
         f;
     }).decorator("foo", function($h, $i) {
         g;

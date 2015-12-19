@@ -208,7 +208,9 @@ angular.module("MyMod").directive("foo", ["$a", "$b", function($a, $b) {
         d;
     }]).animation("foo", ["$f", "$g", function($f, $g) {
         e;
-    }]).invoke("foo", ["$h", "$i", function($h, $i) {
+    }]).component("foo", {controller: ["$scope", "$timeout", function($scope, $timeout) {
+        i;
+    }]}).invoke("foo", ["$h", "$i", function($h, $i) {
         f;
     }]).decorator("foo", ["$h", "$i", function($h, $i) {
         g;
