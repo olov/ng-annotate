@@ -25,7 +25,9 @@ angular.module("MyMod").controller("MyCtrl", ["$scope", "$timeout", function($sc
 ```
 
 Your minifier will most likely retain the `"ngInject"` prologues so use `sed`
-or a regexp in your build toolchain to get rid of those.
+or a regexp in your build toolchain to get rid of those on the ng-annotate output.
+`sed` example: `ng-annotate -a source.js | sed "s/[\"']ngInject[\"'];*//g"`.
+JavaScript regexp example: `source.replace(/["']ngInject["'];*/g, "")`.
 
 You can also use ng-annotate to rebuild or remove existing annotations.
 Rebuilding is useful if you like to check-in the annotated version of your
