@@ -352,7 +352,7 @@ function matchRegular(node, ctx) {
     }
 
     const matchAngularModule = (obj.$chained === chainedRegular || isReDef(obj, ctx) || isLongDef(obj)) &&
-        is.someof(method.name, ["provider", "value", "constant", "bootstrap", "config", "factory", "directive", "filter", "run", "controller", "service", "animation", "invoke", "store", "decorator"]);
+        is.someof(method.name, ["provider", "value", "constant", "bootstrap", "config", "factory", "directive", "filter", "run", "controller", "service", "animation", "invoke", "store", "decorator", "component"]);
     if (!matchAngularModule) {
         return false;
     }
@@ -363,9 +363,17 @@ function matchRegular(node, ctx) {
     }
 
     const args = node.arguments;
-    const target = (is.someof(method.name, ["config", "run"]) ?
+    let target = (is.someof(method.name, ["config", "run"]) ?
         args.length === 1 && args[0] :
         args.length === 2 && args[0].type === "Literal" && is.string(args[0].value) && args[1]);
+
+    if (method.name === "component") {
+        const controllerProp = (target && target.type === "ObjectExpression" && matchProp("controller", target.properties));
+        if (!controllerProp) {
+            return false;
+        }
+        target = controllerProp;
+    }
 
     if (target) {
         target.$methodName = method.name;

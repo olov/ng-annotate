@@ -41,6 +41,7 @@ myMod.store("foo", ["$scope", "$timeout", function($scope, $timeout) {
 }]);
 myMod.decorator("foo", ["$scope", "$timeout", function($scope, $timeout) {
 }]);
+myMod.component("foo", {controller: ["$scope", "$timeout", function($scope, $timeout) {}]});
 
 // implicit config function
 angular.module("MyMod", ["$interpolateProvider", function($interpolateProvider) {}]);
@@ -71,6 +72,7 @@ myMod.store("foo", function() {
 });
 myMod.decorator("foo", function() {
 });
+myMod.component("foo", {controller: function() {}});
 
 // run, config don't take names
 myMod.run(["$scope", "$timeout", function($scope, $timeout) {
@@ -178,7 +180,9 @@ myMod.directive("foo", ["$a", "$b", function($a, $b) {
         d;
     }]).animation("foo", ["$f", "$g", function($f, $g) {
         e;
-    }]).invoke("foo", ["$f", "$g", function($f, $g) {
+    }]).component("foo", {controller: ["$scope", "$timeout", function($scope, $timeout) {
+        i;
+    }]}).invoke("foo", ["$f", "$g", function($f, $g) {
         f;
     }]).decorator("foo", ["$f", "$g", function($f, $g) {
         g;
