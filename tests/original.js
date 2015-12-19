@@ -265,6 +265,10 @@ angular.module("MyMod").directive("pleasematchthis", function() {
             promiseObj: function($scope, $timeout) { b },
             translations: "translations",
         },
+        params: {
+            simple: function($scope) {},
+            inValue: { value: function($scope) {}, notThis: function($scope) {} },
+        },
         views: {
             viewa: {
                 controller: function($scope, myParam) {},

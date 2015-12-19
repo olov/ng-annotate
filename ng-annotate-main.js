@@ -146,6 +146,7 @@ function matchNgUi(node) {
     //     onExit: function($scope)
     // });
     // $stateProvider.state("myState", {... resolve: {f: function($scope) {}, ..} ..})
+    // $stateProvider.state("myState", {... params: {params: {simple: function($scope) {}, inValue: { value: function($scope) {} }} ..})
     // $stateProvider.state("myState", {... views: {... somename: {... controller: fn, controllerProvider: fn, templateProvider: fn, resolve: {f: fn}}}})
     //
     // stateHelperProvider.setNestedState({ sameasregularstate, children: [sameasregularstate, ..]})
@@ -227,6 +228,18 @@ function matchNgUi(node) {
 
         // {resolve: ..}
         res.push.apply(res, matchResolve(props));
+
+        // {params: {simple: function($scope) {}, inValue: { value: function($scope) {} }}
+        const a = matchProp("params", props);
+        if (a && a.type === "ObjectExpression") {
+            a.properties.forEach(function(prop) {
+                if (prop.value.type === "ObjectExpression") {
+                    res.push(matchProp("value", prop.value.properties));
+                } else {
+                    res.push(prop.value);
+                }
+            });
+        }
 
         // {view: ...}
         const viewObject = matchProp("views", props);
