@@ -377,6 +377,16 @@ angular.module("MyMod").directive("pleasematchthis", function() {
         },
         donttouch: function(me) {},
     });
+    $uibModal.open({
+        templateUrl: "str",
+        controller: ["$scope", function($scope) {}],
+        resolve: {
+            items: ["MyService", function(MyService) {}],
+            data: ["a", "b", function(a, b) {}],
+            its: 42,
+        },
+        donttouch: function(me) {},
+    });
 
     // angular material design $mdBottomSheet, $mdDialog, $mdToast
     $mdDialog.show({
@@ -540,6 +550,16 @@ foobar.irrespective("dontmatchthis", function() {
 
     // angular ui / ui-bootstrap $modal
     $modal.open({
+        templateUrl: "str",
+        controller: function($scope) {},
+        resolve: {
+            items: function(MyService) {},
+            data: function(a, b) {},
+            its: 42,
+        },
+        donttouch: function(me) {},
+    });
+    $uibModal.open({
         templateUrl: "str",
         controller: function($scope) {},
         resolve: {
@@ -847,7 +867,7 @@ myMod.directive("donttouch", function() {
 
 // IIFE-jumping (primarily for compile-to-JS langs)
 angular.module("MyMod").directive("foo", ["$a", "$b", function($a, $b) {
-    $modal.open({
+    $uibModal.open({
         resolve: {
             collection: (function(_this) {
                 return ["$c", function($c) {
