@@ -1,3 +1,11 @@
+## v1.1.0 2015-12-19
+ * bugfix $inject arrays for function definitions not being hoisted
+ * match angular.module("MyMod").component("foo", {controller: function ..})
+ * match angular.module("MyMod").decorator("foo", function ..)
+ * match $controllerProvider.register
+ * match $uibModal.open from angular-ui (recently renamed from $modal.open)
+ * ui-router declarations improvements
+
 ## v1.0.2 2015-07-17
  * bugfix reference-following crash
 
