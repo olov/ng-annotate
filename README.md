@@ -148,6 +148,8 @@ ng-annotate understands `$provide.decorator("bar", function($scope) ..)`, `$prov
 
 ng-annotate understands `$routeProvider.when("path", { .. })`.
 
+ng-annotate understands `$controllerProvider.register("foo", function($scope) ..)`.
+
 ng-annotate understands `$httpProvider.interceptors.push(function($scope) ..)` and
 `$httpProvider.responseInterceptors.push(function($scope) ..)`.
 

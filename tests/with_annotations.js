@@ -240,6 +240,13 @@ function notInContext() {
     });
 }
 
+// $controllerProvider
+angular.module("myMod").controller("foo", function() {
+    $controllerProvider.register("foo", ["$scope", function($scope) {}]);
+});
+function notInContext() {
+    $controllerProvider.register("foo", function($scope) {});
+}
 
 // all the patterns below matches only when we're inside a detected angular module
 angular.module("MyMod").directive("pleasematchthis", function() {

@@ -36,7 +36,7 @@ function match(node, ctx, matchPlugins) {
     // matchProvide must happen before matchRegular
     // to prevent regular from matching it as a short-form
     const matchMethodCalls = (isMethodCall &&
-        (matchInjectorInvoke(node) || matchProvide(node, ctx) || matchRegular(node, ctx) || matchNgRoute(node) || matchMaterialShowModalOpen(node) || matchNgUi(node) || matchHttpProvider(node)));
+        (matchInjectorInvoke(node) || matchProvide(node, ctx) || matchRegular(node, ctx) || matchNgRoute(node) || matchMaterialShowModalOpen(node) || matchNgUi(node) || matchHttpProvider(node) || matchControllerProvider(node)));
 
     return matchMethodCalls ||
         (matchPlugins && matchPlugins(node)) ||
@@ -269,6 +269,24 @@ function matchHttpProvider(node) {
         obj.type === "MemberExpression" && !obj.computed &&
         obj.object.name === "$httpProvider" && is.someof(obj.property.name,  ["interceptors", "responseInterceptors"]) &&
         node.arguments.length >= 1 && node.arguments);
+}
+
+function matchControllerProvider(node) {
+    // $controllerProvider.register("foo", function($scope) {});
+
+    // we already know that node is a (non-computed) method call
+    const callee = node.callee;
+    const obj = callee.object; // identifier or expression
+    const method = callee.property; // identifier
+    const args = node.arguments;
+
+    const target = obj.type === "Identifier" && obj.name === "$controllerProvider" &&
+        method.name === "register" && args.length === 2 && args[1];
+
+    if (target) {
+        target.$methodName = method.name;
+    }
+    return target;
 }
 
 function matchProvide(node, ctx) {
