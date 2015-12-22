@@ -1,3 +1,6 @@
+## v1.1.1 2015-12-22
+ * bugfix parsing in strict mode even if source is not
+
 ## v1.1.0 2015-12-19
  * bugfix $inject arrays for function definitions not being hoisted
  * match angular.module("MyMod").component("foo", {controller: function ..})
