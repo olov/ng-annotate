@@ -1,3 +1,6 @@
+## v1.2.0 2015-12-24
+ * bugfix $inject array positioning with TypeScript inheritance (__extends)
+
 ## v1.1.1 2015-12-22
  * bugfix parsing in strict mode even if source is not
 
