@@ -239,6 +239,24 @@ function notInContext() {
     $controllerProvider.register("foo", function($scope) {});
 }
 
+// special handling for TypeScript __extends
+function outer1() {
+    a;
+    __extends();
+    b;
+    function foo($a) {
+        "ngInject";
+    }
+}
+function outer2() {
+    a;
+    __not_extends();
+    b;
+    function foo($a) {
+        "ngInject";
+    }
+}
+
 // all the patterns below matches only when we're inside a detected angular module
 angular.module("MyMod").directive("pleasematchthis", function() {
 

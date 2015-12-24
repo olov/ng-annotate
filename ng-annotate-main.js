@@ -855,8 +855,9 @@ function judgeInjectArraySuspect(node, ctx) {
 
         let foundSuspectInBody = false;
         let existingExpressionStatementWithArray = null;
-        let troublesomeReturn = false;
-        onode.$parent.body.forEach(function(bnode) {
+        let nodeAfterExtends = null;
+        let __extends = null;
+        onode.$parent.body.forEach(function(bnode, idx) {
             if (bnode === onode) {
                 foundSuspectInBody = true;
             }
@@ -870,18 +871,21 @@ function judgeInjectArraySuspect(node, ctx) {
                 existingExpressionStatementWithArray = bnode;
             }
 
-            // there's a return statement before our function
-            if (!foundSuspectInBody && bnode.type === "ReturnStatement") {
-                troublesomeReturn = bnode;
+            let e;
+            if (!nodeAfterExtends && !foundSuspectInBody && bnode.type === "ExpressionStatement" && (e = bnode.expression).type === "CallExpression" && e.callee.type === "Identifier" && e.callee.name === "__extends") {
+                const nextStatement = onode.$parent.body[idx + 1];
+                if (nextStatement) {
+                    nodeAfterExtends = nextStatement;
+                }
             }
         });
         assert(foundSuspectInBody);
-        if (onode.type === "FunctionDeclaration") {
-            troublesomeReturn = firstNonPrologueStatement(onode.$parent.body);
+        if (onode.type === "FunctionDeclaration" && !nodeAfterExtends) {
+            nodeAfterExtends = firstNonPrologueStatement(onode.$parent.body);
         }
 
-        if (troublesomeReturn && !existingExpressionStatementWithArray) {
-            posAfterFunctionDeclaration = skipPrevNewline(troublesomeReturn.range[0], troublesomeReturn.loc.start);
+        if (nodeAfterExtends && !existingExpressionStatementWithArray) {
+            posAfterFunctionDeclaration = skipPrevNewline(nodeAfterExtends.range[0], nodeAfterExtends.loc.start);
         }
 
         function hasInjectArray(node) {
