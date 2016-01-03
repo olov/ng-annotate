@@ -52,11 +52,12 @@ module.exports = {
         // {resolve: ..}
         res.push.apply(res, ctx.matchResolve(props));
 
-        // edit: {controller: function(), resolve: {}}
+        // edit: {controller: function(), resolve: {}, apply: function()}
         const edit = ctx.matchProp('edit', props);
         if (edit && edit.type === "ObjectExpression") {
             const editProps = edit.properties;
             res.push(ctx.matchProp('controller', editProps));
+            res.push(ctx.matchProp('apply', editProps));
             res.push.apply(res, ctx.matchResolve(editProps));
         }
 
