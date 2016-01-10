@@ -856,7 +856,6 @@ function judgeInjectArraySuspect(node, ctx) {
         let foundSuspectInBody = false;
         let existingExpressionStatementWithArray = null;
         let nodeAfterExtends = null;
-        let __extends = null;
         onode.$parent.body.forEach(function(bnode, idx) {
             if (bnode === onode) {
                 foundSuspectInBody = true;
@@ -880,12 +879,13 @@ function judgeInjectArraySuspect(node, ctx) {
             }
         });
         assert(foundSuspectInBody);
-        if (onode.type === "FunctionDeclaration" && !nodeAfterExtends) {
-            nodeAfterExtends = firstNonPrologueStatement(onode.$parent.body);
-        }
-
-        if (nodeAfterExtends && !existingExpressionStatementWithArray) {
-            posAfterFunctionDeclaration = skipPrevNewline(nodeAfterExtends.range[0], nodeAfterExtends.loc.start);
+        if (onode.type === "FunctionDeclaration") {
+            if (!nodeAfterExtends) {
+                nodeAfterExtends = firstNonPrologueStatement(onode.$parent.body);
+            }
+            if (nodeAfterExtends && !existingExpressionStatementWithArray) {
+                posAfterFunctionDeclaration = skipPrevNewline(nodeAfterExtends.range[0], nodeAfterExtends.loc.start);
+            }
         }
 
         function hasInjectArray(node) {

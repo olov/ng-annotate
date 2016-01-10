@@ -121,7 +121,36 @@ function inspectComments(ctx) {
     }
 }
 
+function isStringArray(node) {
+    if (node.type !== "ArrayExpression") {
+        return false;
+    }
+    return node.elements.length >= 1 && node.elements.every(function(n) {
+        return n.type === "Literal" && is.string(n.value);
+    });
+}
+
+function findNextStatement(node) {
+    const body = node.$parent.body;
+    for (let i = 0; i < body.length; i++) {
+        if (body[i] === node) {
+            return body[i + 1] || null;
+        }
+    }
+    return null;
+}
+
 function addSuspect(target, ctx, block) {
+    if (target.type === "ExpressionStatement" && target.expression.type === "AssignmentExpression" && isStringArray(target.expression.right)) {
+        // /*@ngInject*/
+        // FooBar.$inject = ["$a", "$b"];
+        // function FooBar($a, $b) {}
+        const adjustedTarget = findNextStatement(target);
+        if (adjustedTarget) {
+            return addSuspect(adjustedTarget, ctx, block);
+        }
+    }
+
     if (target.type === "ObjectExpression") {
         // /*@ngInject*/ {f1: function(a), .., {f2: function(b)}}
         addObjectExpression(target, ctx);

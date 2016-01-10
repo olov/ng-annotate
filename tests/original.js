@@ -828,6 +828,32 @@ var SupFoo3 = ngNoInject(function($scope) {
 });
 
 
+// regression-test for https://github.com/olov/ng-annotate/issues/221
+var FooBar = (function (_super) {
+    __extends(FooBar, _super);
+    /*@ngInject*/
+    function FooBar($a, $b) {
+        _super.call(this);
+    }
+    /*@ngInject*/
+    FooBar.onEnter = function (callback) {
+        x;
+    };
+    return FooBar;
+})(Bar);
+var FooBar2 = (function (_super) {
+    __extends(FooBar, _super);
+    function FooBar($a, $b) {
+        "ngInject";
+        _super.call(this);
+    }
+    FooBar.onEnter = function (callback) {
+        "ngInject";
+        x;
+    };
+    return FooBar;
+})(Bar);
+
 // snippets that shouldn't fool ng-annotate into generating false positives,
 //   whether we're inside an angular module or not
 myMod.controller("donttouchme", function() {
