@@ -83,6 +83,9 @@ angular.module('myMod', ['adf.provider'])
           controller: function($http){
             // control something
           },
+          apply: function($http, config){
+            // apply configuration
+          },
           resolve: {
             editone: function($http, config){
               // resolve something
