@@ -1,5 +1,6 @@
 ## v1.2.1 2016-01-10
  * bugfix case where $inject arrays were incorrectly hoisted
+ * angular-dashboard-framework optional: match apply
 
 ## v1.2.0 2015-12-24
  * bugfix $inject array positioning with TypeScript inheritance (__extends)
