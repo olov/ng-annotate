@@ -1,6 +1,6 @@
 // ng-annotate.js
 // MIT licensed, see LICENSE file
-// Copyright (c) 2013-2015 Olov Lassus <olov.lassus@gmail.com>
+// Copyright (c) 2013-2016 Olov Lassus <olov.lassus@gmail.com>
 
 "use strict";
 
