@@ -1,8 +1,8 @@
 # ng-annotate [![Build Status](https://travis-ci.org/olov/ng-annotate.svg?branch=master)](https://travis-ci.org/olov/ng-annotate)
 ng-annotate adds and removes AngularJS dependency injection annotations.
 
-Write your code without annotations and mark-up functions to be annotated 
-with the `"ngInject"` directive prologue, just like you would 
+Write your code without annotations and mark-up functions to be annotated
+with the `"ngInject"` directive prologue, just like you would
 `"use strict"`. This must be at the beginning of your function.
 
 ```js
@@ -54,9 +54,9 @@ ng-annotate can be used as a library, see [OPTIONS.md](OPTIONS.md) for its API.
 ## Implicit matching of common code forms
 ng-annotate uses static analysis to detect common AngularJS code patterns. When
 this works it means that you do not need to mark-up functions with `"ngInject"`.
-For a lot of code bases this works very well (use `ng-strict-di` to simplify 
-debugging when it doesn't) but for others it is less reliable and you may prefer 
-to use `"ngInject"` instead. For more information about implicit matching see 
+For a lot of code bases this works very well (use `ng-strict-di` to simplify
+debugging when it doesn't) but for others it is less reliable and you may prefer
+to use `"ngInject"` instead. For more information about implicit matching see
 [IMPLICIT.md](IMPLICIT.md).
 
 
@@ -86,7 +86,7 @@ Your transpiler should preserve directive prologues, if not please file a bug on
 
 Do that in your ng-annotate processed (but not minified) builds and AngularJS will
 let you know if there are any missing dependency injection annotations.
-[ng-strict-di](https://docs.angularjs.org/api/ng/directive/ngApp) is available in 
+[ng-strict-di](https://docs.angularjs.org/api/ng/directive/ngApp) is available in
 AngularJS 1.3 or later.
 
 
@@ -101,7 +101,7 @@ AngularJS 1.3 or later.
 * [Webpack](http://webpack.github.io/): [ng-annotate-webpack-plugin](https://www.npmjs.org/package/ng-annotate-webpack-plugin) by [Chris Liechty](https://github.com/cliechty), [ng-annotate-loader](https://www.npmjs.org/package/ng-annotate-loader) by [Andrey Skladchikov](https://github.com/huston007)
 * [Middleman](http://middlemanapp.com/): [middleman-ngannotate](http://rubygems.org/gems/middleman-ngannotate) by [Michael Siebert](https://github.com/siebertm)
 * [ENB](http://enb-make.info/) (Russian): [enb-ng-techs](https://www.npmjs.org/package/enb-ng-techs#ng-annotate) by [Alexey Gurianov](https://github.com/guria)
-* [rollup](https://rollupjs.org/): [rollup-pulgin-ng1-annotate](https://github.com/xierenyuan/rollup-plugin-ng-annotate) by [RenHong Xie]
+* [rollup](https://rollupjs.org/): [rollup-pulgin-ng1-annotate](https://github.com/xierenyuan/rollup-plugin-ng-annotate) by [RenHong Xie](https://github.com/xierenyuan)
 * [Metalsmith](http://www.metalsmith.io/): [metalsmith-ng-annotate](https://www.npmjs.com/package/metalsmith-ng-annotate) by [Miguel Fonseca](https://github.com/fmmfonseca)
 
 
@@ -115,8 +115,8 @@ to transpile to ES5. See [BUILD.md](BUILD.md) for build and test instructions.
 
 
 ## Issues and contributions
-Please provide issues in the form of input, expected output, actual output. Include 
-the version of ng-annotate and node that you are using. With pull requests, please 
+Please provide issues in the form of input, expected output, actual output. Include
+the version of ng-annotate and node that you are using. With pull requests, please
 include changes to the tests as well (tests/original.js, tests/with_annotations.js).
 
 
