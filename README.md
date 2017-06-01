@@ -101,6 +101,7 @@ AngularJS 1.3 or later.
 * [Webpack](http://webpack.github.io/): [ng-annotate-webpack-plugin](https://www.npmjs.org/package/ng-annotate-webpack-plugin) by [Chris Liechty](https://github.com/cliechty), [ng-annotate-loader](https://www.npmjs.org/package/ng-annotate-loader) by [Andrey Skladchikov](https://github.com/huston007)
 * [Middleman](http://middlemanapp.com/): [middleman-ngannotate](http://rubygems.org/gems/middleman-ngannotate) by [Michael Siebert](https://github.com/siebertm)
 * [ENB](http://enb-make.info/) (Russian): [enb-ng-techs](https://www.npmjs.org/package/enb-ng-techs#ng-annotate) by [Alexey Gurianov](https://github.com/guria)
+* [Metalsmith](http://www.metalsmith.io/): [metalsmith-ng-annotate](https://www.npmjs.com/package/metalsmith-ng-annotate) by [Miguel Fonseca](https://github.com/fmmfonseca)
 
 
 ## Changes
