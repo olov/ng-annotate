@@ -1,3 +1,6 @@
+## v1.2.2 2017-06-01
+ * so long and thanks for all the bits
+
 ## v1.2.1 2016-01-10
  * bugfix case where $inject arrays were incorrectly hoisted
  * angular-dashboard-framework optional: match apply
