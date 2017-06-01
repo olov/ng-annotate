@@ -102,6 +102,8 @@ AngularJS 1.3 or later.
 * [Middleman](http://middlemanapp.com/): [middleman-ngannotate](http://rubygems.org/gems/middleman-ngannotate) by [Michael Siebert](https://github.com/siebertm)
 * [ENB](http://enb-make.info/) (Russian): [enb-ng-techs](https://www.npmjs.org/package/enb-ng-techs#ng-annotate) by [Alexey Gurianov](https://github.com/guria)
 * [rollup](https://rollupjs.org/): [rollup-pulgin-ng1-annotate](https://github.com/xierenyuan/rollup-plugin-ng-annotate) by [RenHong Xie]
+* [Metalsmith](http://www.metalsmith.io/): [metalsmith-ng-annotate](https://www.npmjs.com/package/metalsmith-ng-annotate) by [Miguel Fonseca](https://github.com/fmmfonseca)
+
 
 ## Changes
 See [CHANGES.md](CHANGES.md).
